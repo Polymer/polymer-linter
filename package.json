@@ -9,7 +9,7 @@
   "dependencies": {
     "dom5": "^2.0.0",
     "parse5": "^2.2.1",
-    "polymer-analyzer": "^2.0.0-alpha.11"
+    "polymer-analyzer": "^2.0.0-alpha.12"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.32",

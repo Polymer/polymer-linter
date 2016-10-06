@@ -17,10 +17,9 @@
 import {Linter} from '../linter';
 import {Severity, Warning} from 'polymer-analyzer/lib/warning/warning';
 import {UnbalancedDelimiters} from '../rules/unbalanced-delimiters';
-// import 'mochawait'; // needed to support node4
 import * as assert from 'assert';
 
-suite('Linter', () => {
+suite('UnbalancedDelimiters', () => {
 
   test('unbalanced-delimiters', async() => {
 

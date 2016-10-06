@@ -22,7 +22,6 @@ import {PolymerElement} from 'polymer-analyzer/lib/polymer/polymer-element';
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
 import * as matchers from '../matchers';
-import * as utils from '../utils';
 
 export class UnbalancedDelimiters implements Rule {
   public async check(document: Document): Promise<Warning[]> {
@@ -79,7 +78,7 @@ export class UnbalancedDelimiters implements Rule {
           code: 'unbalanced-delimiters',
           message: `Expression ${node.value} has unbalanced delimiters`,
           severity: Severity.ERROR,
-          sourceRange: utils.getSourceRangeForTextNode(parsedHtml.url, node)!
+          sourceRange: parsedHtml.sourceRangeForNode(node)!
         });
       }
 
