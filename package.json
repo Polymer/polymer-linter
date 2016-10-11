@@ -1,6 +1,6 @@
 {
   "name": "polymer-linter",
-  "version": "1.0.0",
+  "version": "1.0.0-alpha.1",
   "description": "Lint Polymer!",
   "main": "lib/polymer-linter.js",
   "bin": {
