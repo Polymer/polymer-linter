@@ -11,13 +11,11 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-
-'use strict';
+import * as assert from 'assert';
+import {Severity, Warning} from 'polymer-analyzer/lib/warning/warning';
 
 import {Linter} from '../linter';
-import {Severity, Warning} from 'polymer-analyzer/lib/warning/warning';
 import {UnbalancedDelimiters} from '../rules/unbalanced-delimiters';
-import * as assert from 'assert';
 
 suite('UnbalancedDelimiters', () => {
 
@@ -87,13 +85,12 @@ suite('UnbalancedDelimiters', () => {
 
     assert.deepEqual(warnings[5], {
       code: 'unbalanced-delimiters',
-      message:
-          'Expression {{myVar} has unbalanced delimiters in attribute href',
+      message: 'Expression {{myVar} has unbalanced delimiters',
       severity: Severity.ERROR,
       sourceRange: {
         end: {column: 22, line: 18},
         file: 'test/sample/imports/unbalanced-delimiters.html',
-        start: {column: 7, line: 18}
+        start: {column: 12, line: 18}
       }
     });
   });
