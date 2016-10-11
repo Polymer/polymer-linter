@@ -19,7 +19,7 @@ import {Rule} from '../rule';
 
 suite('Linter', () => {
 
-  it('catches exceptions during Analyze and presents as Warnings', async() => {
+  it('catches WarningCarryingExceptions on Analyze', async() => {
     const explodingLinter = class implements Rule {
       public async check(document: Document): Promise<Warning[]> {
         throw new WarningCarryingException({
@@ -34,6 +34,7 @@ suite('Linter', () => {
         });
       }
     };
+
     const linter = new Linter([new explodingLinter()]);
     const warnings =
         await linter.lint(['test/sample/my-element-collection.html']);

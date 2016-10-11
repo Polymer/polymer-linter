@@ -11,9 +11,6 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-
-'use strict';
-
 import {Document} from 'polymer-analyzer/lib/model/document';
 import {Warning} from 'polymer-analyzer/lib/warning/warning';
 
