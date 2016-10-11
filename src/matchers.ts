@@ -11,12 +11,13 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-
-'use strict';
-
 import * as dom5 from 'dom5';
 
 const p = dom5.predicates;
 
+export const isDomBindTemplate =
+    p.AND(p.hasTagName('template'), p.hasAttrValue('is', 'dom-bind'));
+export const isDomModuleTemplate = p.AND(
+    p.parentMatches(p.hasTagName('dom-module')), p.hasTagName('template'));
 export const isTemplate = p.hasTagName('template');
 export const isTemplateDescendant = p.parentMatches(isTemplate);
