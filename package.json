@@ -2,14 +2,11 @@
   "name": "polymer-linter",
   "version": "1.0.0-alpha.1",
   "description": "Lint Polymer!",
-  "main": "lib/polymer-linter.js",
-  "bin": {
-    "polymer-linter": "bin/linter-cli"
-  },
+  "main": "lib/linter.js",
   "dependencies": {
     "dom5": "^2.0.0",
     "parse5": "^2.2.1",
-    "polymer-analyzer": "^2.0.0-alpha.12"
+    "polymer-analyzer": "^2.0.0-alpha.14"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.32",
