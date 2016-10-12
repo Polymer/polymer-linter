@@ -59,7 +59,7 @@ export class UnbalancedDelimiters implements Rule {
       if (this._extractBadBindingExpression(attr.value || '')) {
         warnings.push({
           code: 'unbalanced-delimiters',
-          message: `Expression ${attr.value} has unbalanced delimiters`,
+          message: this._getMessageForBadBindingExpression(attr.value),
           severity: Severity.ERROR,
           sourceRange:
               parsedHtml.sourceRangeForAttributeValue(element, attr.name)!
@@ -67,6 +67,19 @@ export class UnbalancedDelimiters implements Rule {
       }
     }
     return warnings;
+  }
+
+  private _getMessageForBadBindingExpression(text: string): string {
+    const delimitersOnly = text.replace(/[^\[\]{}]/g, '');
+    const suggestion = {
+      '{{}': ' are you missing a closing \'}\'?',
+      '[[]': ' are you missing a closing \']\'?',
+      '{}}': ' are you missing an opening \'{\'?',
+      '[]]': ' are you missing an opening \'[\'?'
+    }[delimitersOnly] ||
+        '';
+    return 'Invalid polymer expression delimiters.  You put \'' +
+        delimitersOnly + '\'' + suggestion;
   }
 
   private _getWarningsForTemplate(
@@ -91,7 +104,7 @@ export class UnbalancedDelimiters implements Rule {
           this._isBadBindingExpression(node.value)) {
         warnings.push({
           code: 'unbalanced-delimiters',
-          message: `Expression ${node.value} has unbalanced delimiters`,
+          message: this._getMessageForBadBindingExpression(node.value),
           severity: Severity.ERROR,
           sourceRange: parsedHtml.sourceRangeForNode(node)!
         });
@@ -103,13 +116,9 @@ export class UnbalancedDelimiters implements Rule {
 
   private _extractBadBindingExpression(text: string): string|undefined {
     // 4 cases, {{}, {}}, [[], []]
-    let match = text.match(/\{\{([^\}]*)\}(?!\})/) ||
-        text.match(/\[\[([^\]]*)\](?!\])/);
-    if (!match) {
-      const reversed = text.split('').reverse().join('');
-      match = reversed.match(/\}\}([^\{]*)\{(?!\{)/) ||
-          reversed.match(/\]\]([^\[]*)\[(?!\[)/);
-    }
+    const match = text.match(/\{\{([^\}]*)\}(?!\})|\[\[([^\]]*)\](?!\])/) ||
+        text.split('').reverse().join('').match(
+            /\}\}([^\{]*)\{(?!\{)|\]\]([^\[]*)\[(?!\[)/);
     if (match) {
       return text;
     }

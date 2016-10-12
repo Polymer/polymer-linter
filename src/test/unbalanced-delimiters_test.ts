@@ -30,7 +30,8 @@ suite('UnbalancedDelimiters', () => {
 
     assert.deepEqual(warnings[0], {
       code: 'unbalanced-delimiters',
-      message: 'Expression [[myVar] has unbalanced delimiters',
+      message: 'Invalid polymer expression delimiters.  You put \'[[]\' ' +
+          'are you missing a closing \']\'?',
       severity: Severity.ERROR,
       sourceRange: {
         end: {column: 18, line: 11},
@@ -41,7 +42,8 @@ suite('UnbalancedDelimiters', () => {
 
     assert.deepEqual(warnings[1], {
       code: 'unbalanced-delimiters',
-      message: 'Expression [myVar]] has unbalanced delimiters',
+      message: 'Invalid polymer expression delimiters.  You put \'[]]\' ' +
+          'are you missing an opening \'[\'?',
       severity: Severity.ERROR,
       sourceRange: {
         end: {column: 18, line: 12},
@@ -52,7 +54,8 @@ suite('UnbalancedDelimiters', () => {
 
     assert.deepEqual(warnings[2], {
       code: 'unbalanced-delimiters',
-      message: 'Expression {myVar}} has unbalanced delimiters',
+      message: 'Invalid polymer expression delimiters.  You put \'{}}\' ' +
+          'are you missing an opening \'{\'?',
       severity: Severity.ERROR,
       sourceRange: {
         end: {column: 18, line: 13},
@@ -63,7 +66,8 @@ suite('UnbalancedDelimiters', () => {
 
     assert.deepEqual(warnings[3], {
       code: 'unbalanced-delimiters',
-      message: 'Expression {{myVar} has unbalanced delimiters',
+      message: 'Invalid polymer expression delimiters.  You put \'{{}\' ' +
+          'are you missing a closing \'}\'?',
       severity: Severity.ERROR,
       sourceRange: {
         end: {column: 18, line: 14},
@@ -74,7 +78,8 @@ suite('UnbalancedDelimiters', () => {
 
     assert.deepEqual(warnings[4], {
       code: 'unbalanced-delimiters',
-      message: 'Expression {{\n      myVar\n    } has unbalanced delimiters',
+      message: 'Invalid polymer expression delimiters.  You put \'{{}\' ' +
+          'are you missing a closing \'}\'?',
       severity: Severity.ERROR,
       sourceRange: {
         end: {column: 5, line: 17},
@@ -85,7 +90,8 @@ suite('UnbalancedDelimiters', () => {
 
     assert.deepEqual(warnings[5], {
       code: 'unbalanced-delimiters',
-      message: 'Expression {{myVar} has unbalanced delimiters',
+      message: 'Invalid polymer expression delimiters.  You put \'{{}\' ' +
+          'are you missing a closing \'}\'?',
       severity: Severity.ERROR,
       sourceRange: {
         end: {column: 22, line: 18},
