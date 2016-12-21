@@ -1,14 +1,12 @@
 {
-    "extends": "tslint:recommended",
     "rules": {
         "class-name": true,
         "indent": [
             true,
             "spaces"
         ],
-        "interface-name": "never-prefix",
+        "prefer-const": true,
         "no-duplicate-variable": true,
-        "no-console": false,
         "no-eval": true,
         "no-internal-module": true,
         "no-trailing-whitespace": true,
