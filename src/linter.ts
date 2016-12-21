@@ -11,8 +11,10 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+
 import {Analyzer} from 'polymer-analyzer';
-import {Warning, WarningCarryingException, Severity} from 'polymer-analyzer/lib/warning/warning';
+import {Severity, Warning, WarningCarryingException} from 'polymer-analyzer/lib/warning/warning';
+
 import {Rule} from './rule';
 
 /**
@@ -41,7 +43,15 @@ export class Linter {
     warnings = warnings.concat(analysisWarnings);
     for (const document of documents) {
       for (const rule of this._rules) {
-        warnings = warnings.concat(await rule.check(document));
+        try {
+          warnings = warnings.concat(await rule.check(document));
+        } catch (e) {
+          warnings.push(this._getWarningFromError(
+              e,
+              document.url,
+              'internal-lint-error',
+              `Internal error during linting: ${e ? e.message : e}`));
+        }
       }
     }
     return warnings;
@@ -54,23 +64,28 @@ export class Linter {
       try {
         documents.push(await this._analyzer.analyze(file));
       } catch (e) {
-        if (e instanceof WarningCarryingException) {
-          warnings.push(e.warning);
-        } else {
-          warnings.push({
-            code: 'unable-to-analyze-file',
-            message: `Internal Error while analyzing: ${e ? e.message : e}`,
-            severity: Severity.WARNING,
-            sourceRange: {
-              file,
-              start: {line: 0, column: 0},
-              end: {line: 0, column: 0}
-            }
-          });
-        }
+        warnings.push(this._getWarningFromError(
+            e,
+            file,
+            'unable-to-analyze-file',
+            `Internal Error while analyzing: ${e ? e.message : e}`));
       }
     }
 
     return {documents, warnings};
+  }
+
+  private _getWarningFromError(
+      e: any, file: string, code: string, message: string) {
+    if (e instanceof WarningCarryingException) {
+      return e.warning;
+    }
+    return {
+      code,
+      message,
+      severity: Severity.WARNING,
+      sourceRange:
+          {file, start: {line: 0, column: 0}, end: {line: 0, column: 0}}
+    };
   }
 }
