@@ -11,9 +11,8 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+
 import {Document} from 'polymer-analyzer/lib/model/document';
 import {Warning} from 'polymer-analyzer/lib/warning/warning';
 
-// TODO(usergenic): Linter rules should have a standard interface for
-// configuring Warning severity and for setting their options.
 export interface Rule { check(document: Document): Promise<Warning[]>; }
