@@ -14,16 +14,15 @@
 
 import * as dom5 from 'dom5';
 import {ParsedHtmlDocument} from 'polymer-analyzer/lib/html/html-document';
-import {Document} from 'polymer-analyzer/lib/model/model';
 
 import stripIndent = require('strip-indent');
 import {Warning, Severity} from 'polymer-analyzer/lib/warning/warning';
 
-import {Rule} from '../rule';
+import {HtmlRule} from './rule';
 
 const p = dom5.predicates;
 
-export class MoveStyleIntoTemplate extends Rule {
+export class MoveStyleIntoTemplate extends HtmlRule {
   code = 'style-into-template';
   description = stripIndent(`
       Transforms:
@@ -46,12 +45,8 @@ export class MoveStyleIntoTemplate extends Rule {
     super();
   }
 
-  async check(document: Document) {
+  async checkFile(parsedDocument: ParsedHtmlDocument) {
     const warnings: Warning[] = [];
-    const parsedDocument = document.parsedDocument;
-    if (!(parsedDocument instanceof ParsedHtmlDocument)) {
-      return warnings;
-    }
     const outOfPlaceStyle = p.AND(
         p.hasTagName('style'), p.parentMatches(p.hasTagName('dom-module')));
     const outOfPlaceStyles =
