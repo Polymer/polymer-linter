@@ -16,18 +16,16 @@ import {Rule, RuleCollection} from './rule';
 import {stripWhitespace} from './util';
 
 /**
- * A singleton class where lint rules and rule collections can register
+ * A centralized place where lint rules and rule collections can register
  * themselves and you can get a collection of rules by querying.
+ *
+ * Almost all users should not construct their own registry, but instead use
+ * the instance exported as `registry` from this module.
  */
 export class LintRegistry {
-  private static readonly _singleton = new LintRegistry();
-  static get instance() {
-    return LintRegistry._singleton;
-  }
-
   private _all = new Map<string, Rule|RuleCollection>();
 
-  private constructor() {
+  constructor() {
   }
 
   /**
@@ -53,37 +51,30 @@ export class LintRegistry {
    * return the set of rules.
    */
   getRules(ruleCodes: string[]): Set<Rule> {
-    return this._getRules(ruleCodes, new Set());
-  }
-
-  private _getRules(ruleCodes: string[], alreadyExpanded: Set<string>):
-      Set<Rule> {
-    ruleCodes = ruleCodes.filter(p => !alreadyExpanded.has(p));
-
-    const results = new Set<Rule>();
-
-    for (const code of ruleCodes) {
-      for (const rule of this._getRulesForCode(code, alreadyExpanded)) {
-        results.add(rule);
-      }
-    }
-
+    const results = new Set();
+    this._getRules(ruleCodes, new Set(), results);
     return results;
   }
 
-  private _getRulesForCode(code: string, alreadyExpanded: Set<string>) {
-    alreadyExpanded.add(code);
-    const ruleOrCollection = this._all.get(code);
-    if (ruleOrCollection == null) {
-      throw new Error(`Could not find lint rule with code '${code}'`);
-    }
+  private _getRules(
+      ruleCodes: string[], alreadyExpanded: Set<string>,
+      results: Set<Rule>): void {
+    ruleCodes = ruleCodes.filter(p => !alreadyExpanded.has(p));
 
-    if (ruleOrCollection instanceof Rule) {
-      return new Set([ruleOrCollection]);
-    }
+    for (const code of ruleCodes) {
+      alreadyExpanded.add(code);
+      const ruleOrCollection = this._all.get(code);
+      if (ruleOrCollection == null) {
+        throw new Error(`Could not find lint rule with code '${code}'`);
+      }
 
-    return this._getRules(ruleOrCollection.rules, alreadyExpanded);
+      if (ruleOrCollection instanceof Rule) {
+        results.add(ruleOrCollection);
+      } else {
+        this._getRules(ruleOrCollection.rules, alreadyExpanded, results);
+      }
+    }
   }
 }
 
-export const registry = LintRegistry.instance;
+export const registry = new LintRegistry();

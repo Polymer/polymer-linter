@@ -51,7 +51,8 @@ export class RuleCollection {
   /**
    * Describes the rule collection.
    *
-   * Who should use it? When? What should they expect?
+   * A description should answer questions like: Who should use it? When? What
+   * should they expect?
    */
   description: string;
 
