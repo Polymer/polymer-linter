@@ -119,7 +119,7 @@ const fileSpecificIgnoredCodes: {[path: string]: Set<string>} = {
 
 // Filter out known issues in the codebase.
 function filterWarnings(warnings: Warning[]) {
-  return warnings.filter(w => {
+  return warnings.filter((w) => {
     if (ignoredCodes.has(w.code)) {
       return false;
     }
