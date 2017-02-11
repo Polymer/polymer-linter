@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
-## [1.0.0-pre.1] - 2017-02-10
+## [0.1.0] - 2017-02-10
+
+- The start of our rewrite of https://github.com/PolymerLabs/polylint on top of our new incremental static analysis framework.
 
 ### Added
+
 - APIs for both linting by files and by package.
 - Rule collections. Semantic, intent-based collections of lint rules.
 - A queryable, extensible registry of rules and rule collections.
