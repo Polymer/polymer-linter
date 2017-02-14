@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- getRules and getCollections on the registry, for accessing all registered rules and collections.
+- allRules and allRuleCollections on the registry, for accessing all registered rules and collections.
 
 ## [0.1.0] - 2017-02-10
 

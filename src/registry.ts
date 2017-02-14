@@ -76,12 +76,12 @@ export class LintRegistry {
     }
   }
 
-  allRules(): Iterable<Rule> {
+  get allRules(): Iterable<Rule> {
     return Array.from(this._all.values())
         .filter((r) => r instanceof Rule) as Rule[];
   }
 
-  allRuleCollections(): Iterable<RuleCollection> {
+  get allRuleCollections(): Iterable<RuleCollection> {
     return Array.from(this._all.values())
         .filter((r) => r instanceof RuleCollection) as RuleCollection[];
   }
