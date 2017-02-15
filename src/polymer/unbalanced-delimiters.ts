@@ -30,9 +30,9 @@ import stripIndent = require('strip-indent');
  * side.
  */
 export class UnbalancedDelimiters extends HtmlRule {
-  code = 'unbalanced-polymer-delimitors';
+  code = 'unbalanced-polymer-delimiters';
   description = stripIndent(`
-      Matches unbalanced delimitors around Polymer databinding expressions.
+      Matches unbalanced delimiters around Polymer databinding expressions.
 
       For example, {{foo} is missing a } at the end, it should instead be
       {{foo}}.`);

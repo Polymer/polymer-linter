@@ -14,4 +14,4 @@
 
 import './html/dom-module-name-or-is';
 import './html/move-style-into-template';
-import './polymer/unbalanced-delimitors';
+import './polymer/unbalanced-delimiters';
