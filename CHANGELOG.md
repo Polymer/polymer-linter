@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### New Lint Rules
+- unbalanced-polymer-delimitors: finds unbalanced delimitors in polymer databinding expressions.
+
 ## [0.1.3] - 2017-02-22
 
 - bump version of the analyzer.
