@@ -24,7 +24,7 @@ import {WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
 
-suite('unbalanced-polymer-delimitors', () => {
+suite('unbalanced-polymer-delimiters', () => {
   let analyzer: Analyzer;
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
@@ -33,7 +33,7 @@ suite('unbalanced-polymer-delimitors', () => {
     analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
     warningPrinter = new WarningPrettyPrinter(analyzer);
     linter = new Linter(
-        registry.getRules(['unbalanced-polymer-delimitors']), analyzer);
+        registry.getRules(['unbalanced-polymer-delimiters']), analyzer);
   });
 
   test('works in the trivial case', async() => {
