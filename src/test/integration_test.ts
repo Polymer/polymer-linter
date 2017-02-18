@@ -115,6 +115,14 @@ const fileSpecificIgnoredCodes: {[path: string]: Set<string>} = {
   'hydrolysis/src/loader/noop-resolver.ts': new Set(['unable-to-analyze']),
   'hydrolysis/src/loader/string-resolver.ts': new Set(['unable-to-analyze']),
   'hydrolysis/src/loader/xhr-resolver.ts': new Set(['unable-to-analyze']),
+
+  // https://github.com/PolymerElements/app-layout/pull/412
+  'app-layout/templates/publishing/src/blog-app.html':
+      new Set(['polymer-expression-parse-error']),
+
+  // https://github.com/PolymerElements/iron-doc-viewer/pull/98
+  'iron-doc-viewer/iron-doc-property.html':
+      new Set(['polymer-expression-parse-error']),
 };
 
 // Filter out known issues in the codebase.
