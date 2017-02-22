@@ -21,7 +21,8 @@ registry.register(
     new RuleCollection('polymer-2', `Rules for projects that use Polymer 2.x`, [
       'dom-module-invalid-attrs',
       'style-into-template',
-      'unbalanced-polymer-delimiters'
+      'unbalanced-polymer-delimiters',
+      'polymer-bind-to-undeclared-attrs',
     ]));
 
 registry.register(new RuleCollection(
@@ -32,7 +33,8 @@ Will warn about use of deprecated Polymer 1.x features or brand new features in 
     [
       'dom-module-invalid-attrs',
       'style-into-template',
-      'unbalanced-polymer-delimiters'
+      'unbalanced-polymer-delimiters',
+      'polymer-bind-to-undeclared-attrs',
     ]));
 
 registry.register(new RuleCollection(
@@ -41,4 +43,7 @@ registry.register(new RuleCollection(
 
 For projects that are ready to start transitioning to Polymer 2.0 see polymer-2-hybrid.
 `,
-    ['unbalanced-polymer-delimiters']));
+    [
+      'unbalanced-polymer-delimiters',
+      'polymer-bind-to-undeclared-attrs',
+    ]));

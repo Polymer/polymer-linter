@@ -123,6 +123,10 @@ const fileSpecificIgnoredCodes: {[path: string]: Set<string>} = {
   // https://github.com/PolymerElements/iron-doc-viewer/pull/98
   'iron-doc-viewer/iron-doc-property.html':
       new Set(['polymer-expression-parse-error']),
+
+  // https://github.com/PolymerElements/iron-location/pull/68
+  'iron-location/test/initialization-cases.html':
+      new Set(['polymer-bind-to-undeclared-attrs']),
 };
 
 // Filter out known issues in the codebase.
