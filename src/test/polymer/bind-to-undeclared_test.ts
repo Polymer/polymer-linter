@@ -83,6 +83,7 @@ suite('unknown-set-attribute', () => {
       'test-elem elements do not have an attribute named ib. Consider instead:  id',
       'test-elem elements do not have an attribute named tattle. Consider instead:  title',
       'test-elem elements do not have a property named class. Consider instead:  class$',
+      'data-* attributes must be accessed as attributes. i.e. you must write:  data-foo$="{{dont.do.this}}"'
     ]);
   });
 });
