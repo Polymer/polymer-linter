@@ -17,19 +17,27 @@ import {ElementReference} from 'polymer-analyzer/lib/model/element-reference';
 import {Document} from 'polymer-analyzer/lib/model/model';
 import {Severity, Warning} from 'polymer-analyzer/lib/warning/warning';
 
-import {Rule} from '../rule';
+import {registry} from '../registry';
 
-export class UndefinedElements implements Rule {
-  public async check(document: Document): Promise<Warning[]> {
+import {HtmlRule} from './rule';
+
+import stripIndent = require('strip-indent');
+
+export class UndefinedElements extends HtmlRule {
+  code = 'undefined-elements';
+  description = stripIndent(`
+      Warns for elements which have no definition.
+  `);
+
+  constructor() {
+    super();
+  }
+
+  async checkDocument(_parsedDocument: ParsedHtmlDocument, document: Document): Promise<Warning[]> {
     const warnings: Warning[] = [];
-    const parsedHtml = document.parsedDocument;
-
-    if (!(parsedHtml instanceof ParsedHtmlDocument)) {
-      return warnings;
-    }
 
     const elements =
-        Array.from(document.getByKind('element')).map(e => e.tagName);
+        Array.from(document.getByKind('element')).map((e) => e.tagName);
 
     const refs = document.getByKind('element-reference');
 
@@ -48,3 +56,5 @@ export class UndefinedElements implements Rule {
     return warnings;
   }
 }
+
+registry.register(new UndefinedElements());
