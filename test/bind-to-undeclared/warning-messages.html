@@ -26,8 +26,12 @@
     <test-elem class$="{{good}}"></test-elem>
     <test-elem class="{{no}}"></test-elem>
 
+    <test-elem data-foo="ok"></test-elem>
+    <test-elem data-foo$="{{fine}}"></test-elem>
+    <test-elem data-foo="{{dont.do.this}}"></test-elem>
+
     <!--
-      TODO(rictic) binding into data-props, on-foo, and onfoo event handlers
+      TODO(rictic) binding into on-foo, and onfoo event handlers
       -->
   </template>
 </dom-module>

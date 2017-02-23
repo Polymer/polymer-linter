@@ -164,13 +164,13 @@ export class BindToUndeclaredAttributes extends HtmlRule {
             }
           }
           // This is an open namespace.
-          if (name.startsWith('data-')) {
+          if (attr.name.startsWith('data-')) {
             if (!isAttribute) {
               warnings.push({
                 code: this.code,
                 message: stripWhitespace(`
-                  The data-* attributes must be accessed as attributes.
-                  i.e. you must write:  ${name}$="${attr.value}"`),
+                  data-* attributes must be accessed as attributes.
+                  i.e. you must write:  ${attr.name}$="${attr.value}"`),
                 severity: Severity.ERROR,
                 sourceRange:
                     parsedDoc.sourceRangeForAttributeName(node, attr.name)!
