@@ -186,11 +186,6 @@ export class BindToUndeclaredAttributes extends HtmlRule {
             continue;
           }
 
-          // TODO(rictic): if binding to a property, and the user hasn't
-          // performed the hyphenization, we should give them a specialized
-          // warning message.
-          // Likewise if there is an attribute but not a property or vice versa.
-
           const allowedBindings =
               isAttribute ? element.attributes : element.properties;
           const shared = isAttribute ? sharedAttributes : sharedProperties;
