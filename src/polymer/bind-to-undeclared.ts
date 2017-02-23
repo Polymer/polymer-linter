@@ -179,7 +179,7 @@ export class BindToUndeclaredAttributes extends HtmlRule {
             continue;
           }
           if (name.startsWith('on')) {
-            // TODO(rictic): handle these.
+            // TODO(https://github.com/Polymer/polymer-linter/issues/34)
             continue;
           }
 
