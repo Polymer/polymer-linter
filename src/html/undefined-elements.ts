@@ -33,7 +33,8 @@ export class UndefinedElements extends HtmlRule {
     super();
   }
 
-  async checkDocument(_parsedDocument: ParsedHtmlDocument, document: Document): Promise<Warning[]> {
+  async checkDocument(_parsedDocument: ParsedHtmlDocument, document: Document):
+      Promise<Warning[]> {
     const warnings: Warning[] = [];
 
     const elements =

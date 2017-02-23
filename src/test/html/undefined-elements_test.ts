@@ -16,9 +16,9 @@ import * as path from 'path';
 import {Analyzer} from 'polymer-analyzer';
 import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
 
+import {UndefinedElements} from '../../html/undefined-elements';
 import {Linter} from '../../linter';
 import {WarningPrettyPrinter} from '../util';
-import {UndefinedElements} from '../../html/undefined-elements';
 
 const fixtures_dir = path.resolve(path.join(__dirname, '../../../test'));
 
@@ -34,11 +34,13 @@ suite('UndefinedElements', () => {
   });
 
   test('finds undefined element references', async() => {
-    const warnings = await linter.lint(['undefined-elements/undefined-elements.html']);
+    const warnings =
+        await linter.lint(['undefined-elements/undefined-elements.html']);
 
     assert.deepEqual(await warningPrinter.prettyPrint(warnings), [`
 <undefined-element></undefined-element>
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`]);
-    assert.equal(warnings[0].message, 'The element undefined-element is not defined');
+    assert.equal(
+        warnings[0].message, 'The element undefined-element is not defined');
   });
 });
