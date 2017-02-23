@@ -128,6 +128,9 @@ export class BindToUndeclaredAttributes extends HtmlRule {
 
       This rule will warn when setting an attribute or property on a custom
       element.
+
+      This catches misspellings, forgetting to convert camelCase to kebab-case,
+      and binding to attributes like class and style like they were properties.
   `).trim();
 
   constructor() {

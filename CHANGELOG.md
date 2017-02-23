@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### New Lint Rules
 - unbalanced-polymer-delimiters: finds unbalanced delimiters in polymer databinding expressions.
+- `unknown-set-attribute` - included in all polymer rule collections.
+  - Warns setting undeclared properties or attributes in Polymer templates.
+
+    This rule will warn when setting an attribute or property on a custom
+    element.
+
+    This catches misspellings, forgetting to convert camelCase to kebab-case,
+    and binding to attributes like class and style like they were properties.Warns when setting an unknown attribute or property on a custom element in a polymer databinding template. Catches misspellings
+
 
 ## [0.1.3] - 2017-02-22
 
