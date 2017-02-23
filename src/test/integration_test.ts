@@ -126,7 +126,7 @@ const fileSpecificIgnoredCodes: {[path: string]: Set<string>} = {
 
   // https://github.com/PolymerElements/iron-location/pull/68
   'iron-location/test/initialization-cases.html':
-      new Set(['polymer-bind-to-undeclared-attrs']),
+      new Set(['unknown-set-attribute']),
 };
 
 // Filter out known issues in the codebase.
