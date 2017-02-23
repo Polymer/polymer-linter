@@ -22,6 +22,7 @@ import {registry} from '../registry';
 import {stripWhitespace} from '../util';
 
 import stripIndent = require('strip-indent');
+import * as levenshtein from 'fast-levenshtein';
 
 const sharedAttributes = new Set([
   // From https://html.spec.whatwg.org/multipage/dom.html#htmlelement
@@ -121,7 +122,7 @@ const sharedProperties = new Set([
 
 
 export class BindToUndeclaredAttributes extends HtmlRule {
-  code = 'polymer-attribute';
+  code = 'unknown-set-attribute';
   description = stripIndent(`
       Warns setting undeclared properties or attributes in Polymer templates.
 
@@ -140,40 +141,26 @@ export class BindToUndeclaredAttributes extends HtmlRule {
       if (!domModule.template) {
         continue;
       }
-      // TODO(rictic): querying for local features is O(N). We should add a
-      // cache to Document but until then, build one here.
-      const elementsByTagName = new Map<string, Element|null>();
-      const duplicates = new Set();
-      for (const element of document.getByKind('element')) {
-        const tagName = element.tagName;
-        if (!tagName) {
-          continue;
-        }
-        if (duplicates.has(tagName)) {
-          continue;
-        }
-        if (elementsByTagName.has(tagName)) {
-          duplicates.add(tagName);
-          elementsByTagName.delete(tagName);
-          continue;
-        }
-        elementsByTagName.set(tagName, element);
-      }
-
       dom5.nodeWalk(domModule.template, (node) => {
-        const element = elementsByTagName.get(node.tagName!);
-        if (!element) {
+        if (!node || !node.tagName) {
           return false;
         }
+        const elements = document.getById('element', node.tagName);
+        if (elements.size !== 1) {
+          return false;
+        }
+        const element = elements.values().next().value!;
         for (const attr of node.attrs || []) {
           let name = attr.name;
           let isAttribute = true;
-          const isDataBinding = /^(({{.*}})|(\[\[.*\]\]))$/.test(attr.value);
-          if (isDataBinding) {
+          const isFullDataBinding =
+              /^(({{.*}})|(\[\[.*\]\]))$/.test(attr.value);
+          if (isFullDataBinding) {
             if (name.endsWith('$')) {
               name = name.slice(0, name.length - 1);
             } else {
               isAttribute = false;
+              name = name.replace(/-(.)/g, (v) => v[1].toUpperCase());
             }
           }
           // This is an open namespace.
@@ -196,10 +183,6 @@ export class BindToUndeclaredAttributes extends HtmlRule {
             continue;
           }
 
-          // TODO(rictic): The `for` attribute on <label> must be
-          // attribute-bound.
-
-
           // TODO(rictic): if binding to a property, and the user hasn't
           // performed the hyphenization, we should give them a specialized
           // warning message.
@@ -211,12 +194,16 @@ export class BindToUndeclaredAttributes extends HtmlRule {
           const found = shared.has(name) ||
               !!allowedBindings.find((b) => b.name === name);
           if (!found) {
+            const suggestion = closestOption(name, isAttribute, element);
+            if (isFullDataBinding && suggestion.attribute) {
+              suggestion.name += '$';
+            }
             const bindingType = isAttribute ? 'an attribute' : 'a property';
             warnings.push({
               code: this.code,
               message: stripWhitespace(
-                  `${node.tagName} elements do not have ${bindingType}
-                   named ${name}`),
+                  `${node.tagName} elements do not have ${bindingType} ` +
+                  `named ${name}. Consider instead:  ${suggestion.name}`),
               severity: Severity.WARNING,
               sourceRange:
                   parsedDoc.sourceRangeForAttributeName(node, attr.name)!
@@ -230,5 +217,39 @@ export class BindToUndeclaredAttributes extends HtmlRule {
   }
 }
 
+function closestOption(name: string, isAttribute: boolean, element: Element) {
+  const attributeOptions = element.attributes.map((a) => a.name)
+                               .concat(Array.from(sharedAttributes.keys()));
+  const propertyOptions = element.properties.map((a) => a.name)
+                              .concat(Array.from(sharedProperties.keys()));
+  const closestAttribute =
+      minBy(attributeOptions, (option) => levenshtein.get(name, option));
+  const closestProperty =
+      minBy(propertyOptions, (option) => levenshtein.get(name, option));
+  if (closestAttribute.minScore! === closestProperty.minScore) {
+    if (isAttribute) {
+      return {attribute: true, name: closestAttribute.min!};
+    }
+    return {attribute: false, name: closestProperty.min!};
+  }
+  if (closestAttribute.minScore! < closestProperty.minScore!) {
+    return {attribute: true, name: closestAttribute.min!};
+  } else {
+    return {attribute: false, name: closestProperty.min!};
+  }
+}
+
+function minBy<T>(it: Iterable<T>, score: (t: T) => number) {
+  let min = undefined;
+  let minScore = undefined;
+  for (const val of it) {
+    const valScore = score(val);
+    if (minScore === undefined || valScore < minScore) {
+      minScore = valScore;
+      min = val;
+    }
+  }
+  return {min, minScore};
+}
 
 registry.register(new BindToUndeclaredAttributes());
