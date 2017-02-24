@@ -25,7 +25,7 @@ import {WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.resolve(path.join(__dirname, '../../../test'));
 
-suite('unknown-set-attribute', () => {
+suite('set-unknown-attribute', () => {
   let analyzer: Analyzer;
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
@@ -33,7 +33,7 @@ suite('unknown-set-attribute', () => {
   setup(() => {
     analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
     warningPrinter = new WarningPrettyPrinter(analyzer);
-    linter = new Linter(registry.getRules(['unknown-set-attribute']), analyzer);
+    linter = new Linter(registry.getRules(['set-unknown-attribute']), analyzer);
   });
 
   test('works in the trivial case', async() => {
@@ -48,7 +48,7 @@ suite('unknown-set-attribute', () => {
 
   test('warns at the right times', async() => {
     const warnings =
-        await linter.lint(['bind-to-undeclared/when-to-warn.html']);
+        await linter.lint(['set-unknown-attribute/when-to-warn.html']);
     assert.deepEqual(await warningPrinter.prettyPrint(warnings), [
       `
     <elem-one unknown="not ok"></elem-one>
@@ -70,13 +70,16 @@ suite('unknown-set-attribute', () => {
               ~~~~~~~`,
       `
     <elem-two propTwo="{{also.not.ok}}"></elem-two>
-              ~~~~~~~`
+              ~~~~~~~`,
+      `
+<elem-one unknown="warns even outside databindings"></elem-one>
+          ~~~~~~~`
     ]);
   });
 
   test('gives helpful warning messages', async() => {
     const warnings =
-        await linter.lint(['bind-to-undeclared/warning-messages.html']);
+        await linter.lint(['set-unknown-attribute/warning-messages.html']);
     assert.deepEqual(warnings.map((w) => w.message), [
       'test-elem elements do not have an attribute named bazic. Consider instead:  basic',
       'test-elem elements do not have an attribute named multiword. Consider instead:  multi-word',
