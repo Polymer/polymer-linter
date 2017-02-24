@@ -1,0 +1,26 @@
+<dom-module id="foo-elem">
+  <template>
+    <!-- Good -->
+    <div id="{{declared}}"></div>
+    <div id="{{writtenTo}}"></div>
+    <div id="{{method(writtenTo)}}"></div>
+
+    <!-- Bad -->
+    <div id="[[onlyReadFrom]]"></div>
+    <div id="[[onlyReadFrom]]"></div>
+    <div id="[[onlyReadFrom]]"></div>
+
+    <div id="{{referencedOnlyOnce}}"></div>
+  </template>
+  <script>
+    Polymer({
+      is: 'foo-elem',
+      properties: {
+        declared: String
+      },
+      method: function () {
+
+      }
+    })
+  </script>
+</dom-module>
