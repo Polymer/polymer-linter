@@ -78,7 +78,7 @@ const fileSpecificIgnoredCodes: {[path: string]: Set<string>} = {
 
   // https://github.com/PolymerElements/iron-a11y-keys-behavior/pull/66
   'iron-a11y-keys-behavior/test/basic-test.html':
-      new Set(['unknown-polymer-behavior']),
+      new Set(['unknown-polymer-behavior', 'set-unknown-attribute']),
 
   // https://github.com/PolymerLabs/note-app-elements/pull/5
   'note-app-elements/na-behavior.html': new Set(['unknown-polymer-behavior']),
@@ -126,7 +126,7 @@ const fileSpecificIgnoredCodes: {[path: string]: Set<string>} = {
 
   // https://github.com/PolymerElements/iron-location/pull/68
   'iron-location/test/initialization-cases.html':
-      new Set(['unknown-set-attribute']),
+      new Set(['set-unknown-attribute']),
 };
 
 // Filter out known issues in the codebase.
