@@ -82,7 +82,13 @@ suite('unbalanced-polymer-delimiters', () => {
             ~~~~~~~~~~~`,
       `
       <div id="{dm-dr-foo}}"></div>
-              ~~~~~~~~~~~~~~`
+              ~~~~~~~~~~~~~~`,
+      `
+  <div id="{dr}}"></div>
+          ~~~~~~~`,
+      `
+  <div id="{{di}"></div>
+          ~~~~~~~`
     ]);
   });
 });

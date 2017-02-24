@@ -45,7 +45,11 @@ export class UnbalancedDelimiters extends HtmlRule {
       Promise<Warning[]> {
     let warnings: Warning[] = [];
 
-    const templates = matchers.getNestedDataBindingTemplates(parsedHtml.ast);
+    const templates = dom5.queryAll(
+        parsedHtml.ast,
+        matchers.isDatabindingTemplate,
+        [],
+        dom5.childNodesIncludeTemplate);
     for (const template of templates) {
       warnings =
           warnings.concat(this._getWarningsForTemplate(parsedHtml, template));
