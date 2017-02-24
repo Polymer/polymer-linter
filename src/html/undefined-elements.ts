@@ -39,10 +39,8 @@ export class UndefinedElements extends HtmlRule {
     const refs = document.getByKind('element-reference');
 
     for (const ref of refs) {
-      const el = document.getById('element', ref.tagName, {
-        imported: true,
-        externalPackages: true
-      });
+      const el = document.getById(
+          'element', ref.tagName, {imported: true, externalPackages: true});
 
       if (el.size === 0) {
         warnings.push({
