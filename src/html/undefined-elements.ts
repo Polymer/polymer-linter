@@ -13,7 +13,6 @@
  */
 
 import {ParsedHtmlDocument} from 'polymer-analyzer/lib/html/html-document';
-import {ElementReference} from 'polymer-analyzer/lib/model/element-reference';
 import {Document} from 'polymer-analyzer/lib/model/model';
 import {Severity, Warning} from 'polymer-analyzer/lib/warning/warning';
 
@@ -26,8 +25,8 @@ import stripIndent = require('strip-indent');
 export class UndefinedElements extends HtmlRule {
   code = 'undefined-elements';
   description = stripIndent(`
-      Warns for elements which have no definition.
-  `);
+    Warns when an HTML tag refers to a custom element with no known definition.
+  `).trim();
 
   constructor() {
     super();
@@ -37,17 +36,18 @@ export class UndefinedElements extends HtmlRule {
       Promise<Warning[]> {
     const warnings: Warning[] = [];
 
-    const elements =
-        Array.from(document.getByKind('element')).map((e) => e.tagName);
-
     const refs = document.getByKind('element-reference');
 
     for (const ref of refs) {
-      const elementRef = ref as ElementReference;
-      if (elements.indexOf(elementRef.tagName) === -1) {
+      const el = document.getById('element', ref.tagName, {
+        imported: true,
+        externalPackages: true
+      });
+
+      if (el.size === 0) {
         warnings.push({
           code: 'undefined-elements',
-          message: `The element ${elementRef.tagName} is not defined`,
+          message: `The element ${ref.tagName} is not defined`,
           severity: Severity.WARNING,
           sourceRange: ref.sourceRange!
         });
