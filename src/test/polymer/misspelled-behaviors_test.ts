@@ -43,6 +43,6 @@ suite('MisspelledBehaviors', () => {
     ~~~~~~~~~~~~~~`]);
     assert.equal(
         warnings[0].message,
-        '"behaviours" property is possibly misspelled, did you mean "behaviors"?');
+        '"behaviours" property should be spelled "behaviors"');
   });
 });
