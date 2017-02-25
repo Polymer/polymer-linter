@@ -42,6 +42,6 @@ suite('UnknownEventHandlerDeclarations', () => {
       on-non-existent="foo"
       ~~~~~~~~~~~~~~~~~~~~~`]);
     assert.equal(
-        warnings[0].message, 'unknown event handler "non-existent" on foo');
+        warnings[0].message, 'Unknown event handler "non-existent" on tag');
   });
 });

@@ -56,7 +56,7 @@ export class UnknownEventHandlerDeclarations extends Rule {
             warnings.push({
               code: this.code,
               message: stripWhitespace(`
-                  Unknown event handler "${attr.name}" on tag`),
+                  Unknown event handler "${eventName}" on tag`),
               severity: Severity.WARNING,
               sourceRange: attr.sourceRange
             });
