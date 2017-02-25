@@ -23,13 +23,14 @@ import {registry} from '../registry';
 export class MisspelledBehaviors extends Rule {
   code = 'misspelled-behaviors';
   description = stripIndent(`
-      Warns for missing and misspelled behaviors:
+      Warns when the Polymer \`behaviors\` property is spelled \`behaviours\`,
+      as Polymer uses the American spelling.
 
           Polymer({
             behaviours: [...]
           });
 
-      Correct syntax:
+      Accepted syntax:
 
           Polymer({
             behaviors: [...]
@@ -46,13 +47,13 @@ export class MisspelledBehaviors extends Rule {
 
     for (const element of elements) {
       const behavioursProperty =
-          element.properties.find((prop) => prop.name === 'behaviours');
+          element.properties.find((prop) => prop.name === 'behaviours' && !prop.published);
 
       if (behavioursProperty && behavioursProperty.sourceRange) {
         warnings.push({
           code: this.code,
           message: stripWhitespace(`
-              "behaviours" property is possibly misspelled, did you mean "behaviors"?`),
+              "behaviours" property should be spelled "behaviors"`),
           severity: Severity.WARNING,
           sourceRange: behavioursProperty.sourceRange
         });
