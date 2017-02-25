@@ -26,10 +26,6 @@ export class UnknownEventHandlerDeclarations extends Rule {
       Warns for unknown event handler declarations:
 
           <paper-button on-unknown-event="foo">
-
-      Correct syntax:
-
-          <paper-button on-known-event="foo">
   `).trim();
 
   constructor() {
@@ -56,9 +52,9 @@ export class UnknownEventHandlerDeclarations extends Rule {
             warnings.push({
               code: this.code,
               message: stripWhitespace(`
-                  Unknown event handler "${eventName}" on tag`),
+                  Tag ${element.tagName} is not known to emit an event named ${eventName}`),
               severity: Severity.WARNING,
-              sourceRange: attr.sourceRange
+              sourceRange: attr.nameSourceRange
             });
           }
         }

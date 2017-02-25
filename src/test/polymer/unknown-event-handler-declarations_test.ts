@@ -40,8 +40,8 @@ suite('UnknownEventHandlerDeclarations', () => {
 
     assert.deepEqual(await warningPrinter.prettyPrint(warnings), [`
       on-non-existent="foo"
-      ~~~~~~~~~~~~~~~~~~~~~`]);
+      ~~~~~~~~~~~~~~~`]);
     assert.equal(
-        warnings[0].message, 'Unknown event handler "non-existent" on tag');
+        warnings[0].message, 'Tag unknown-event-handler-declarations is not known to emit an event named non-existent');
   });
 });
