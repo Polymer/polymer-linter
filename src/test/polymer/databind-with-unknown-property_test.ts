@@ -11,6 +11,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+
 import {assert} from 'chai';
 import * as path from 'path';
 import {Analyzer} from 'polymer-analyzer';

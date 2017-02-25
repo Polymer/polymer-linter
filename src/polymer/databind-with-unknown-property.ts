@@ -12,15 +12,15 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ParsedHtmlDocument} from 'polymer-analyzer/lib/html/html-document';
-import {Document, SourceRange} from 'polymer-analyzer/lib/model/model';
+import {Document, ParsedHtmlDocument, Severity, SourceRange, Warning} from 'polymer-analyzer';
 import {DatabindingExpression} from 'polymer-analyzer/lib/polymer/expression-scanner';
-import stripIndent = require('strip-indent');
-import {Warning, Severity} from 'polymer-analyzer/lib/warning/warning';
+
 import {HtmlRule} from '../html/rule';
+import {sharedProperties} from '../html/util';
 import {registry} from '../registry';
 import {closestSpelling} from '../util';
-import {sharedProperties} from '../html/util';
+
+import stripIndent = require('strip-indent');
 
 export class DatabindWithUnknownProperty extends HtmlRule {
   code = 'databind-with-unknown-property';
