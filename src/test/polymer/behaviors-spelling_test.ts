@@ -18,12 +18,12 @@ import {Analyzer} from 'polymer-analyzer';
 import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
 
 import {Linter} from '../../linter';
-import {MisspelledBehaviors} from '../../polymer/misspelled-behaviors';
+import {BehaviorsSpelling} from '../../polymer/behaviors-spelling';
 import {WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.resolve(path.join(__dirname, '../../../test'));
 
-suite('MisspelledBehaviors', () => {
+suite('BehaviorsSpelling', () => {
   let analyzer: Analyzer;
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
@@ -31,12 +31,12 @@ suite('MisspelledBehaviors', () => {
   setup(() => {
     analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
     warningPrinter = new WarningPrettyPrinter(analyzer);
-    linter = new Linter([new MisspelledBehaviors()], analyzer);
+    linter = new Linter([new BehaviorsSpelling()], analyzer);
   });
 
-  test('finds polymer elements with misspelled behaviors', async() => {
+  test('finds polymer elements with wrong behaviors spelling', async() => {
     const warnings =
-        await linter.lint(['misspelled-behaviors/misspelled-behaviors.html']);
+        await linter.lint(['behaviors-spelling/behaviors-spelling.html']);
 
     assert.deepEqual(await warningPrinter.prettyPrint(warnings), [`
     behaviours: []

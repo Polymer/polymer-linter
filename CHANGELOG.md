@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### New Lint Rules
+
+- `behaviors-spelling`: Warns when the `behaviors` property may not have the American-English spelling
+
 ## [0.1.4] - 2017-02-24
 
 - bump version of the analyzer.

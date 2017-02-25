@@ -22,7 +22,7 @@ registry.register(
       'dom-module-invalid-attrs',
       'style-into-template',
       'undefined-elements',
-      'misspelled-behaviors'
+      'behaviors-spelling'
     ]));
 
 registry.register(new RuleCollection(
@@ -34,7 +34,7 @@ Will warn about use of deprecated Polymer 1.x features or brand new features in 
       'dom-module-invalid-attrs',
       'style-into-template',
       'undefined-elements',
-      'misspelled-behaviors'
+      'behaviors-spelling'
     ]));
 
 registry.register(new RuleCollection(
@@ -43,4 +43,4 @@ registry.register(new RuleCollection(
 
 For projects that are ready to start transitioning to Polymer 2.0 see polymer-2-hybrid.
 `,
-    ['undefined-elements', 'misspelled-behaviors']));
+    ['undefined-elements', 'behaviors-spelling']));

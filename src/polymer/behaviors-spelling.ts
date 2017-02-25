@@ -20,8 +20,8 @@ import {stripWhitespace} from '../util';
 import {Rule} from '../rule';
 import {registry} from '../registry';
 
-export class MisspelledBehaviors extends Rule {
-  code = 'misspelled-behaviors';
+export class BehaviorsSpelling extends Rule {
+  code = 'behaviors-spelling';
   description = stripIndent(`
       Warns when the Polymer \`behaviors\` property is spelled \`behaviours\`,
       as Polymer uses the American spelling.
@@ -63,4 +63,4 @@ export class MisspelledBehaviors extends Rule {
   }
 }
 
-registry.register(new MisspelledBehaviors());
+registry.register(new BehaviorsSpelling());
