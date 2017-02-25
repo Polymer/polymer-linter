@@ -44,7 +44,7 @@ suite('databind-with-unknown-property', () => {
     assert.deepEqual(warnings, []);
   });
 
-  test('warns in the right cases', async() => {
+  test('warns for the proper cases and with the right messages', async() => {
     const warnings = await linter.lint(
         ['databind-with-unknown-property/databind-with-unknown-property.html']);
     assert.deepEqual(await warningPrinter.prettyPrint(warnings), [
@@ -54,6 +54,11 @@ suite('databind-with-unknown-property', () => {
       `
     <div id="{{referencedOnlyOnce}}"></div>
                ~~~~~~~~~~~~~~~~~~`
+    ]);
+
+    assert.deepEqual(warnings.map((w) => w.message), [
+      'onlyReadFrom is not declared and is only read from, never written to. If it\'s part of the element\'s API it should be a declared property.',
+      'referencedOnlyOnce is not declared or used more than once. Did you mean: translate'
     ]);
   });
 });

@@ -16,108 +16,12 @@ import * as dom5 from 'dom5';
 import {Attribute, Document, Element, ParsedHtmlDocument, SourcePosition, Property, SourceRange, Warning, Severity} from 'polymer-analyzer';
 
 import {HtmlRule} from '../html/rule';
+import {sharedAttributes, sharedProperties} from '../html/util';
 import {registry} from '../registry';
-import {stripWhitespace} from '../util';
+import {closestSpelling, stripWhitespace} from '../util';
 
 import stripIndent = require('strip-indent');
-import * as levenshtein from 'fast-levenshtein';
 import {isDatabindingTemplate} from './matchers';
-
-const sharedAttributes = new Set([
-  // From https://html.spec.whatwg.org/multipage/dom.html#htmlelement
-  'title',
-  'lang',
-  'translate',
-  'dir',
-  'hidden',
-  'tabindex',
-  'accesskey',
-  'draggable',
-  'spellcheck',
-  'innertext',
-  'contextmenu',
-  // https://html.spec.whatwg.org/multipage/interaction.html#elementcontenteditable
-  'contenteditable',
-
-  // https://dom.spec.whatwg.org/#interface-element
-  'id',
-  'class',
-  'slot',
-
-
-  // https://html.spec.whatwg.org/multipage/dom.html#global-attributes
-  'itemid',
-  'itemprop',
-  'itemref',
-  'itemscope',
-  'itemtype',
-  'is',
-  'style',
-
-  // aria-* http://www.w3.org/TR/wai-aria/states_and_properties#state_prop_def
-  // role: http://www.w3.org/TR/wai-aria/host_languages#host_general_role
-  'aria-activedescendant',
-  'aria-atomic',
-  'aria-autocomplete',
-  'aria-busy',
-  'aria-checked',
-  'aria-controls',
-  'aria-describedby',
-  'aria-disabled',
-  'aria-dropeffect',
-  'aria-expanded',
-  'aria-flowto',
-  'aria-grabbed',
-  'aria-haspopup',
-  'aria-hidden',
-  'aria-invalid',
-  'aria-label',
-  'aria-labelledby',
-  'aria-level',
-  'aria-live',
-  'aria-multiline',
-  'aria-multiselectable',
-  'aria-orientation',
-  'aria-owns',
-  'aria-posinset',
-  'aria-pressed',
-  'aria-readonly',
-  'aria-relevant',
-  'aria-required',
-  'aria-selected',
-  'aria-setsize',
-  'aria-sort',
-  'aria-valuemax',
-  'aria-valuemin',
-  'aria-valuenow',
-  'aria-valuetext',
-  'role',
-]);
-
-const sharedProperties = new Set([
-  // From https://html.spec.whatwg.org/multipage/dom.html#htmlelement
-  'title',
-  'lang',
-  'translate',
-  'dir',
-  'hidden',
-  'tab-index',
-  'access-key',
-  'draggable',
-  'spellcheck',
-  'inner-text',
-  'context-menu',
-  // https://html.spec.whatwg.org/multipage/interaction.html#elementcontenteditable
-  'content-editable',
-
-  // https://dom.spec.whatwg.org/#interface-element
-  'id',
-  'class-name',
-  'slot',
-
-
-  'is',
-]);
 
 
 export class SetUnknownAttribute extends HtmlRule {
@@ -282,34 +186,20 @@ function closestOption(name: string, isAttribute: boolean, element: Element) {
                                .concat(Array.from(sharedAttributes.keys()));
   const propertyOptions = element.properties.map((a) => a.name)
                               .concat(Array.from(sharedProperties.keys()));
-  const closestAttribute =
-      minBy(attributeOptions, (option) => levenshtein.get(name, option));
-  const closestProperty =
-      minBy(propertyOptions, (option) => levenshtein.get(name, option));
+  const closestAttribute = closestSpelling(name, attributeOptions)!;
+  const closestProperty = closestSpelling(name, propertyOptions)!;
   if (closestAttribute.minScore! === closestProperty.minScore) {
     if (isAttribute) {
-      return {attribute: true, name: closestAttribute.min!};
+      return {attribute: true, name: closestAttribute.min};
     }
-    return {attribute: false, name: closestProperty.min!};
+    return {attribute: false, name: closestProperty.min};
   }
   if (closestAttribute.minScore! < closestProperty.minScore!) {
-    return {attribute: true, name: closestAttribute.min!};
+    return {attribute: true, name: closestAttribute.min};
   } else {
-    return {attribute: false, name: closestProperty.min!};
+    return {attribute: false, name: closestProperty.min};
   }
 }
 
-function minBy<T>(it: Iterable<T>, score: (t: T) => number) {
-  let min = undefined;
-  let minScore = undefined;
-  for (const val of it) {
-    const valScore = score(val);
-    if (minScore === undefined || valScore < minScore) {
-      minScore = valScore;
-      min = val;
-    }
-  }
-  return {min, minScore};
-}
 
 registry.register(new SetUnknownAttribute());

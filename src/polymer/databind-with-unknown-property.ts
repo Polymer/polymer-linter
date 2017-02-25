@@ -19,6 +19,8 @@ import stripIndent = require('strip-indent');
 import {Warning, Severity} from 'polymer-analyzer/lib/warning/warning';
 import {HtmlRule} from '../html/rule';
 import {registry} from '../registry';
+import {closestSpelling} from '../util';
+import {sharedProperties} from '../html/util';
 
 export class DatabindWithUnknownProperty extends HtmlRule {
   code = 'databind-with-unknown-property';
@@ -40,8 +42,10 @@ export class DatabindWithUnknownProperty extends HtmlRule {
         continue;
       }
       const element = elements.values().next().value;
-      const explicitlyDeclaredProperties =
-          new Set(element.properties.map((p) => p.name));
+
+      const explicitlyKnownProperties =
+          new Set(element.properties.map((p) => p.name)
+                      .concat(Array.from(sharedProperties)));
       type PropertyUse = {
         name: string,
         sourceRange: SourceRange,
@@ -50,7 +54,7 @@ export class DatabindWithUnknownProperty extends HtmlRule {
       const suspiciousPropertiesByName = new Map<string, Array<PropertyUse>>();
       for (const expression of domModule.databindings) {
         for (const prop of expression.properties) {
-          if (explicitlyDeclaredProperties.has(prop.name)) {
+          if (explicitlyKnownProperties.has(prop.name)) {
             continue;
           }
           const props = suspiciousPropertiesByName.get(prop.name) || [];
@@ -65,15 +69,15 @@ export class DatabindWithUnknownProperty extends HtmlRule {
           throw new Error('This should never happen');
         }
         if (usesOfProperty.length === 1) {
-          // TODO(rictic): reuse fast-levenstein work from other unknown
-          // attribute/property rule
+          const bestGuess =
+              closestSpelling(firstUse.name, explicitlyKnownProperties)!.min;
           warnings.push({
             code: this.code,
             severity: Severity.WARNING,
             sourceRange: firstUse.sourceRange,
             message:
-                `${firstUse.name
-                } is not declared or used more than once. Is it misspelled?`
+                `${firstUse.name} is not declared or used more than once. ` +
+                `Did you mean: ${bestGuess}`
           });
           continue;
         }
@@ -89,8 +93,6 @@ export class DatabindWithUnknownProperty extends HtmlRule {
         // TODO(rictic): when we add the ability to configure a lint pass we
         //     should allow users to force all properties to be declared.
         if (hasWrite) {
-          // There's more than one use of the property, and one of them is a
-          // write, so this is probably intended.
           continue;
         }
         warnings.push({
