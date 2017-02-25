@@ -39,8 +39,6 @@ export class UnknownEventHandlerDeclarations extends Rule {
   async check(document: Document) {
     const warnings: Warning[] = [];
     const elements = document.getByKind('element-reference');
-    const toCamel = (name: string) =>
-        name.replace(/-(\w)/g, (matches) => matches[1].toUpperCase());
 
     for (const element of elements) {
       const definition = document.getOnlyAtId(
@@ -52,7 +50,7 @@ export class UnknownEventHandlerDeclarations extends Rule {
         const events = definition.events.map((e) => e.name);
 
         for (const attr of element.attributes) {
-          const eventName = toCamel(attr.name.substr(3));
+          const eventName = attr.name.substr(3);
           if (attr.name.indexOf('on-') === 0 &&
               events.indexOf(eventName) === -1) {
             warnings.push({
