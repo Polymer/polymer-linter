@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `databind-with-unknown-property` - Warns when a polymer element's databindings use properties that aren't declared on that element.
 - `element-before-dom-module`: Warns when a Polymer element is defined before its `<dom-module>` exists in the DOM.
 
+### Fixes
+- `unknown-set-attribute`
+  - We weren't checking bindings on imported elements.
+  - Warning for unknown attributes has too many false positives to be on by default. There are too many legit use cases for adding arbitrary attributes to elements. We'll add it as an option once we've got lint rule options hooked up.
+
 ## [0.1.6] - 2017-03-07
 
 - Update polymer-analyzer to 1.0.0-alpha.31

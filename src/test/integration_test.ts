@@ -128,6 +128,14 @@ const fileSpecificIgnoredCodes: {[path: string]: Set<string>} = {
 
   // This is a template file, and it contains a malformed url.
   'web-component-tester/data/index.html': new Set(['unable-to-analyze']),
+
+  // https://github.com/PolymerElements/app-layout/pull/423
+  'app-layout/patterns/transform-navigation/x-app.html':
+      new Set(['set-unknown-attribute']),
+
+  // https://github.com/PolymerElements/app-route/pull/182
+  'app-route/demo/data-loading-demo/flickr-search-demo.html':
+      new Set(['set-unknown-attribute']),
 };
 
 const codesOkInTestsAndDemos = new Set([
