@@ -45,6 +45,7 @@ export class DatabindWithUnknownProperty extends HtmlRule {
 
       const explicitlyKnownProperties =
           new Set(element.properties.map((p) => p.name)
+                      .concat(element.methods.map((m) => m.name))
                       .concat(Array.from(sharedProperties)));
       type PropertyUse = {
         name: string,
@@ -95,14 +96,16 @@ export class DatabindWithUnknownProperty extends HtmlRule {
         if (hasWrite) {
           continue;
         }
-        warnings.push({
-          code: this.code,
-          severity: Severity.WARNING,
-          sourceRange: firstUse.sourceRange,
-          message: `${firstUse.name} is not declared and is only read from, ` +
-              `never written to. If it's part of the element's API ` +
-              `it should be a declared property.`
-        });
+        for (const use of usesOfProperty) {
+          warnings.push({
+            code: this.code,
+            severity: Severity.WARNING,
+            sourceRange: use.sourceRange,
+            message: `${use.name} is not declared and is only read from, ` +
+                `never written to. If it's part of the element's API ` +
+                `it should be a declared property.`
+          });
+        }
       }
     }
 

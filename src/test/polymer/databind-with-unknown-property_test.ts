@@ -53,13 +53,28 @@ suite('databind-with-unknown-property', () => {
     <div id="[[onlyReadFrom]]"></div>
                ~~~~~~~~~~~~`,
       `
+    <p id="[[onlyReadFrom]]"></p>
+             ~~~~~~~~~~~~`,
+      `
+    <nav id="[[onlyReadFrom]]"></nav>
+               ~~~~~~~~~~~~`,
+      `
     <div id="{{referencedOnlyOnce}}"></div>
                ~~~~~~~~~~~~~~~~~~`
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
-      'onlyReadFrom is not declared and is only read from, never written to. If it\'s part of the element\'s API it should be a declared property.',
-      'referencedOnlyOnce is not declared or used more than once. Did you mean: translate'
+      'onlyReadFrom is not declared and is only read from, never written to. ' +
+          'If it\'s part of the element\'s API it should ' +
+          'be a declared property.',
+      'onlyReadFrom is not declared and is only read from, never written to. ' +
+          'If it\'s part of the element\'s API it should ' +
+          'be a declared property.',
+      'onlyReadFrom is not declared and is only read from, never written to. ' +
+          'If it\'s part of the element\'s API it should ' +
+          'be a declared property.',
+      'referencedOnlyOnce is not declared or used more than once. ' +
+          'Did you mean: translate'
     ]);
   });
 });
