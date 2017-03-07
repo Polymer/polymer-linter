@@ -95,7 +95,6 @@ export class DatabindWithUnknownProperty extends HtmlRule {
         }
       }
 
-
       // TODO(rictic): also validate computed properties and observers once
       //     https://github.com/Polymer/polymer-analyzer/pull/552 has
       //     landed.
