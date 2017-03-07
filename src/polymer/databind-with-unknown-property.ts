@@ -13,7 +13,7 @@
  */
 
 import {Document, ParsedHtmlDocument, Severity, SourceRange, Warning} from 'polymer-analyzer';
-import {DatabindingExpression} from 'polymer-analyzer/lib/polymer/expression-scanner';
+import {AttributeDatabindingExpression, DatabindingExpression} from 'polymer-analyzer/lib/polymer/expression-scanner';
 
 import {HtmlRule} from '../html/rule';
 import {sharedProperties} from '../html/util';
@@ -34,10 +34,14 @@ export class DatabindWithUnknownProperty extends HtmlRule {
 
   async checkDocument(_parsed: ParsedHtmlDocument, document: Document) {
     const warnings: Warning[] = [];
-    const domModules = document.getByKind('dom-module');
+    const domModules = document.getFeatures({kind: 'dom-module'});
     for (const domModule of domModules) {
-      const elements = document.getById(
-          'element', domModule.id!, {imported: true, externalPackages: true});
+      const elements = document.getFeatures({
+        kind: 'element',
+        id: domModule.id!,
+        imported: true,
+        externalPackages: true
+      });
       if (elements.size !== 1) {
         continue;
       }
@@ -89,9 +93,11 @@ export class DatabindWithUnknownProperty extends HtmlRule {
           // text node), if it's a bidirectional binding, and it's the only
           // property in the expression. (this isn't perfect, it misses some
           // strange stuff with literals like foo(10, 20) but it's good enough.)
-          return use.expression.databindingInto === 'attribute' &&
-              use.expression.direction === '{' &&
-              use.expression.properties.length === 1;
+          if (!(use.expression instanceof AttributeDatabindingExpression)) {
+            return false;
+          }
+          return use.expression.direction === '{' &&
+              use.expression.isCompleteBinding;
         });
         // TODO(rictic): when we add the ability to configure a lint pass we
         //     should allow users to force all properties to be declared.

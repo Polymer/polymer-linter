@@ -44,7 +44,7 @@ export class BehaviorsSpelling extends Rule {
 
   async check(document: Document) {
     const warnings: Warning[] = [];
-    const elements = document.getByKind('polymer-element');
+    const elements = document.getFeatures({kind: 'polymer-element'});
 
     for (const element of elements) {
       const behavioursProperty = element.properties.find(

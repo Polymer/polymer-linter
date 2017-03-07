@@ -128,6 +128,10 @@ const fileSpecificIgnoredCodes: {[path: string]: Set<string>} = {
 
   // This is a template file, and it contains a malformed url.
   'web-component-tester/data/index.html': new Set(['unable-to-analyze']),
+
+  // This file has a really long observer that's broken into two string
+  // literals spread across two lines.
+  'iron-ajax/iron-ajax.html': new Set(['unanalyzable-polymer-expression']),
 };
 
 const codesOkInTestsAndDemos = new Set([

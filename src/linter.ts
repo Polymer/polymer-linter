@@ -52,7 +52,8 @@ export class Linter {
   public async lintPackage(): Promise<Warning[]> {
     const pckage = await this._analyzer.analyzePackage();
     const analysisWarnings = pckage.getWarnings();
-    const warnings = await this._lintDocuments(pckage.getByKind('document'));
+    const warnings =
+        await this._lintDocuments(pckage.getFeatures({kind: 'document'}));
     return analysisWarnings.concat(warnings);
   }
 

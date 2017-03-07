@@ -13,7 +13,7 @@
  */
 
 import * as dom5 from 'dom5';
-import {Attribute, comparePositionAndRange, Document, Element, ParsedHtmlDocument, Property, Severity, SourcePosition, SourceRange, Warning} from 'polymer-analyzer';
+import {Attribute, Document, Element, isPositionInsideRange, ParsedHtmlDocument, Property, Severity, Warning} from 'polymer-analyzer';
 
 import {HtmlRule} from '../html/rule';
 import {sharedAttributes, sharedProperties} from '../html/util';
@@ -49,7 +49,7 @@ export class SetUnknownAttribute extends HtmlRule {
     // It doesn't matter right now, as there's no way to have an inline html
     // document, but this query should specify that it doesn't want to match
     // inline documents.
-    const elementReferences = document.getByKind('element-reference');
+    const elementReferences = document.getFeatures({kind: 'element-reference'});
     if (elementReferences.size === 0) {
       return [];
     }
@@ -61,7 +61,8 @@ export class SetUnknownAttribute extends HtmlRule {
       if (!node || !node.tagName) {
         continue;
       }
-      const elements = document.getById('element', node.tagName);
+      const elements =
+          document.getFeatures({kind: 'element', id: node.tagName});
       if (elements.size !== 1) {
         continue;
       }
@@ -75,7 +76,8 @@ export class SetUnknownAttribute extends HtmlRule {
         // contained within a databinding template.
         const isFullDataBinding =
             /^(({{.*}})|(\[\[.*\]\]))$/.test(attr.value) &&
-            !!databindingRanges.find((r) => contains(ref.sourceRange.start, r));
+            !!databindingRanges.find(
+                (r) => isPositionInsideRange(ref.sourceRange.start, r));
         if (isFullDataBinding) {
           if (name.endsWith('$')) {
             name = name.slice(0, name.length - 1);
@@ -128,10 +130,6 @@ export class SetUnknownAttribute extends HtmlRule {
     }
     return warnings;
   }
-}
-
-function contains(position: SourcePosition, range: SourceRange) {
-  return comparePositionAndRange(position, range) === 0;
 }
 
 function closestOption(name: string, isAttribute: boolean, element: Element) {
