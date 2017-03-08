@@ -13,7 +13,7 @@
  */
 
 import * as dom5 from 'dom5';
-import {Attribute, Document, Element, ParsedHtmlDocument, SourcePosition, Property, SourceRange, Warning, Severity} from 'polymer-analyzer';
+import {Attribute, Document, Element, ParsedHtmlDocument, Property, Severity, SourcePosition, SourceRange, Warning} from 'polymer-analyzer';
 
 import {HtmlRule} from '../html/rule';
 import {registry} from '../registry';

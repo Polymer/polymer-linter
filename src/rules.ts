@@ -15,6 +15,7 @@
 import './html/dom-module-name-or-is';
 import './html/move-style-into-template';
 import './html/undefined-elements';
-import './polymer/unbalanced-delimiters';
-import './polymer/set-unknown-attribute';
 import './polymer/behaviors-spelling';
+import './polymer/element-before-dom-module';
+import './polymer/set-unknown-attribute';
+import './polymer/unbalanced-delimiters';
