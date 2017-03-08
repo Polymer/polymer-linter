@@ -64,6 +64,8 @@ export class DatabindWithUnknownProperty extends HtmlRule {
           suspiciousPropertiesByName.set(prop.name, props);
         }
       }
+      // TODO(rictic): also validate computed properties and observers once
+      //     https://github.com/Polymer/polymer-analyzer/pull/552 has landed.
       for (const usesOfProperty of suspiciousPropertiesByName.values()) {
         const firstUse = usesOfProperty[0];
         if (!firstUse) {
