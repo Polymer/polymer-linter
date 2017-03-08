@@ -14,8 +14,7 @@
 
 import {assert} from 'chai';
 import * as path from 'path';
-import {Analyzer, FSUrlLoader, PackageUrlResolver, Warning} from 'polymer-analyzer';
-import {WarningPrinter} from 'polymer-analyzer/lib/warning/warning-printer';
+import {Analyzer, FSUrlLoader, PackageUrlResolver, Warning, WarningPrinter} from 'polymer-analyzer';
 
 import {Linter} from '../linter';
 import {registry} from '../registry';
