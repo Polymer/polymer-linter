@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt
  * The complete set of authors may be found at
@@ -111,7 +111,7 @@ export class ElementBeforeDomModule extends HtmlRule {
         if (comparePositionAndRange(
                 pair.sourceRange.start, domModule.sourceRange) === -1) {
           // TODO(rictic): if we ever support multiple source ranges on
-          //     warnings, this would be a good canidadate.
+          //     warnings, this would be a good candidate.
           warnings.push({
             code: this.code,
             message: `A Polymer element must be defined after its ` +
