@@ -35,7 +35,7 @@ export class ElementBeforeDomModule extends HtmlRule {
       But this is fine:
         <dom-module id='my-elem'></dom-module>
         <script>Polymer({is: 'my-elem'})</script>
-      `);
+      `).trim();
 
   constructor() {
     super();
@@ -91,7 +91,7 @@ export class ElementBeforeDomModule extends HtmlRule {
       return comparePositionAndRange(a.sourceRange.start, b.sourceRange);
     });
 
-    const seenSoFar = new Set<null|string>([null]);
+    const seenSoFar = new Set<string>();
     for (const pair of sorted) {
       for (const element of pair.elements) {
         const tagName = element.tagName;
