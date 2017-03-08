@@ -1,19 +1,20 @@
 <!-- First the good -->
-<dom-module id='el-1'></dom-module>
-<script>
-  Polymer({ is: 'el-1' });
 
-</script>
-
-<dom-module id='el-2'>
+<dom-module id='el-1'>
   <script>
-    Polymer({ is: 'el-2' });
+    Polymer({ is: 'el-1' });
   </script>
 </dom-module>
 
-<dom-module id='el-3'>
-  <script src='./el-3.js'></script>
+<dom-module id='el-2'>
+  <script src='./el-2.js'></script>
 </dom-module>
+
+<dom-module id='el-3'></dom-module>
+<script>
+  Polymer({ is: 'el-3' });
+
+</script>
 
 <dom-module id='el-4'>
 </dom-module>
@@ -23,7 +24,7 @@
 
 <!-- Obviously wrong-->
 <script>
-    Polymer({ is: 'el-5' });
+  Polymer({ is: 'el-5' });
 
 </script>
 <dom-module id='el-5'></dom-module>

@@ -72,10 +72,16 @@ export class ElementBeforeDomModule extends HtmlRule {
               if (!i.document) {
                 return undefined!;
               }
-              return {
-                sourceRange: i.sourceRange!,
-                elements: Array.from(i.document.getByKind('polymer-element'))
-              };
+              // For complicated reasons, non-module script src tags are kinda
+              // treated like independent documents, and kinda like inline
+              // scripts. Long story short, we need to make sure that any
+              // elements defined "in them" aren't actually defined in us, their
+              // importer.
+              const elements =
+                  Array.from(i.document.getByKind('polymer-element'));
+              const nonlocalElements = elements.filter(
+                  (e) => e.sourceRange && e.sourceRange.file !== document.url);
+              return {sourceRange: i.sourceRange!, elements: nonlocalElements};
             })
             .filter((v) => !!v);
 
