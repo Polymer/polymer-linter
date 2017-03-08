@@ -49,6 +49,9 @@ suite('databind-with-unknown-property', () => {
         ['databind-with-unknown-property/databind-with-unknown-property.html']);
     assert.deepEqual(await warningPrinter.prettyPrint(warnings), [
       `
+    <div id="{{horse}}"></div>
+               ~~~~~`,
+      `
     <div id="[[onlyReadFrom]]"></div>
                ~~~~~~~~~~~~`,
       `
@@ -63,6 +66,7 @@ suite('databind-with-unknown-property', () => {
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
+      'horse is not declared or used more than once. Did you mean: house',
       'onlyReadFrom is not declared and is only read from, never written to. ' +
           'If it\'s part of the element\'s API it should ' +
           'be a declared property.',

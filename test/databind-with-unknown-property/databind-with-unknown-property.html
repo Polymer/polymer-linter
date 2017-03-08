@@ -7,6 +7,7 @@
     <div title="{{title}}"></div>
 
     <!-- Bad -->
+    <div id="{{horse}}"></div>
     <div id="[[onlyReadFrom]]"></div>
     <p id="[[onlyReadFrom]]"></p>
     <nav id="[[onlyReadFrom]]"></nav>
@@ -17,7 +18,8 @@
     Polymer({
       is: 'foo-elem',
       properties: {
-        declared: String
+        declared: String,
+        house: String,
       },
       method: function () {
 
