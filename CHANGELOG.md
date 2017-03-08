@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!--## Unreleased-->
+## Unreleased
+
+### New Lint Rules
+- `element-before-dom-module`: Warns when a Polymer element is defined before its `<dom-module>` exists in the DOM.
+
 ## [0.1.6] - 2017-03-07
 
 - Update polymer-analyzer to 1.0.0-alpha.31
