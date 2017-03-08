@@ -13,7 +13,7 @@
  */
 
 import * as dom5 from 'dom5';
-import {Attribute, Document, Element, ParsedHtmlDocument, Property, Severity, SourcePosition, SourceRange, Warning} from 'polymer-analyzer';
+import {Attribute, Document, Element, isPositionInsideRange, ParsedHtmlDocument, Property, Severity, Warning} from 'polymer-analyzer';
 
 import {HtmlRule} from '../html/rule';
 import {registry} from '../registry';
@@ -171,7 +171,8 @@ export class SetUnknownAttribute extends HtmlRule {
         // contained within a databinding template.
         const isFullDataBinding =
             /^(({{.*}})|(\[\[.*\]\]))$/.test(attr.value) &&
-            !!databindingRanges.find((r) => contains(ref.sourceRange.start, r));
+            !!databindingRanges.find(
+                (r) => isPositionInsideRange(ref.sourceRange.start, r));
         if (isFullDataBinding) {
           if (name.endsWith('$')) {
             name = name.slice(0, name.length - 1);
@@ -226,56 +227,6 @@ export class SetUnknownAttribute extends HtmlRule {
   }
 }
 
-function contains(position: SourcePosition, range: SourceRange) {
-  return comparePositionAndRange(position, range) === 0;
-}
-
-// TODO(rictic): export this function from analyzer rather than copy-pasting it.
-/**
- * If the position is inside the range, returns 0. If it comes before the range,
- * it returns -1. If it comes after the range, it returns 1.
- */
-function comparePositionAndRange(
-    position: SourcePosition, range: SourceRange, includeEdges?: boolean) {
-  // Usually we want to include the edges of a range as part
-  // of the thing, but sometimes, e.g. for start and end tags,
-  // we'd rather not.
-  if (includeEdges == null) {
-    includeEdges = true;
-  }
-  if (includeEdges == null) {
-    includeEdges = true;
-  }
-  if (position.line < range.start.line) {
-    return -1;
-  }
-  if (position.line > range.end.line) {
-    return 1;
-  }
-  if (position.line === range.start.line) {
-    if (includeEdges) {
-      if (position.column < range.start.column) {
-        return -1;
-      }
-    } else {
-      if (position.column <= range.start.column) {
-        return -1;
-      }
-    }
-  }
-  if (position.line === range.end.line) {
-    if (includeEdges) {
-      if (position.column > range.end.column) {
-        return 1;
-      }
-    } else {
-      if (position.column >= range.end.column) {
-        return 1;
-      }
-    }
-  }
-  return 0;
-}
 
 function closestOption(name: string, isAttribute: boolean, element: Element) {
   const attributeOptions = element.attributes.map((a) => a.name)
