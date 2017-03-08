@@ -34,15 +34,19 @@ export class UndefinedElements extends HtmlRule {
       Promise<Warning[]> {
     const warnings: Warning[] = [];
 
-    const refs = document.getByKind('element-reference');
+    const refs = document.getFeatures({kind: 'element-reference'});
 
     for (const ref of refs) {
       if (ref.tagName === 'test-fixture') {
         // HACK. Filed as https://github.com/Polymer/polymer-analyzer/issues/507
         continue;
       }
-      const el = document.getById(
-          'element', ref.tagName, {imported: true, externalPackages: true});
+      const el = document.getFeatures({
+        kind: 'element',
+        id: ref.tagName,
+        imported: true,
+        externalPackages: true
+      });
 
       if (el.size === 0) {
         warnings.push({
