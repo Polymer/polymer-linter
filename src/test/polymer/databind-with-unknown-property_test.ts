@@ -65,7 +65,10 @@ suite('databind-with-unknown-property', () => {
                ~~~~~~~~~~~~~~~~~~`,
       `
     <div id="{{item}}"></div>
-               ~~~~`
+               ~~~~`,
+      `
+    <div id="{{rabbit}}"></div>
+               ~~~~~~`,
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
@@ -81,7 +84,8 @@ suite('databind-with-unknown-property', () => {
           'be a declared property.',
       'referencedOnlyOnce is not declared or used more than once. ' +
           'Did you mean: translate',
-      'item is not declared or used more than once. Did you mean: title'
+      'item is not declared or used more than once. Did you mean: title',
+      'rabbit is not declared or used more than once. Did you mean: lang',
     ]);
   });
 });
