@@ -49,20 +49,29 @@ suite('call-super-in-callbacks', () => {
         ['call-super-in-callbacks/call-super-in-callbacks.html']);
     assert.deepEqual(await warningPrinter.prettyPrint(warnings), [
       `
-    constructor() {/* BadPolymer */
+    constructor() {/* BadSuper */ }
     ~~~~~~~~~~~`,
       `
-    connectedCallback() { /* BadPolymer */ }
+    connectedCallback() { /* BadSuper */ }
     ~~~~~~~~~~~~~~~~~`,
       `
-    disconnectedCallback() {/* BadPolymer */ }
+    disconnectedCallback() {/* BadSuper */ }
     ~~~~~~~~~~~~~~~~~~~~`,
       `
-    attributeChangedCallback() {/* BadPolymer */ }
+    attributeChangedCallback() {/* BadSuper */ }
     ~~~~~~~~~~~~~~~~~~~~~~~~`,
       `
     connectedCallback() { /* ReassignedBad */ }
-    ~~~~~~~~~~~~~~~~~`
+    ~~~~~~~~~~~~~~~~~`,
+      `
+    connectedCallback() { /* BadMixin1 */ }
+    ~~~~~~~~~~~~~~~~~`,
+      `
+    connectedCallback() { /* BadMixin2 */ }
+    ~~~~~~~~~~~~~~~~~`,
+      `
+    disconnectedCallback() { /* BadMixin2 */ }
+    ~~~~~~~~~~~~~~~~~~~~`,
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
@@ -80,6 +89,15 @@ suite('call-super-in-callbacks', () => {
       'Elements that extend Polymer.Element must call ' +
           'super.connectedCallback() in their ' +
           'connectedCallback method override.',
+      'Elements that extend Polymer.Element must call ' +
+          'super.connectedCallback() in their ' +
+          'connectedCallback method override.',
+      'Elements that extend Polymer.Element must call ' +
+          'super.connectedCallback() in their ' +
+          'connectedCallback method override.',
+      'Elements that extend Polymer.Element must call ' +
+          'super.disconnectedCallback() in their ' +
+          'disconnectedCallback method override.',
     ]);
   });
 });
