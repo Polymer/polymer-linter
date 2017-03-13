@@ -13,8 +13,7 @@
  */
 
 import * as dom5 from 'dom5';
-import {Document, isPositionInsideRange, ParsedHtmlDocument, Severity, SourceRange, Warning} from 'polymer-analyzer';
-import {DatabindingExpression} from 'polymer-analyzer/lib/polymer/expression-scanner';
+import {AttributeDatabindingExpression, Document, isPositionInsideRange, ParsedHtmlDocument, PolymerDatabindingExpression as DatabindingExpression, Severity, SourceRange, Warning} from 'polymer-analyzer';
 
 import {HtmlRule} from '../html/rule';
 import {sharedProperties} from '../html/util';
@@ -122,8 +121,9 @@ export class DatabindWithUnknownProperty extends HtmlRule {
           // text node), if it's a bidirectional binding, and it's the only
           // property in the expression. (this isn't perfect, it misses some
           // strange stuff with literals like foo(10, 20) but it's good enough.)
-          return use.expression.databindingInto === 'attribute' &&
+          return use.expression instanceof AttributeDatabindingExpression &&
               use.expression.direction === '{' &&
+              use.expression.isCompleteBinding &&
               use.expression.properties.length === 1;
         });
         // TODO(rictic): when we add the ability to configure a lint pass we
