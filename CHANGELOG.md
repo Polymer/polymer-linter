@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### New Lint Rules
 - `databind-with-unknown-property` - Warns when a polymer element's databindings use properties that aren't declared on that element.
 - `element-before-dom-module`: Warns when a Polymer element is defined before its `<dom-module>` exists in the DOM.
+- `call-super-in-callbacks`: Warns when a Polymer 2.0 element does not call super() in callbacks that require it, like `connectedCallback`.
 
 ## [0.1.6] - 2017-03-07
 

@@ -1,0 +1,60 @@
+<script>
+  // declare that Polymer.Element exists.
+  /** @namespace */
+  const Polymer = {};
+  /**
+   * @polymerElement
+   * @memberof Polymer
+   */
+  class Element extends HTMLElement { };
+
+  // Good:
+  class Vanilla extends HTMLElement {
+    constructor() {
+      super();
+    }
+    connectedCallback() {
+      // Vanilla doesn't need super.
+      this.appendChild(document.createElement('lol'));
+    }
+    disconnectedCallback() { }
+    attributeChangedCallback() { }
+  }
+  customElements.define('vanilla-elem', Vanilla);
+
+  class GoodPolymer extends Polymer.Element {
+    constructor() {
+      super();
+    }
+    connectedCallback() {
+      super.connectedCallback();
+      this.appendChild(document.createElement('lol'));
+    }
+    disconnectedCallback() {
+      super.disconnectedCallback();
+    }
+    attributeChangedCallback() {
+      super.attributeChangedCallback();
+    }
+  }
+  customElements.define('good-polymer', GoodPolymer);
+
+
+
+  // Bad!
+  class BadPolymer extends Polymer.Element {
+    constructor() {/* BadPolymer */
+      console.log(this.lol);
+    }
+    connectedCallback() { /* BadPolymer */ }
+    disconnectedCallback() {/* BadPolymer */ }
+    attributeChangedCallback() {/* BadPolymer */ }
+  }
+  customElements.define('bad-polymer', BadPolymer);
+
+  const ReassignedBad = class AlsoBad extends Polymer.Element {
+    connectedCallback() { /* ReassignedBad */ }
+  }
+  customElements.define('reassigned-bad', ReassignedBad);
+
+</script>
