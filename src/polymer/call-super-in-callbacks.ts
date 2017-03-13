@@ -14,7 +14,7 @@
 
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
-import {Document, isPositionInsideRange, ParsedJavaScriptDocument, Severity, SourceRange, Warning} from 'polymer-analyzer';
+import {Document, isPositionInsideRange, ParsedDocument, Severity, SourceRange, Warning} from 'polymer-analyzer';
 
 import {registry} from '../registry';
 import {Rule} from '../rule';
@@ -113,7 +113,7 @@ export class CallSuperInCallbacks extends Rule {
 
 function getParsedDocumentContaining(
     sourceRange: SourceRange|undefined,
-    document: Document): ParsedJavaScriptDocument|undefined {
+    document: Document): ParsedDocument<any, any>|undefined {
   if (!sourceRange) {
     return undefined;
   }
@@ -128,8 +128,7 @@ function getParsedDocumentContaining(
     }
   }
   mostSpecificDocument = mostSpecificDocument || document;
-  // TODO(rictic): export ParsedDocument from analyzer.
-  return mostSpecificDocument.parsedDocument as any;
+  return mostSpecificDocument.parsedDocument;
 }
 
 function getClassBody(astNode?: estree.Node|null): undefined|estree.ClassBody {
