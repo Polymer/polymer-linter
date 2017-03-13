@@ -107,7 +107,7 @@ export class DatabindingCallsMustBeFunctions extends Rule {
       }
       const potentialMethodNames = new Set(
           element.properties
-              .filter((p) => !definitelyNotMethodTypes.has(p.type || ''))
+              .filter((p) => !p.type || !definitelyNotMethodTypes.has(p.type))
               .map((p) => p.name)
               .concat(element.methods.map((m) => m.name)));
       const elementName =
