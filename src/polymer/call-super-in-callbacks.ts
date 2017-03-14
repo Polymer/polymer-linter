@@ -43,10 +43,14 @@ export class CallSuperInCallbacks extends Rule {
   async check(document: Document) {
     const warnings: Warning[] = [];
 
-    for (const element of document.getByKind('polymer-element')) {
+    const elementLikes =
+        Array.from(document.getByKind('element'))
+            .concat(Array.from(document.getByKind('element-mixin')));
+    for (const elementLike of elementLikes) {
       // TODO(rictic): methods should have astNodes, that would make this
-      //     simpler.
-      const classBody = getClassBody(element.astNode);
+      //     simpler. Filed as:
+      //     https://github.com/Polymer/polymer-analyzer/issues/562
+      const classBody = getClassBody(elementLike.astNode);
       if (!classBody) {
         continue;
       }
@@ -60,9 +64,13 @@ export class CallSuperInCallbacks extends Rule {
         if (method.kind === 'constructor') {
           methodName = 'constructor';
         }
-        if (method.kind === 'method' && method.key.type === 'Identifier' &&
-            mustCallSuper(element, method.key.name, document)) {
-          methodName = method.key.name;
+        let classThatRequiresSuper: string|undefined;
+        if (method.kind === 'method' && method.key.type === 'Identifier') {
+          classThatRequiresSuper =
+              mustCallSuper(elementLike, method.key.name, document);
+          if (classThatRequiresSuper) {
+            methodName = method.key.name;
+          }
         }
         if (!methodName) {
           continue;
@@ -72,25 +80,34 @@ export class CallSuperInCallbacks extends Rule {
         if (!doesCallSuper(method, methodName)) {
           // Construct a nice legible warning.
           const parsedDocumentContaining =
-              getParsedDocumentContaining(element.sourceRange, document);
+              getParsedDocumentContaining(elementLike.sourceRange, document);
           if (parsedDocumentContaining) {
-            const correctSyntax = method.kind === 'constructor' ?
-                'super()' :
-                `super.${methodName}()`;
-            const nameOfMethod = method.kind === 'constructor' ?
-                'constructor' :
-                `${methodName} method override`;
-            warnings.push({
-              code: this.code,
-              severity: Severity.ERROR,
-              sourceRange:
-                  parsedDocumentContaining.sourceRangeForNode(method.key)!,
-              message: stripWhitespace(`
-                Elements that extend Polymer.Element must call
-                ${correctSyntax}
-                in their ${nameOfMethod}.
-            `)
-            });
+            const sourceRange =
+                parsedDocumentContaining.sourceRangeForNode(method.key)!;
+            if (method.kind === 'constructor') {
+              warnings.push(
+                  {
+                    code: this.code,
+                    severity: Severity.ERROR, sourceRange,
+                    message: stripWhitespace(`
+                  ${elementLike.className || elementLike.tagName} must call
+                  super() in its constructor because ES6 requires it.
+                `)
+                  });
+            } else {
+              const overrides = elementLike instanceof ElementMixin ?
+                  'may override a' :
+                  'overrides the';
+              warnings.push({
+                code: this.code,
+                severity: Severity.WARNING, sourceRange,
+                message: stripWhitespace(`
+                  ${getName(elementLike)} may need to call
+                  super.${methodName}() because it ${overrides}
+                  version in ${classThatRequiresSuper}.
+                `)
+              });
+            }
           }
         }
       }
@@ -99,6 +116,8 @@ export class CallSuperInCallbacks extends Rule {
   }
 }
 
+// TODO(rictic): This is awkward. Filed as
+//     https://github.com/Polymer/polymer-analyzer/issues/557
 function getParsedDocumentContaining(
     sourceRange: SourceRange|undefined,
     document: Document): ParsedDocument<any, any>|undefined {
@@ -135,40 +154,51 @@ function getClassBody(astNode?: estree.Node|null): undefined|estree.ClassBody {
   return classBody;
 }
 
+/**
+ * Returns the name of the class in element's inheritance chain that requires
+ * super[methodName]() be called. Returns undefined if no such class exists.
+ */
 function mustCallSuper(
-    element: Element, methodName: string, document: Document): boolean {
+    elementLike: Element, methodName: string, document: Document): (string|
+                                                                    undefined) {
   // TODO(rictic): look up the inheritance graph for a jsdoc tag that describes
   //     the method as needing to be called?
   if (!methodsThatMustCallSuper.has(methodName)) {
-    return false;
+    return;
+  }
+  // ElementMixins should always conditionally call super in callbacks.
+  if (elementLike instanceof ElementMixin) {
+    return `the mixin's given superclass`;
   }
   // Did the element's super class define the method?
-  if (element.superClass) {
-    const superElement =
-        onlyOrNone(document.getById('element', element.superClass.identifier));
-    if (definesMethod(superElement, methodName)) {
-      return true;
+  if (elementLike.superClass) {
+    const superElement = onlyOrNone(
+        document.getById('element', elementLike.superClass.identifier));
+    if (superElement && definesMethod(superElement, methodName)) {
+      return superElement.tagName || superElement.className;
     }
   }
 
-  return anyMixinDefinesMethod(element, methodName, document, true);
+  return anyMixinDefinesMethod(elementLike, methodName, document, true);
 }
 
 function doesCallSuper(method: estree.MethodDefinition, methodName: string) {
-  const statements = method.value.body.body;
-  const superCallTargets = statements.map((s) => {
-    if (s.type === 'ExpressionStatement' &&
-        s.expression.type === 'CallExpression') {
-      const callee = s.expression.callee;
-      // Just super()
-      if (callee.type === 'Super') {
-        return 'constructor';
-      }
-      // super.foo()
-      if (callee.type === 'MemberExpression' &&
-          callee.object.type === 'Super' &&
-          callee.property.type === 'Identifier') {
-        return callee.property.name;
+  const superCallTargets: string[] = [];
+  estraverse.traverse(method.value.body, {
+    enter(node: estree.Node) {
+      if (node.type === 'ExpressionStatement' &&
+          node.expression.type === 'CallExpression') {
+        const callee = node.expression.callee;
+        // Just super()
+        if (callee.type === 'Super') {
+          superCallTargets.push('constructor');
+        }
+        // super.foo()
+        if (callee.type === 'MemberExpression' &&
+            callee.object.type === 'Super' &&
+            callee.property.type === 'Identifier') {
+          superCallTargets.push(callee.property.name);
+        }
       }
     }
   });
@@ -176,32 +206,49 @@ function doesCallSuper(method: estree.MethodDefinition, methodName: string) {
 }
 
 function anyMixinDefinesMethod(
-    mixinOrElement: ElementMixin|Element,
+    elementLike: ElementMixin|Element,
     methodName: string,
     document: Document,
-    skipLocalCheck: boolean) {
-  if (!skipLocalCheck && definesMethod(mixinOrElement, methodName)) {
-    return true;
+    skipLocalCheck: boolean): string|undefined {
+  if (!skipLocalCheck) {
+    const source = definesMethod(elementLike, methodName);
+    if (source) {
+      return source;
+    }
   }
-  for (const mixinReference of mixinOrElement.mixins) {
+  for (const mixinReference of elementLike.mixins) {
     // TODO(rictic): once we have a representation of a Class this should be
-    //   something like `document.getById('element')` instead.
+    //   something like `document.getById('class')` instead.
     const mixin = onlyOrNone(
         document.getById('element-mixin', mixinReference.identifier));
     // TODO(rictic): if mixins had their own mixins pre-mixed in we wouldn't
-    //     need to recurse here.
-    if (mixin && anyMixinDefinesMethod(mixin, methodName, document, false)) {
-      return true;
+    //     need to recurse here, just use definesMethod directly.
+    const cause =
+        mixin && anyMixinDefinesMethod(mixin, methodName, document, false);
+    if (cause) {
+      return cause;
     }
   }
-  return false;
+  return;
 }
 
-function definesMethod(element: Element|undefined, methodName: string) {
-  if (!element) {
-    return false;
+function definesMethod(
+    elementLike: Element|ElementMixin|undefined, methodName: string) {
+  if (!elementLike) {
+    return;
   }
-  return !!element.methods.find((m) => m.name === methodName);
+  const method = elementLike.methods.find((m) => m.name === methodName);
+  if (method) {
+    return method.inheritedFrom || getName(elementLike);
+  }
+}
+
+function getName(elementLike: Element|ElementMixin) {
+  if (elementLike instanceof Element) {
+    return elementLike.className || elementLike.tagName || 'Unknown Element';
+  } else {
+    return elementLike.name || 'Unknown Mixin';
+  }
 }
 
 function onlyOrNone<V>(iterable: Iterable<V>): V|undefined {

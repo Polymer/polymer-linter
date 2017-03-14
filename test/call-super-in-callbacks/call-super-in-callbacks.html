@@ -4,7 +4,11 @@
    */
   function MixinConnected(superClass) {
     return class extends superClass {
-      connectedCallback() { }
+      connectedCallback() {
+        if (super.connectedCallback) {
+          super.connectedCallback();
+        }
+      }
     }
   }
 
@@ -14,7 +18,11 @@
    */
   function MixinConnectedAndDisconnected(superClass) {
     return class extends mixinConnected(superClass) {
-      disconnectedCallback() { }
+      disconnectedCallback() {
+        if (super.disconnectedCallback) {
+          super.disconnectedCallback();
+        }
+      }
     }
   }
 
@@ -133,6 +141,15 @@
   class NotAnElement extends MixinConnectedAndDisconnected(Array) {
     constructor() { }
     connectedCallback() { }
+  }
+
+  /**
+   * @polymerMixin
+   */
+  function BadMixinConnected(superClass) {
+    return class extends superClass {
+      connectedCallback() { /** BadMixinConnected */ }
+    }
   }
 
 </script>

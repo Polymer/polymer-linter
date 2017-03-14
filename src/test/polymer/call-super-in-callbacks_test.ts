@@ -72,32 +72,30 @@ suite('call-super-in-callbacks', () => {
       `
     disconnectedCallback() { /* BadMixin2 */ }
     ~~~~~~~~~~~~~~~~~~~~`,
+      `
+      connectedCallback() { /** BadMixinConnected */ }
+      ~~~~~~~~~~~~~~~~~`
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
-      'Elements that extend Polymer.Element must call super() in their ' +
-          'constructor.',
-      'Elements that extend Polymer.Element must call ' +
-          'super.connectedCallback() in their ' +
-          'connectedCallback method override.',
-      'Elements that extend Polymer.Element must call ' +
-          'super.disconnectedCallback() in their ' +
-          'disconnectedCallback method override.',
-      'Elements that extend Polymer.Element must call ' +
-          'super.attributeChangedCallback() in their ' +
-          'attributeChangedCallback method override.',
-      'Elements that extend Polymer.Element must call ' +
-          'super.connectedCallback() in their ' +
-          'connectedCallback method override.',
-      'Elements that extend Polymer.Element must call ' +
-          'super.connectedCallback() in their ' +
-          'connectedCallback method override.',
-      'Elements that extend Polymer.Element must call ' +
-          'super.connectedCallback() in their ' +
-          'connectedCallback method override.',
-      'Elements that extend Polymer.Element must call ' +
-          'super.disconnectedCallback() in their ' +
-          'disconnectedCallback method override.',
+      'BadSuper must call super() in its constructor because ' +
+          'ES6 requires it.',
+      'BadSuper may need to call super.connectedCallback() ' +
+          'because it overrides the version in SuperClass.',
+      'BadSuper may need to call super.disconnectedCallback() ' +
+          'because it overrides the version in SuperClass.',
+      'BadSuper may need to call super.attributeChangedCallback() ' +
+          'because it overrides the version in SuperClass.',
+      'ReassignedBad may need to call super.connectedCallback() ' +
+          'because it overrides the version in SuperClass.',
+      'BadMixin1 may need to call super.connectedCallback() ' +
+          'because it overrides the version in MixinConnected.',
+      'BadMixin2 may need to call super.connectedCallback() ' +
+          'because it overrides the version in MixinConnected.',
+      'BadMixin2 may need to call super.disconnectedCallback() ' +
+          'because it overrides the version in MixinConnectedAndDisconnected.',
+      `BadMixinConnected may need to call super.connectedCallback() ` +
+          `because it may override a version in the mixin's given superclass.`
     ]);
   });
 });
