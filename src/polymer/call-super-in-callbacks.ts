@@ -174,15 +174,16 @@ function mustCallSuper(
   if (elementLike.superClass) {
     const superElement = onlyOrNone(
         document.getById('element', elementLike.superClass.identifier));
-    if (superElement && definesMethod(superElement, methodName)) {
+    if (superElement && getMethodDefiner(superElement, methodName)) {
       return superElement.tagName || superElement.className;
     }
   }
 
-  return anyMixinDefinesMethod(elementLike, methodName, document, true);
+  return getMethodDefinerFromMixins(elementLike, methodName, document, true);
 }
 
-function doesCallSuper(method: estree.MethodDefinition, methodName: string) {
+function doesCallSuper(
+    method: estree.MethodDefinition, methodName: string): boolean {
   const superCallTargets: string[] = [];
   estraverse.traverse(method.value.body, {
     enter(node: estree.Node) {
@@ -205,13 +206,13 @@ function doesCallSuper(method: estree.MethodDefinition, methodName: string) {
   return !!superCallTargets.find((ct) => ct === methodName);
 }
 
-function anyMixinDefinesMethod(
+function getMethodDefinerFromMixins(
     elementLike: ElementMixin|Element,
     methodName: string,
     document: Document,
     skipLocalCheck: boolean): string|undefined {
   if (!skipLocalCheck) {
-    const source = definesMethod(elementLike, methodName);
+    const source = getMethodDefiner(elementLike, methodName);
     if (source) {
       return source;
     }
@@ -219,12 +220,14 @@ function anyMixinDefinesMethod(
   for (const mixinReference of elementLike.mixins) {
     // TODO(rictic): once we have a representation of a Class this should be
     //   something like `document.getById('class')` instead.
+    //   https://github.com/Polymer/polymer-analyzer/issues/563
     const mixin = onlyOrNone(
         document.getById('element-mixin', mixinReference.identifier));
     // TODO(rictic): if mixins had their own mixins pre-mixed in we wouldn't
     //     need to recurse here, just use definesMethod directly.
+    //     https://github.com/Polymer/polymer-analyzer/issues/564
     const cause =
-        mixin && anyMixinDefinesMethod(mixin, methodName, document, false);
+        mixin && getMethodDefinerFromMixins(mixin, methodName, document, false);
     if (cause) {
       return cause;
     }
@@ -232,11 +235,16 @@ function anyMixinDefinesMethod(
   return;
 }
 
-function definesMethod(
-    elementLike: Element|ElementMixin|undefined, methodName: string) {
+function getMethodDefiner(
+    elementLike: Element|ElementMixin|undefined, methodName: string): string|
+    undefined {
   if (!elementLike) {
     return;
   }
+  // Note that if elementLike is an element, this will include methods
+  // defined on super classes and in mixins. If it's a mixin it doesn't,
+  // thus the need for anyMixinDefinesMethod until
+  // https://github.com/Polymer/polymer-analyzer/issues/564 is fixed.
   const method = elementLike.methods.find((m) => m.name === methodName);
   if (method) {
     return method.inheritedFrom || getName(elementLike);
