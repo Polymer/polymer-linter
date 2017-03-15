@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [1.0.0] - 2017-03-15
 
-### Ready for release
+### First major release!
 
 - polymer-lint is now at feature parity with [polylint](https://github.com/PolymerLabs/polylint), and is ready to replace it!
 
