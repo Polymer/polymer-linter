@@ -39,7 +39,7 @@ my-elem.html(9,24) warning [set-unknown-attribute] - paper-button elements do no
 
 polymer-lint is also integrated into a number of editor plugins for instant as-you-type linting. See [https://github.com/Polymer/polymer-editor-service](the polymer editor service) for details.
 
-<!-- TODO(rictic): animated gif of editing text with linting here. -->
+![Animated gif of the VSCode with the linter running.](https://cloud.githubusercontent.com/assets/1659/23933285/ad63eb62-08fa-11e7-819b-641bf83cf9c6.gif)
 
 ## Writing your own lint rule
 
