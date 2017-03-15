@@ -4,7 +4,7 @@ Analyze your Polymer project for errors.
 
 ## Usage
 
-The linter can be run in one of two ways, from the command line, or through our editor plugins.
+The linter can be run in one of two ways: from the command line, or through our editor plugins.
 
 First though, it needs to be configured. Create a `polymer.json` file at the root of your project and ensure it has a "lint" field like so:
 
@@ -28,6 +28,8 @@ polymer-lint is run on the command line through Polymer CLI:
   polymer lint
 ```
 
+By default this produces output with the exact location of any issues clearly underlined:
+
 ```
     <paper-button opan="{{nonono}}"></paper-button>
                   ~~~~
@@ -37,7 +39,7 @@ my-elem.html(9,24) warning [set-unknown-attribute] - paper-button elements do no
 
 ### Inside your editor
 
-polymer-lint is also integrated into a number of editor plugins for instant as-you-type linting. See [https://github.com/Polymer/polymer-editor-service](the polymer editor service) for details.
+polymer-lint is also integrated into a number of editor plugins for instant as-you-type linting. See [the polymer editor service](https://github.com/Polymer/polymer-editor-service) for details.
 
 ![Animated gif of the VSCode with the linter running.](https://cloud.githubusercontent.com/assets/1659/23933285/ad63eb62-08fa-11e7-819b-641bf83cf9c6.gif)
 
@@ -45,7 +47,7 @@ polymer-lint is also integrated into a number of editor plugins for instant as-y
 
 The linter is built on top of the [polymer analyzer](https://github.com/Polymer/polymer-analyzer). A lint rule is given a `Document` object with an AST that can be walked, as well as the ability to query high level features of the document like imports and custom elements. From this is just has to return an array of warnings to display.
 
-For a simple example, see [behaviors-spelling](src/polymer/behaviors-spelling.ts), which implements checks for the commonwealth spelling of the property `behaviors` on a Polymer element.
+For a simple example, see [behaviors-spelling](src/polymer/behaviors-spelling.ts), which implements a check for the commonwealth spelling of the property `behaviors` on a Polymer element.
 
 You'll then need to import your rule from [rules.ts](src/rules.ts), and you'll probably want to add your rule to one or more [rule collections](src/collections.ts).
 
