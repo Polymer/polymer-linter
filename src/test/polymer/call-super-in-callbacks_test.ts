@@ -78,25 +78,17 @@ suite('call-super-in-callbacks', () => {
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
-      'BadSuper must call super() in its constructor because ' +
-          'ES6 requires it.',
-      'BadSuper may need to call super.connectedCallback() ' +
-          'because it overrides the version in SuperClass.',
-      'BadSuper may need to call super.disconnectedCallback() ' +
-          'because it overrides the version in SuperClass.',
-      'BadSuper may need to call super.attributeChangedCallback() ' +
-          'because it overrides the version in SuperClass.',
-      'ReassignedBad may need to call super.connectedCallback() ' +
-          'because it overrides the version in SuperClass.',
-      'BadMixin1 may need to call super.connectedCallback() ' +
-          'because it overrides the version in MixinConnected.',
-      'BadMixin2 may need to call super.connectedCallback() ' +
-          'because it overrides the version in MixinConnected.',
-      'BadMixin2 may need to call super.disconnectedCallback() ' +
-          'because it overrides the version in MixinConnectedAndDisconnected.',
-      `BadMixinConnected may need to call super.connectedCallback() because ` +
-          `it may override a version in ` +
-          `some of the classes this mixin may be applied to.`,
+      'ES6 requires super() in constructors with superclasses.',
+      'You may need to call super.connectedCallback() because BadSuper extends SuperClass, which defines connectedCallback too.',
+      'You may need to call super.disconnectedCallback() because BadSuper extends SuperClass, which defines disconnectedCallback too.',
+      'You may need to call super.attributeChangedCallback() because BadSuper extends SuperClass, which defines attributeChangedCallback too.',
+      'You may need to call super.connectedCallback() because ReassignedBad extends SuperClass, which defines connectedCallback too.',
+      'You may need to call super.connectedCallback() because BadMixin1 extends MixinConnected, which defines connectedCallback too.',
+      'You may need to call super.connectedCallback() because BadMixin2 extends MixinConnected, which defines connectedCallback too.',
+      'You may need to call super.disconnectedCallback() because BadMixin2 extends MixinConnectedAndDisconnected, which defines disconnectedCallback too.',
+      `This method should conditionally call super.connectedCallback() ` +
+          `because a class BadMixinConnected is applied to may also define ` +
+          `connectedCallback.`,
     ]);
   });
 });

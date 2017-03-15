@@ -85,28 +85,32 @@ export class CallSuperInCallbacks extends Rule {
             const sourceRange =
                 parsedDocumentContaining.sourceRangeForNode(method.key)!;
             if (method.kind === 'constructor') {
-              warnings.push(
-                  {
-                    code: this.code,
-                    severity: Severity.ERROR, sourceRange,
-                    message: stripWhitespace(`
-                  ${elementLike.className || elementLike.tagName} must call
-                  super() in its constructor because ES6 requires it.
-                `)
-                  });
-            } else {
-              const overrides = elementLike instanceof ElementMixin ?
-                  'may override a' :
-                  'overrides the';
               warnings.push({
-                code: this.code,
-                severity: Severity.WARNING, sourceRange,
+                code: 'call-super-in-constructor',
+                severity: Severity.ERROR, sourceRange,
                 message: stripWhitespace(`
-                  ${getName(elementLike)} may need to call
-                  super.${methodName}() because it ${overrides}
-                  version in ${classThatRequiresSuper}.
+                  ES6 requires super() in constructors with superclasses.
                 `)
               });
+            } else {
+              let message;
+              let code;
+              if (elementLike instanceof ElementMixin) {
+                code = 'call-super-in-mixin-callbacks';
+                message = stripWhitespace(`
+                    This method should conditionally call super.${methodName}()
+                    because a class ${getName(elementLike, 'this mixin')} is
+                    applied to may also define ${methodName}.`);
+              } else {
+                code = this.code;
+                message = stripWhitespace(`
+                    You may need to call super.${methodName}() because
+                    ${getName(elementLike, 'this class')} extends
+                    ${classThatRequiresSuper}, which defines ${methodName} too.
+                `);
+              }
+              warnings.push(
+                  {severity: Severity.WARNING, code, sourceRange, message});
             }
           }
         }
@@ -251,11 +255,12 @@ function getMethodDefiner(
   }
 }
 
-function getName(elementLike: Element|ElementMixin) {
+function getName(elementLike: Element|ElementMixin, fallback?: string) {
   if (elementLike instanceof Element) {
-    return elementLike.className || elementLike.tagName || 'Unknown Element';
+    return elementLike.className || elementLike.tagName || fallback ||
+        'Unknown Element';
   } else {
-    return elementLike.name || 'Unknown Mixin';
+    return elementLike.name || fallback || 'Unknown Mixin';
   }
 }
 
