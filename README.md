@@ -49,19 +49,21 @@ The linter is built on top of the [polymer analyzer](https://github.com/Polymer/
 
 For a simple example, see [behaviors-spelling](src/polymer/behaviors-spelling.ts), which implements a check for the commonwealth spelling of the property `behaviors` on a Polymer element.
 
-You'll then need to import your rule from [rules.ts](src/rules.ts), and you'll probably want to add your rule to one or more [rule collections](src/collections.ts).
+In the future we will support loading lint rules dynamically through a plugin system, but initially all lint rules live in this repo. You'll want to import your rule from [rules.ts](src/rules.ts), and you probably want to add your rule to one or more [rule collections](src/collections.ts).
 
 ### Testing
 
-Testing is straightforward and robust. Test code is in `src/test` and fixtures live in `test/`. We have facilities for ensuring that your warnings pinpoint the issue to the exact right section of code, as well as ensuring that your rule was registered correctly.
+Run tests with `npm test`. Test code goes in `src/test` and fixtures go in `test/`. Each lint rule should test that it is registered correctly, and that it causes neither false positives nor false negatives.
 
 See [behaviors-spelling_test.ts](src/test/polymer/behaviors-spelling_test.ts) for an example.
 
-### Help writing lint rules
+We also have an integration test that runs the `polymer-2-hybrid` rule collection over all of PolymerElements. Run it with `npm run test:integration`. It's an excellent way to test for false positives.
+
+### New Lint Rules Welcome!
 
 More lint rules are very much welcome! We're happy to answer questions. We've got a very welcoming community, come join us in the [#tools channel on slack](https://polymer.slack.com/messages/tools)! ([invites emailed automatically here](https://polymer-slack.herokuapp.com/))
 
-## Previous Version
+## Looking for Polylint?
 
 Polymer Linter is the successor to [polylint](https://www.github.com/polymerlabs/polylint).
 
