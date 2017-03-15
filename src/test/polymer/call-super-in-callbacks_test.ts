@@ -94,8 +94,9 @@ suite('call-super-in-callbacks', () => {
           'because it overrides the version in MixinConnected.',
       'BadMixin2 may need to call super.disconnectedCallback() ' +
           'because it overrides the version in MixinConnectedAndDisconnected.',
-      `BadMixinConnected may need to call super.connectedCallback() ` +
-          `because it may override a version in the mixin's given superclass.`
+      `BadMixinConnected may need to call super.connectedCallback() because ` +
+          `it may override a version in ` +
+          `some of the classes this mixin may be applied to.`,
     ]);
   });
 });

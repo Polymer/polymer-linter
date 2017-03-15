@@ -168,7 +168,7 @@ function mustCallSuper(
   }
   // ElementMixins should always conditionally call super in callbacks.
   if (elementLike instanceof ElementMixin) {
-    return `the mixin's given superclass`;
+    return `some of the classes this mixin may be applied to`;
   }
   // Did the element's super class define the method?
   if (elementLike.superClass) {
