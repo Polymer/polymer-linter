@@ -1,10 +1,10 @@
 # Polymer Linter
 
-Analyze your Polymer project for errors.
+A library for finding and reporting on suspicious patterns and errors in web projects.
 
 ## Usage
 
-The linter can be run in one of two ways: from the command line, or through our editor plugins.
+The Polymer Linter can be run from command line with the [Polymer CLI](https://github.com/Polymer/polymer-cli), or though IDE plugins, such as the [VS Code Plugin](https://github.com/Polymer/vscode-plugin).
 
 First though, it needs to be configured. Create a `polymer.json` file at the root of your project and ensure it has a "lint" field like so:
 
@@ -16,7 +16,7 @@ First though, it needs to be configured. Create a `polymer.json` file at the roo
 }
 ```
 
-You can specify either individual rules, or rule collections. See `polymer lint --help` for a full listing, or see [collections.ts](src/collections.ts) for details.
+You can specify either individual rules, or rule collections. See `polymer lint --help` for a full listing.
 
 ### From the command line
 
@@ -43,7 +43,7 @@ polymer-lint is also integrated into a number of editor plugins for instant as-y
 
 ![Animated gif of the VSCode with the linter running.](https://cloud.githubusercontent.com/assets/1659/23933285/ad63eb62-08fa-11e7-819b-641bf83cf9c6.gif)
 
-## Writing your own lint rule
+## Extending and contributing
 
 The linter is built on top of the [polymer analyzer](https://github.com/Polymer/polymer-analyzer). A lint rule is given a `Document` object with an AST that can be walked, as well as the ability to query high level features of the document like imports and custom elements. From this is just has to return an array of warnings to display.
 
