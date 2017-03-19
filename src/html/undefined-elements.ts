@@ -41,15 +41,21 @@ export class UndefinedElements extends HtmlRule {
         // HACK. Filed as https://github.com/Polymer/polymer-analyzer/issues/507
         continue;
       }
+      if (!ref.astNode) {
+        continue;
+      }
       const el = document.getById(
           'element', ref.tagName, {imported: true, externalPackages: true});
 
       if (el.size === 0) {
+        const sourceRange = parsedDocument.sourceRangeForStartTag(ref.astNode);
+        if (!sourceRange) {
+          continue;
+        }
         warnings.push({
           code: 'undefined-elements',
           message: `The element ${ref.tagName} is not defined`,
-          severity: Severity.WARNING,
-          sourceRange: parsedDocument.sourceRangeForStartTag(ref.astNode)!
+          severity: Severity.WARNING, sourceRange
         });
       }
     }
