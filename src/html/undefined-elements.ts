@@ -41,6 +41,9 @@ export class UndefinedElements extends HtmlRule {
         // HACK. Filed as https://github.com/Polymer/polymer-analyzer/issues/507
         continue;
       }
+      // TODO(rictic): ASTNodes should always exist for element references, and
+      //   it should always be possible to get their start tags, but we saw some
+      //   errors where the source range was undefined. Needs investigation.
       if (!ref.astNode) {
         continue;
       }
