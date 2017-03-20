@@ -37,11 +37,23 @@ export interface Replacement {
 
 
 export interface EditResult {
+  /** The edits that had no conflicts, and are reflected in editedFiles. */
   appliedEdits: Edit[];
+
+  /** Edits that could not be applied due to overlapping ranges. */
   incompatibleEdits: Edit[];
+
+  /** A map from urls to their new contents. */
   editedFiles: Map<string, string>;
 }
 
+/**
+ * Takes the given edits and, provided there are no overlaps, applies them to
+ * the contents loadable from the given loader.
+ *
+ * If there are overlapping edits, then edits earlier in the array get priority
+ * over later ones.
+ */
 export async function applyEdits(
     edits: Edit[], loader: (url: string) => Promise<ParsedDocument<any, any>>):
     Promise<EditResult> {
