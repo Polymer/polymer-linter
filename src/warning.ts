@@ -62,22 +62,13 @@ export async function applyEdits(
     incompatibleEdits: [],
     editedFiles: new Map()
   };
+
+  const replacementsByFile = new Map<string, Replacement[]>();
   for (const edit of edits) {
-    if (canApply(edit, result)) {
+    if (canApply(edit, replacementsByFile)) {
       result.appliedEdits.push(edit);
     } else {
       result.incompatibleEdits.push(edit);
-    }
-  }
-
-  const replacementsByFile = new Map<string, Replacement[]>();
-  for (const edit of result.appliedEdits) {
-    for (const replacement of edit) {
-      const file = replacement.range.file;
-      if (!replacementsByFile.has(file)) {
-        replacementsByFile.set(file, []);
-      }
-      replacementsByFile.get(file)!.push(replacement);
     }
   }
 
@@ -115,28 +106,35 @@ export async function applyEdits(
  * We can apply an edit if none of its replacements overlap with any accepted
  * replacement.
  */
-function canApply(edit: Edit, soFar: EditResult): boolean {
-  // TODO(rictic): This is N^2 in the number of replacements. Can do better by
-  // maintaining a map of file names to a sorted array of replacements.
+function canApply(
+    edit: Edit, replacements: Map<string, Replacement[]>): boolean {
   for (let i = 0; i < edit.length; i++) {
     const replacement = edit[i];
-    for (const acceptedEdit of soFar.appliedEdits) {
-      for (const acceptedReplacement of acceptedEdit) {
-        if (doRangesOverlap(replacement.range, acceptedReplacement.range)) {
-          return false;
-        }
+    const fileLocalReplacements =
+        replacements.get(replacement.range.file) || [];
+    // TODO(rictic): binary search
+    for (const acceptedReplacement of fileLocalReplacements) {
+      if (doRangesOverlap(replacement.range, acceptedReplacement.range)) {
+        return false;
       }
     }
     // Also check consistency between multiple replacements in this edit.
     for (let j = 0; j < i; j++) {
       const acceptedReplacement = edit[j];
-      console.log(
-          `Checking internal consistency between the ${i}th and ${
-                                                                  j
-                                                                }th indexes`);
       if (doRangesOverlap(replacement.range, acceptedReplacement.range)) {
         return false;
       }
+    }
+  }
+
+  // Ok, we can be applied to the replacements, so add our replacements in.
+  for (const replacement of edit) {
+    if (!replacements.has(replacement.range.file)) {
+      replacements.set(replacement.range.file, [replacement]);
+    } else {
+      const fileReplacements = replacements.get(replacement.range.file)!;
+      // TODO(rictic): insert in sorted order
+      fileReplacements.push(replacement);
     }
   }
   return true;
