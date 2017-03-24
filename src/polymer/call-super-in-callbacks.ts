@@ -131,7 +131,6 @@ class CallSuperInCallbacks extends Rule {
   }
 }
 
-/** This should live on parsedDocument. */
 function insertIntoMethod(
     parsedDocument: ParsedDocument<any, any>,
     method: estree.MethodDefinition,
@@ -146,7 +145,12 @@ function insertIntoMethod(
   return undefined;
 }
 
-/** This should live on ParsedDocument. */
+/**
+ * Return a description of the text and source range to replace one ast node
+ * with another.
+ *
+ * Will move this to a method on ParsedDocument.
+ */
 function replace(
     parsedDocument: ParsedDocument<any, any>,
     toReplace: estree.Node,
@@ -176,9 +180,11 @@ function replace(
   return {range: sourceRangeToReplace, replacementText};
 }
 
+/**
+ * Returns the number of spaces at the beginning of the given line number.
+ */
 function getIndentationForLine(
     parsedDocument: ParsedDocument<any, any>, lineNumber: number) {
-  console.log(`lineNumber: ${lineNumber}`);
   let offset = parsedDocument.newlineIndexes[lineNumber - 1];
   if (offset == null) {
     offset = -1;
@@ -194,7 +200,12 @@ function getIndentationForLine(
 }
 
 /**
- * This should live on parsedDocument.
+ * Convert the given source range from file-level to document-level.
+ *
+ * This is relevant for inline documents. e.g. line 3 of a file would be line 1
+ * of the inline document that starts on line 2.
+ *
+ * This will be a (private?) method on parsedDocument.
  */
 function getLocalSourceRange(
     parsedDocument: ParsedDocument<any, any>,
@@ -205,8 +216,10 @@ function getLocalSourceRange(
 /**
  * The inverse of correctSourceRange.
  *
- * Given a whole-document source range, use the locationOffset of an inner
- * parsed document to return a source range in terms of the inner document.
+ * Given a file-level source range, use the locationOffset of an inner
+ * document to return a source range in terms of the inner document.
+ *
+ * This will move into the analyzer alongside correctSourceRange.
  */
 function uncorrectSourceRange(
     sourceRange: SourceRange, locationOffset?: LocationOffset): SourceRange {
@@ -229,8 +242,8 @@ function uncorrectPosition(
   };
 }
 
-// TODO(rictic): This is awkward. Filed as
-//     https://github.com/Polymer/polymer-analyzer/issues/557
+// TODO(rictic): This is awkward and should live in the analyzer somewhere.
+//     Filed as https://github.com/Polymer/polymer-analyzer/issues/557
 function getParsedDocumentContaining(
     sourceRange: SourceRange|undefined,
     document: Document): ParsedDocument<any, any>|undefined {
