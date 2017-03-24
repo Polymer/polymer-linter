@@ -14,9 +14,10 @@
 
 import './collections';
 
-import {Analyzer, Document, Severity, Warning, WarningCarryingException} from 'polymer-analyzer';
+import {Analyzer, Document, Severity, WarningCarryingException} from 'polymer-analyzer';
 
 import {Rule} from './rule';
+import {FixableWarning as Warning} from './warning';
 
 export {registry} from './registry';
 export {Rule, RuleCollection} from './rule';

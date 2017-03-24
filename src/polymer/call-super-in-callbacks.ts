@@ -12,15 +12,19 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as escodegen from 'escodegen';
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
-import {Document, Element, ElementMixin, isPositionInsideRange, ParsedDocument, Severity, SourceRange, Warning} from 'polymer-analyzer';
+import {Document, Element, ElementMixin, isPositionInsideRange, LocationOffset, ParsedDocument, Severity, SourcePosition, SourceRange} from 'polymer-analyzer';
 
 import {registry} from '../registry';
 import {Rule} from '../rule';
 import {stripWhitespace} from '../util';
+import {Edit, FixableWarning} from '../warning';
 
 import stripIndent = require('strip-indent');
+
+const clone: <V>(v: V) => V = require('clone');
 
 const methodsThatMustCallSuper = new Set([
   'ready',
@@ -37,7 +41,7 @@ class CallSuperInCallbacks extends Rule {
   `).trim();
 
   async check(document: Document) {
-    const warnings: Warning[] = [];
+    const warnings: FixableWarning[] = [];
 
     const elementLikes = new Array<Element|ElementMixin>(
         ...document.getFeatures({kind: 'element'}),
@@ -87,7 +91,12 @@ class CallSuperInCallbacks extends Rule {
                 severity: Severity.ERROR, sourceRange,
                 message: stripWhitespace(`
                   ES6 requires super() in constructors with superclasses.
-                `)
+                `),
+                fix: insertIntoMethod(parsedDocumentContaining, method, {
+                  type: 'CallExpression',
+                  callee: {type: 'Super'},
+                  arguments: []
+                })
               });
             } else {
               let message;
@@ -115,6 +124,93 @@ class CallSuperInCallbacks extends Rule {
     }
     return warnings;
   }
+}
+
+/** This should live on parsedDocument. */
+function insertIntoMethod(
+    parsedDocument: ParsedDocument<any, any>,
+    method: estree.MethodDefinition,
+    expression: estree.Expression): Edit|undefined {
+  const sourceRangeToReplace = parsedDocument.sourceRangeForNode(method);
+  if (!sourceRangeToReplace) {
+    return undefined;
+  }
+  method = clone(method);
+  method.value.body.body.unshift({type: 'ExpressionStatement', expression});
+  const inlineCorrectedRange =
+      getLocalSourceRange(parsedDocument, sourceRangeToReplace);
+  const leadingIndentation =
+      getIndentationForLine(parsedDocument, inlineCorrectedRange.start.line);
+
+  // TODO(rictic): how 2 infer user's preferred indentation style??
+  const indentationStyle = '  ';
+  const replacementText = escodegen.generate(method, {
+    comment: true,
+    format: {
+      indent: {
+        adjustMultilineComment: true,
+        base: Math.floor(leadingIndentation / indentationStyle.length),
+        style: indentationStyle,
+      }
+    }
+  });
+
+  return [{range: sourceRangeToReplace, replacementText}];
+}
+
+function getIndentationForLine(
+    parsedDocument: ParsedDocument<any, any>, lineNumber: number) {
+  console.log(`lineNumber: ${lineNumber}`);
+  let offset = parsedDocument.newlineIndexes[lineNumber - 1];
+  if (offset == null) {
+    offset = -1;
+  }
+  offset += 1;  // skip the actual newline character
+  let spaces = 0;
+  while (parsedDocument.contents.charAt(offset) === ' ') {
+    spaces++;
+    offset++;
+  }
+
+  return spaces;
+}
+
+/**
+ * This should live on parsedDocument.
+ * @param parsedDocument
+ * @param sourceRange
+ */
+function getLocalSourceRange(
+    parsedDocument: ParsedDocument<any, any>,
+    sourceRange: SourceRange): SourceRange {
+  return uncorrectSourceRange(sourceRange, parsedDocument['_locationOffset']);
+}
+
+/**
+ * The inverse of correctSourceRange.
+ *
+ * Given a whole-document source range, use the locationOffset of an inner
+ * parsed document to return a source range in terms of the inner document.
+ */
+function uncorrectSourceRange(
+    sourceRange: SourceRange, locationOffset?: LocationOffset): SourceRange {
+  if (!locationOffset) {
+    return sourceRange;
+  }
+  return {
+    file: sourceRange.file,
+    start: uncorrectPosition(sourceRange.start, locationOffset),
+    end: uncorrectPosition(sourceRange.end, locationOffset)
+  };
+}
+
+function uncorrectPosition(
+    position: SourcePosition, locationOffset: LocationOffset): SourcePosition {
+  const line = position.line - locationOffset.line;
+  return {
+    line,
+    column: position.column - (line === 0 ? locationOffset.col : 0)
+  };
 }
 
 // TODO(rictic): This is awkward. Filed as
@@ -162,8 +258,8 @@ function getClassBody(astNode?: estree.Node|null): undefined|estree.ClassBody {
 function mustCallSuper(
     elementLike: Element|ElementMixin, methodName: string, document: Document):
     (string|undefined) {
-  // TODO(rictic): look up the inheritance graph for a jsdoc tag that describes
-  //     the method as needing to be called?
+  // TODO(rictic): look up the inheritance graph for a jsdoc tag that
+  // describes the method as needing to be called?
   if (!methodsThatMustCallSuper.has(methodName)) {
     return;
   }

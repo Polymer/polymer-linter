@@ -16,7 +16,7 @@
 
 import {comparePositionAndRange, isPositionInsideRange, ParsedDocument, SourceRange, Warning} from 'polymer-analyzer';
 
-
+/** This will be upstreamed to just Warning on Analyzer. */
 export interface FixableWarning extends Warning {
   /**
    * If the problem has a single automatic fix, this is it.
@@ -26,6 +26,12 @@ export interface FixableWarning extends Warning {
    * issue completely then it should go in `fix`.
    */
   fix?: Edit;
+  suggestedFixes?: SuggestedFix[];
+}
+
+export interface SuggestedFix {
+  message: string;
+  edit: Edit;
 }
 
 export type Edit = Array<Replacement>;
