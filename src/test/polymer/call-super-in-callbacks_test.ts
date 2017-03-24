@@ -95,12 +95,12 @@ suite('call-super-in-callbacks', () => {
 
   test('applies automatic-safe fixes', async() => {
     const warnings =
-        await linter.lint(['call-super-in-callbacks/fix-cases.html']);
+        await linter.lint(['call-super-in-callbacks/before-fixes.html']);
     const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
     const loader = parsedLoaderFromAnalyzer(analyzer);
     const result = await applyEdits(edits, loader);
     assert.deepEqual(
-        result.editedFiles.get('call-super-in-callbacks/fix-cases.html'),
-        (await loader('call-super-in-callbacks/fixed-cases.html')).contents);
+        result.editedFiles.get('call-super-in-callbacks/before-fixes.html'),
+        (await loader('call-super-in-callbacks/after-fixes.html')).contents);
   });
 });
