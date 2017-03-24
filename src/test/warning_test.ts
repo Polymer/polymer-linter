@@ -18,6 +18,8 @@ import {Analyzer, ParsedDocument, UrlLoader} from 'polymer-analyzer';
 
 import {applyEdits, Replacement} from '../warning';
 
+import {parsedLoaderFromAnalyzer} from './util';
+
 /**
  * TODO(rictic): import these two classes from analyzer once this lands:
  *    https://github.com/Polymer/polymer-analyzer/pull/545
@@ -89,10 +91,7 @@ suite('applyEdits', () => {
     memoryMap = new InMemoryOverlayLoader();
     memoryMap.mapFile('test.html', 'abc');
     const analyzer = new Analyzer({urlLoader: memoryMap});
-    loader = async(url: string) => {
-      const document = await analyzer.analyze(url);
-      return document.parsedDocument;
-    };
+    loader = parsedLoaderFromAnalyzer(analyzer);
   });
 
   function makeTestReplacement(

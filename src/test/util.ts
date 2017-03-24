@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Warning, WarningPrinter} from 'polymer-analyzer';
+import {Analyzer, Document, ParsedDocument, Warning, WarningPrinter} from 'polymer-analyzer';
 
 export class WarningPrettyPrinter {
   private _printer: WarningPrinter;
@@ -24,4 +24,15 @@ export class WarningPrettyPrinter {
     return warnings.map(
         (w) => '\n' + w.toString({verbosity: 'code-only', color: false}));
   }
+}
+
+export function parsedLoaderFromAnalyzer(analyzer: Analyzer): (url: string) =>
+    Promise<ParsedDocument<any, any>> {
+  return async(url: string) => {
+    const result = (await analyzer.analyze([url])).getDocument(url);
+    if (!(result instanceof Document)) {
+      throw new Error('expected a result');
+    }
+    return result.parsedDocument;
+  };
 }
