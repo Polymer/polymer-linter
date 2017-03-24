@@ -34,14 +34,30 @@ export interface SuggestedFix {
   edit: Edit;
 }
 
+/**
+ * An array of replacements that must be applied as a group.
+ *
+ * If any replacement in an edit can't be applied then all replacements from the
+ * edit can't be applied (consider an Edit that renames a class, it's invalid to
+ * only rename some references).
+ *
+ * The replacements may be across multiple files.
+ */
 export type Edit = Array<Replacement>;
 
+
+/**
+ * A single change to a single file.
+ *
+ * This also encompases insertions (range is a point, start and end identical)
+ * and deletions (replacementText is the empty string).
+ */
 export interface Replacement {
   range: SourceRange;
   replacementText: string;
 }
 
-
+/** The result of attempting to apply some edits. */
 export interface EditResult {
   /** The edits that had no conflicts, and are reflected in editedFiles. */
   appliedEdits: Edit[];
@@ -139,7 +155,7 @@ function canApply(
       replacements.set(replacement.range.file, [replacement]);
     } else {
       const fileReplacements = replacements.get(replacement.range.file)!;
-      // TODO(rictic): insert in sorted order
+      // TODO(rictic): insert in sorted order, needed for binary search above.
       fileReplacements.push(replacement);
     }
   }
