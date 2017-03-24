@@ -20,7 +20,7 @@ import {Document, Element, ElementMixin, isPositionInsideRange, LocationOffset, 
 import {registry} from '../registry';
 import {Rule} from '../rule';
 import {stripWhitespace} from '../util';
-import {Edit, FixableWarning} from '../warning';
+import {Edit, FixableWarning, Replacement} from '../warning';
 
 import stripIndent = require('strip-indent');
 
@@ -136,20 +136,33 @@ function insertIntoMethod(
     parsedDocument: ParsedDocument<any, any>,
     method: estree.MethodDefinition,
     expression: estree.Expression): Edit|undefined {
-  const sourceRangeToReplace = parsedDocument.sourceRangeForNode(method);
+  const fixedMethod = clone(method);
+  fixedMethod.value.body.body.unshift(
+      {type: 'ExpressionStatement', expression});
+  const replacement = replace(parsedDocument, method, fixedMethod);
+  if (replacement) {
+    return [replacement];
+  }
+  return undefined;
+}
+
+/** This should live on ParsedDocument. */
+function replace(
+    parsedDocument: ParsedDocument<any, any>,
+    toReplace: estree.Node,
+    replaceWith: estree.Node): Replacement|undefined {
+  const sourceRangeToReplace = parsedDocument.sourceRangeForNode(toReplace);
   if (!sourceRangeToReplace) {
     return undefined;
   }
-  method = clone(method);
-  method.value.body.body.unshift({type: 'ExpressionStatement', expression});
   const inlineCorrectedRange =
       getLocalSourceRange(parsedDocument, sourceRangeToReplace);
   const leadingIndentation =
       getIndentationForLine(parsedDocument, inlineCorrectedRange.start.line);
 
-  // TODO(rictic): how 2 infer user's preferred indentation style??
+  // TODO(rictic): how 2 infer or be told the document's indentation style??
   const indentationStyle = '  ';
-  const replacementText = escodegen.generate(method, {
+  const replacementText = escodegen.generate(replaceWith, {
     comment: true,
     format: {
       indent: {
@@ -160,7 +173,7 @@ function insertIntoMethod(
     }
   });
 
-  return [{range: sourceRangeToReplace, replacementText}];
+  return {range: sourceRangeToReplace, replacementText};
 }
 
 function getIndentationForLine(
@@ -182,8 +195,6 @@ function getIndentationForLine(
 
 /**
  * This should live on parsedDocument.
- * @param parsedDocument
- * @param sourceRange
  */
 function getLocalSourceRange(
     parsedDocument: ParsedDocument<any, any>,
