@@ -26,11 +26,23 @@ export class FixableWarning extends Warning {
    * issue completely then it should go in `fix`.
    */
   fix?: Edit;
+
+  /**
+   * For warnings with multiple fixes, or even a single fix that has some
+   * caveats, these should go into suggestedFixes, where they are only invoked
+   * deliberately by the user.
+   *
+   * e.g. these might be invoked through an interactive CLI menu in `polymer
+   * lint` or with a right-click context menu in a text editor.
+   */
   suggestedFixes?: SuggestedFix[];
 }
 
 export interface SuggestedFix {
-  message: string;
+  /**
+   * Describes what will be done in one short sentence.
+   */
+  shortDescription: string;
   edit: Edit;
 }
 
