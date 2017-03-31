@@ -61,13 +61,9 @@ const fileSpecificIgnoreCodesToIgnore: {[path: string]: Set<string>} = {
   'paper-scroll-header-panel/demo/lorem-ipsum.html':
       new Set(['dom-module-invalid-attrs']),
 
-  // https://github.com/PolymerElements/iron-overlay-behavior/pull/228
-  'iron-overlay-behavior/test/test-buttons-wrapper.html':
-      new Set(['style-into-template']),
-
   // https://github.com/PolymerElements/iron-a11y-keys-behavior/pull/66
   'iron-a11y-keys-behavior/test/basic-test.html':
-      new Set(['unknown-polymer-behavior', 'set-unknown-attribute']),
+      new Set(['unknown-polymer-behavior']),
 
   // https://github.com/PolymerLabs/note-app-elements/pull/5
   'note-app-elements/na-behavior.html': new Set(['unknown-polymer-behavior']),
