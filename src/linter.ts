@@ -52,7 +52,8 @@ export class Linter {
   public async lintPackage(): Promise<Warning[]> {
     const pckage = await this._analyzer.analyzePackage();
     const analysisWarnings = pckage.getWarnings();
-    const warnings = await this._lintDocuments(pckage.getByKind('document'));
+    const warnings =
+        await this._lintDocuments(pckage.getFeatures({kind: 'document'}));
     return analysisWarnings.concat(warnings);
   }
 
@@ -75,17 +76,18 @@ export class Linter {
   }
 
   private async _analyzeAll(files: string[]) {
+    const analysis = await this._analyzer.analyze(files);
     const documents = [];
-    const warnings: Warning[] = [];
+    const warnings = [];
+
     for (const file of files) {
-      try {
-        documents.push(await this._analyzer.analyze(file));
-      } catch (e) {
-        warnings.push(this._getWarningFromError(
-            e,
-            file,
-            'unable-to-analyze-file',
-            `Internal Error while analyzing: ${e ? e.message : e}`));
+      const result = analysis.getDocument(this._analyzer.resolveUrl(file));
+      if (!result) {
+        continue;
+      } else if (result instanceof Document) {
+        documents.push(result);
+      } else {
+        warnings.push(result);
       }
     }
 

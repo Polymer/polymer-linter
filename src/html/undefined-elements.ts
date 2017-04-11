@@ -34,7 +34,7 @@ class UndefinedElements extends HtmlRule {
       Promise<Warning[]> {
     const warnings: Warning[] = [];
 
-    const refs = document.getByKind('element-reference');
+    const refs = document.getFeatures({kind: 'element-reference'});
 
     for (const ref of refs) {
       if (ref.tagName === 'test-fixture') {
@@ -47,8 +47,12 @@ class UndefinedElements extends HtmlRule {
       if (!ref.astNode) {
         continue;
       }
-      const el = document.getById(
-          'element', ref.tagName, {imported: true, externalPackages: true});
+      const el = document.getFeatures({
+        kind: 'element',
+        id: ref.tagName,
+        imported: true,
+        externalPackages: true
+      });
 
       if (el.size === 0) {
         const sourceRange = parsedDocument.sourceRangeForStartTag(ref.astNode);
@@ -58,7 +62,8 @@ class UndefinedElements extends HtmlRule {
         warnings.push({
           code: 'undefined-elements',
           message: `The element ${ref.tagName} is not defined`,
-          severity: Severity.WARNING, sourceRange
+          severity: Severity.WARNING,
+          sourceRange
         });
       }
     }

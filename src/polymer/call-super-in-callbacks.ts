@@ -44,8 +44,8 @@ class CallSuperInCallbacks extends Rule {
     const warnings: Warning[] = [];
 
     const elementLikes =
-        Array.from(document.getByKind('element'))
-            .concat(Array.from(document.getByKind('element-mixin')));
+        Array.from(document.getFeatures({kind: 'element'}))
+            .concat(Array.from(document.getFeatures({kind: 'element-mixin'})));
     for (const elementLike of elementLikes) {
       // TODO(rictic): methods should have astNodes, that would make this
       //     simpler. Filed as:
@@ -87,7 +87,8 @@ class CallSuperInCallbacks extends Rule {
             if (method.kind === 'constructor') {
               warnings.push({
                 code: 'call-super-in-constructor',
-                severity: Severity.ERROR, sourceRange,
+                severity: Severity.ERROR,
+                sourceRange,
                 message: stripWhitespace(`
                   ES6 requires super() in constructors with superclasses.
                 `)
@@ -129,7 +130,7 @@ function getParsedDocumentContaining(
     return undefined;
   }
   let mostSpecificDocument: undefined|Document = undefined;
-  for (const doc of document.getByKind('document')) {
+  for (const doc of document.getFeatures({kind: 'document'})) {
     if (isPositionInsideRange(sourceRange.start, doc.sourceRange)) {
       if (!mostSpecificDocument ||
           isPositionInsideRange(
@@ -176,8 +177,8 @@ function mustCallSuper(
   }
   // Did the element's super class define the method?
   if (elementLike.superClass) {
-    const superElement = onlyOrNone(
-        document.getById('element', elementLike.superClass.identifier));
+    const superElement = onlyOrNone(document.getFeatures(
+        {kind: 'element', id: elementLike.superClass.identifier}));
     if (superElement && getMethodDefiner(superElement, methodName)) {
       return superElement.tagName || superElement.className;
     }
@@ -225,8 +226,8 @@ function getMethodDefinerFromMixins(
     // TODO(rictic): once we have a representation of a Class this should be
     //   something like `document.getById('class')` instead.
     //   https://github.com/Polymer/polymer-analyzer/issues/563
-    const mixin = onlyOrNone(
-        document.getById('element-mixin', mixinReference.identifier));
+    const mixin = onlyOrNone(document.getFeatures(
+        {kind: 'element-mixin', id: mixinReference.identifier}));
     // TODO(rictic): if mixins had their own mixins pre-mixed in we wouldn't
     //     need to recurse here, just use definesMethod directly.
     //     https://github.com/Polymer/polymer-analyzer/issues/564

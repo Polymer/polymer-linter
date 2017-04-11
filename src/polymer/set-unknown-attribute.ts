@@ -49,7 +49,7 @@ class SetUnknownAttribute extends HtmlRule {
     // It doesn't matter right now, as there's no way to have an inline html
     // document, but this query should specify that it doesn't want to match
     // inline documents.
-    const elementReferences = document.getByKind('element-reference');
+    const elementReferences = document.getFeatures({kind: 'element-reference'});
     if (elementReferences.size === 0) {
       return [];
     }
@@ -61,8 +61,12 @@ class SetUnknownAttribute extends HtmlRule {
       if (!node || !node.tagName) {
         continue;
       }
-      const elements = document.getById(
-          'element', node.tagName, {imported: true, externalPackages: true});
+      const elements = document.getFeatures({
+        kind: 'element',
+        id: node.tagName,
+        imported: true,
+        externalPackages: true
+      });
       if (elements.size !== 1) {
         continue;
       }
