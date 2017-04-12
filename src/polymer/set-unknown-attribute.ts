@@ -40,10 +40,6 @@ class SetUnknownAttribute extends HtmlRule {
       metadata on native elements in a convenient format.
   `).trim();
 
-  constructor() {
-    super();
-  }
-
   async checkDocument(parsedDoc: ParsedHtmlDocument, document: Document) {
     const warnings: Warning[] = [];
     // It doesn't matter right now, as there's no way to have an inline html

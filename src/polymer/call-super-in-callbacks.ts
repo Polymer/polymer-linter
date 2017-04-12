@@ -36,10 +36,6 @@ class CallSuperInCallbacks extends Rule {
       but does not call super.callbackName().
   `).trim();
 
-  constructor() {
-    super();
-  }
-
   async check(document: Document) {
     const warnings: Warning[] = [];
 
@@ -87,8 +83,7 @@ class CallSuperInCallbacks extends Rule {
             if (method.kind === 'constructor') {
               warnings.push({
                 code: 'call-super-in-constructor',
-                severity: Severity.ERROR,
-                sourceRange,
+                severity: Severity.ERROR, sourceRange,
                 message: stripWhitespace(`
                   ES6 requires super() in constructors with superclasses.
                 `)

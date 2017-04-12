@@ -38,10 +38,6 @@ class BehaviorsSpelling extends Rule {
           });
   `).trim();
 
-  constructor() {
-    super();
-  }
-
   async check(document: Document) {
     const warnings: Warning[] = [];
     const elements = document.getFeatures({kind: 'polymer-element'});

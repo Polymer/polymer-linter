@@ -26,10 +26,6 @@ class UndefinedElements extends HtmlRule {
     Warns when an HTML tag refers to a custom element with no known definition.
   `).trim();
 
-  constructor() {
-    super();
-  }
-
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document):
       Promise<Warning[]> {
     const warnings: Warning[] = [];
@@ -62,8 +58,7 @@ class UndefinedElements extends HtmlRule {
         warnings.push({
           code: 'undefined-elements',
           message: `The element ${ref.tagName} is not defined`,
-          severity: Severity.WARNING,
-          sourceRange
+          severity: Severity.WARNING, sourceRange
         });
       }
     }

@@ -37,10 +37,6 @@ class ElementBeforeDomModule extends HtmlRule {
         <script>Polymer({is: 'my-elem'})</script>
       `).trim();
 
-  constructor() {
-    super();
-  }
-
   public async checkDocument(
       parsedHtml: ParsedHtmlDocument, document: Document): Promise<Warning[]> {
     const warnings: Warning[] = [];
