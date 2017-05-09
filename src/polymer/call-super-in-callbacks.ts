@@ -12,15 +12,19 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as escodegen from 'escodegen';
 import * as estraverse from 'estraverse';
 import * as estree from 'estree';
-import {Document, Element, ElementMixin, isPositionInsideRange, ParsedDocument, Severity, SourceRange, Warning} from 'polymer-analyzer';
+import {Document, Element, ElementMixin, isPositionInsideRange, LocationOffset, ParsedDocument, Severity, SourcePosition, SourceRange} from 'polymer-analyzer';
 
 import {registry} from '../registry';
 import {Rule} from '../rule';
 import {stripWhitespace} from '../util';
+import {Edit, FixableWarning, Replacement} from '../warning';
 
 import stripIndent = require('strip-indent');
+
+const clone: <V>(v: V) => V = require('clone');
 
 const methodsThatMustCallSuper = new Set([
   'ready',
@@ -37,7 +41,7 @@ class CallSuperInCallbacks extends Rule {
   `).trim();
 
   async check(document: Document) {
-    const warnings: Warning[] = [];
+    const warnings: FixableWarning[] = [];
 
     const elementLikes = new Array<Element|ElementMixin>(
         ...document.getFeatures({kind: 'element'}),
@@ -87,7 +91,12 @@ class CallSuperInCallbacks extends Rule {
                 severity: Severity.ERROR, sourceRange,
                 message: stripWhitespace(`
                   ES6 requires super() in constructors with superclasses.
-                `)
+                `),
+                fix: insertIntoMethod(parsedDocumentContaining, method, {
+                  type: 'CallExpression',
+                  callee: {type: 'Super'},
+                  arguments: []
+                })
               });
             } else {
               let message;
@@ -117,8 +126,119 @@ class CallSuperInCallbacks extends Rule {
   }
 }
 
-// TODO(rictic): This is awkward. Filed as
-//     https://github.com/Polymer/polymer-analyzer/issues/557
+function insertIntoMethod(
+    parsedDocument: ParsedDocument<any, any>,
+    method: estree.MethodDefinition,
+    expression: estree.Expression): Edit|undefined {
+  const fixedMethod = clone(method);
+  fixedMethod.value.body.body.unshift(
+      {type: 'ExpressionStatement', expression});
+  const replacement = replace(parsedDocument, method, fixedMethod);
+  if (replacement) {
+    return [replacement];
+  }
+  return undefined;
+}
+
+/**
+ * Return a description of the text and source range to replace one ast node
+ * with another.
+ *
+ * Will move this to a method on ParsedDocument.
+ */
+function replace(
+    parsedDocument: ParsedDocument<any, any>,
+    toReplace: estree.Node,
+    replaceWith: estree.Node): Replacement|undefined {
+  const sourceRangeToReplace = parsedDocument.sourceRangeForNode(toReplace);
+  if (!sourceRangeToReplace) {
+    return undefined;
+  }
+  const inlineCorrectedRange =
+      getLocalSourceRange(parsedDocument, sourceRangeToReplace);
+  const leadingIndentation =
+      getIndentationForLine(parsedDocument, inlineCorrectedRange.start.line);
+
+  // TODO(rictic): how 2 infer or be told the document's indentation style??
+  const indentationStyle = '  ';
+  const replacementText = escodegen.generate(replaceWith, {
+    comment: true,
+    format: {
+      indent: {
+        adjustMultilineComment: true,
+        base: Math.floor(leadingIndentation / indentationStyle.length),
+        style: indentationStyle,
+      }
+    }
+  });
+
+  return {range: sourceRangeToReplace, replacementText};
+}
+
+/**
+ * Returns the number of spaces at the beginning of the given line number.
+ */
+function getIndentationForLine(
+    parsedDocument: ParsedDocument<any, any>, lineNumber: number) {
+  let offset = parsedDocument.newlineIndexes[lineNumber - 1];
+  if (offset == null) {
+    offset = -1;
+  }
+  offset += 1;  // skip the actual newline character
+  let spaces = 0;
+  while (parsedDocument.contents.charAt(offset) === ' ') {
+    spaces++;
+    offset++;
+  }
+
+  return spaces;
+}
+
+/**
+ * Convert the given source range from file-level to document-level.
+ *
+ * This is relevant for inline documents. e.g. line 3 of a file would be line 1
+ * of the inline document that starts on line 2.
+ *
+ * This will be a (private?) method on parsedDocument.
+ */
+function getLocalSourceRange(
+    parsedDocument: ParsedDocument<any, any>,
+    sourceRange: SourceRange): SourceRange {
+  return uncorrectSourceRange(sourceRange, parsedDocument['_locationOffset']);
+}
+
+/**
+ * The inverse of correctSourceRange.
+ *
+ * Given a file-level source range, use the locationOffset of an inner
+ * document to return a source range in terms of the inner document.
+ *
+ * This will move into the analyzer alongside correctSourceRange.
+ */
+function uncorrectSourceRange(
+    sourceRange: SourceRange, locationOffset?: LocationOffset): SourceRange {
+  if (!locationOffset) {
+    return sourceRange;
+  }
+  return {
+    file: sourceRange.file,
+    start: uncorrectPosition(sourceRange.start, locationOffset),
+    end: uncorrectPosition(sourceRange.end, locationOffset)
+  };
+}
+
+function uncorrectPosition(
+    position: SourcePosition, locationOffset: LocationOffset): SourcePosition {
+  const line = position.line - locationOffset.line;
+  return {
+    line,
+    column: position.column - (line === 0 ? locationOffset.col : 0)
+  };
+}
+
+// TODO(rictic): This is awkward and should live in the analyzer somewhere.
+//     Filed as https://github.com/Polymer/polymer-analyzer/issues/557
 function getParsedDocumentContaining(
     sourceRange: SourceRange|undefined,
     document: Document): ParsedDocument<any, any>|undefined {
@@ -162,8 +282,8 @@ function getClassBody(astNode?: estree.Node|null): undefined|estree.ClassBody {
 function mustCallSuper(
     elementLike: Element|ElementMixin, methodName: string, document: Document):
     (string|undefined) {
-  // TODO(rictic): look up the inheritance graph for a jsdoc tag that describes
-  //     the method as needing to be called?
+  // TODO(rictic): look up the inheritance graph for a jsdoc tag that
+  // describes the method as needing to be called?
   if (!methodsThatMustCallSuper.has(methodName)) {
     return;
   }

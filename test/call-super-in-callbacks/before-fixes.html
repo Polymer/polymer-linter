@@ -1,0 +1,22 @@
+<!--This comment is here to make source ranges harder-->
+
+<script>
+  /**
+   * @polymerElement
+   */
+  class SuperClass extends HTMLElement { }
+
+  class BadConstructor1 extends SuperClass {
+    constructor() {
+      // Very important
+      this.foo = 'bar';
+    }
+  }
+  customElements.define('bad-constructor1', BadConstructor1);
+
+  class BadConstructor2 extends SuperClass {
+    constructor() { }
+  }
+  customElements.define('bad-constructor2', BadConstructor2);
+
+</script>

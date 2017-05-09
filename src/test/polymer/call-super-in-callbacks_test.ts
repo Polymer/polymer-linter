@@ -18,7 +18,8 @@ import {Analyzer, FSUrlLoader} from 'polymer-analyzer';
 
 import {Linter} from '../../linter';
 import {registry} from '../../registry';
-import {WarningPrettyPrinter} from '../util';
+import {applyEdits} from '../../warning';
+import {parsedLoaderFromAnalyzer, WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
 
@@ -90,5 +91,16 @@ suite('call-super-in-callbacks', () => {
           `because a class BadMixinConnected is applied to may also define ` +
           `connectedCallback.`,
     ]);
+  });
+
+  test('applies automatic-safe fixes', async() => {
+    const warnings =
+        await linter.lint(['call-super-in-callbacks/before-fixes.html']);
+    const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
+    const loader = parsedLoaderFromAnalyzer(analyzer);
+    const result = await applyEdits(edits, loader);
+    assert.deepEqual(
+        result.editedFiles.get('call-super-in-callbacks/before-fixes.html'),
+        (await loader('call-super-in-callbacks/after-fixes.html')).contents);
   });
 });
