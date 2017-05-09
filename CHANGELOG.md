@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [2.0.1] - 2017-05-09
 
-- Upgraded dependency `polymer-analyzer` to 2.0.0-alpha.41, providing better method privacy inference, support for new JSDoc tags including those in HTML comments for custom elements, and better warnings for mixins, elements, and classes.
+- Upgraded dependency `polymer-analyzer` to 2.0.0-alpha.42, providing better method privacy inference, support for new JSDoc tags including those in HTML comments for custom elements, and better warnings for mixins, elements, and classes.
 
 ## [2.0.0] - 2017-04-14
 
