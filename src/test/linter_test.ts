@@ -17,6 +17,7 @@ import * as path from 'path';
 import {Analyzer, Document, FSUrlLoader, Severity, Warning} from 'polymer-analyzer';
 
 import {Linter} from '../linter';
+import {registry} from '../registry';
 import {Rule} from '../rule';
 
 import {WarningPrettyPrinter} from './util';
@@ -104,6 +105,102 @@ suite('Linter', () => {
         'bower_components/external.html',
         'bower_components/external.html'
       ].sort());
+    });
+
+    suite('comment directives', () => {
+
+      (<[[string, any]]>[
+        ['comment-directives/disable-all.html', []],
+        [
+          'comment-directives/disable-one.html',
+          [{
+            code: 'behaviors-spelling',
+            sourceRange: {
+              file: 'comment-directives/disable-one.html',
+              start: {line: 8, column: 4},
+              end: {line: 8, column: 18}
+            }
+          }]
+        ],
+        [
+          'comment-directives/disable-all-then-renable-one.html',
+          [{
+            code: 'dom-module-invalid-attrs',
+            sourceRange: {
+              file: 'comment-directives/disable-all-then-renable-one.html',
+              start: {line: 4, column: 12},
+              end: {line: 4, column: 16}
+            }
+          }]
+        ],
+        [
+          'comment-directives/disable-all-then-renable-all.html',
+          [{
+            code: 'dom-module-invalid-attrs',
+            sourceRange: {
+              file: 'comment-directives/disable-all-then-renable-all.html',
+              start: {line: 4, column: 12},
+              end: {line: 4, column: 16}
+            }
+          }]
+
+        ],
+        [
+          'comment-directives/disable-one-then-renable-one.html',
+          [{
+            code: 'dom-module-invalid-attrs',
+            sourceRange: {
+              file: 'comment-directives/disable-one-then-renable-one.html',
+              start: {line: 4, column: 12},
+              end: {line: 4, column: 16}
+            }
+          }]
+        ],
+        [
+          'comment-directives/disable-one-then-renable-all.html',
+          [{
+            code: 'dom-module-invalid-attrs',
+            sourceRange: {
+              file: 'comment-directives/disable-one-then-renable-all.html',
+              start: {line: 4, column: 12},
+              end: {line: 4, column: 16}
+            }
+          }]
+        ],
+        ['comment-directives/inline-documents-inherit.html', []],
+        [
+          'comment-directives/inline-documents-interweave.html',
+          [
+            {
+              code: 'dom-module-invalid-attrs',
+              sourceRange: {
+                file: 'comment-directives/inline-documents-interweave.html',
+                start: {line: 23, column: 12},
+                end: {line: 23, column: 16}
+              }
+            },
+            {
+              code: 'behaviors-spelling',
+              sourceRange: {
+                file: 'comment-directives/inline-documents-interweave.html',
+                start: {line: 17, column: 4},
+                end: {line: 17, column: 18}
+              }
+            }
+          ]
+        ],
+      ]).forEach(([filePath, expectedResults]) => {
+        test(`properly lints ${filePath}`, async() => {
+          const linter = new Linter(
+              registry.getRules(
+                  ['dom-module-invalid-attrs', 'behaviors-spelling']),
+              analyzer);
+          const warnings = await linter.lint([filePath]);
+          const warningsData =
+              warnings.map(({code, sourceRange}) => ({code, sourceRange}));
+          assert.deepEqual(warningsData, expectedResults);
+        });
+      });
     });
   });
 });

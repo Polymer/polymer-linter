@@ -14,7 +14,7 @@
 
 import './collections';
 
-import {Analyzer, Document, Severity, Warning, WarningCarryingException} from 'polymer-analyzer';
+import {Analyzer, comparePositionAndRange, Document, PolymerLintDirective, Severity, Warning, WarningCarryingException} from 'polymer-analyzer';
 
 import {Rule} from './rule';
 
@@ -22,9 +22,57 @@ export {registry} from './registry';
 export {Rule, RuleCollection} from './rule';
 
 /**
- * The Linter is a simple class which groups together a set of Rules and applies
- * them to a set of file urls which can be resolved and loaded by the provided
- * Analyzer.  A default Analyzer is prepared if one is not provided.
+ * Given a set of directives, return an array of only those directives that
+ * apply to the given code. This can be a directive that mentions the rule by
+ * name, or a directive that effects all rules.
+ */
+function filterDirectivesByCode(
+    directives: Set<PolymerLintDirective>, code: string) {
+  return Array.from(directives)
+      .filter(
+          (directive) => directive.args.length === 1 ||
+              directive.args.slice(1).includes(code));
+}
+
+/**
+ * Filter an array of warnings based on an ordered set of associated directives.
+ * If a directive disables the rule at the location of the warning, that warning
+ * will be filtered out as invalid.
+ *
+ * TODO(fks) 05-10-2017: Improve performance by first sorting warnings, and then
+ * stepping through warnings and directives in tandem in a single pass.
+ */
+function filterLintWarningsByDirective(
+    warnings: Warning[], directives: Set<PolymerLintDirective>) {
+  const directivesByCode = new Map<string, PolymerLintDirective[]>();
+  return warnings.filter((warning: Warning) => {
+    // Memoize the directives relevant to this specific warning code
+    let relevantDirectives = directivesByCode.get(warning.code);
+    if (!relevantDirectives) {
+      relevantDirectives = filterDirectivesByCode(directives, warning.code);
+      directivesByCode.set(warning.code, relevantDirectives);
+    }
+    // For each relevant directive that comes before the warning, flip the state
+    // based on whether the directive was a "enable" or "disable" command.
+    // Return the final state.
+    return relevantDirectives.reduce((isValid, directive) => {
+      const directiveEffect = (directive.args[0] === 'enable');
+      const isDirectiveInSameFile =
+          directive.sourceRange.file === warning.sourceRange.file;
+      const isDirectiveBeforeWarning =
+          comparePositionAndRange(
+              directive.sourceRange!.end, warning.sourceRange) === -1;
+      return (isDirectiveInSameFile && isDirectiveBeforeWarning) ?
+          directiveEffect :
+          isValid;
+    }, true);
+  });
+}
+
+/**
+ * The Linter is a simple class which groups together a set of Rules and
+ * applies them to a set of file urls which can be resolved and loaded by the
+ * provided Analyzer.  A default Analyzer is prepared if one is not provided.
  */
 export class Linter {
   private _analyzer: Analyzer;
@@ -56,21 +104,30 @@ export class Linter {
   }
 
   private async _lintDocuments(documents: Iterable<Document>) {
-    const warnings: Warning[] = [];
+    const verifiedWarnings: Warning[] = [];
     for (const document of documents) {
+      const lintWarnings: Warning[] = [];
       for (const rule of this._rules) {
         try {
-          warnings.push(...await rule.check(document));
+          lintWarnings.push(...(await rule.check(document)));
         } catch (e) {
-          warnings.push(this._getWarningFromError(
+          verifiedWarnings.push(this._getWarningFromError(
               e,
               document.url,
               'internal-lint-error',
               `Internal error during linting: ${e ? e.message : e}`));
         }
       }
+      const directives =
+          document.getFeatures({kind: 'directive', id: 'polymer-lint'});
+      if (directives.size === 0) {
+        verifiedWarnings.push(...lintWarnings);
+      } else {
+        verifiedWarnings.push(
+            ...filterLintWarningsByDirective(lintWarnings, directives));
+      }
     }
-    return warnings;
+    return verifiedWarnings;
   }
 
   private async _analyzeAll(files: string[]) {
