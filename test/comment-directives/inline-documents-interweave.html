@@ -1,0 +1,24 @@
+<!-- polymer-lint disable -->
+
+<!-- this node's warning should not be reported -->
+<dom-module name="foo-elem"></dom-module>
+
+<script>
+  Polymer({
+    is: 'foo-element',
+    // This warning should not be reported
+    behaviours: []
+  });
+
+  /* polymer-lint enable */
+
+  Polymer({
+    is: 'bar-element',
+    // This warning should be reported
+    behaviours: []
+  });
+
+</script>
+
+<!-- this node's warning should be reported -->
+<dom-module name="bar-elem"></dom-module>

@@ -1,0 +1,12 @@
+<!-- polymer-lint disable: dom-module-invalid-attrs -->
+
+<!-- this node's warning should not be reported -->
+<dom-module name="baz-elem"></dom-module>
+
+<!-- this node's warning should be reported -->
+<script>
+  Polymer({
+    behaviours: []
+  });
+
+</script>
