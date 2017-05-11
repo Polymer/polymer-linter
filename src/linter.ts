@@ -40,7 +40,7 @@ function filterDirectivesByCode(
  * will be filtered out as invalid.
  *
  * TODO(fks) 05-10-2017: Improve performance by first sorting warnings, and then
- * stepping through warnings and directives in tandem in a single pass.
+ * stepping through warnings and directives in lockstep in a single pass.
  */
 function filterLintWarningsByDirective(
     warnings: Warning[], directives: Set<PolymerLintDirective>) {
