@@ -104,7 +104,7 @@ class DatabindingCallsMustBeFunctions extends Rule {
         continue;
       }
       const potentialMethodNames = new Set(
-          [...element.properties.values()]
+          Array.from(element.properties.values())
               .filter((p) => !p.type || !definitelyNotMethodTypes.has(p.type))
               .map((p) => p.name)
               .concat([...element.methods.keys()]));

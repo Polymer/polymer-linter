@@ -142,10 +142,10 @@ class SetUnknownAttribute extends HtmlRule {
 }
 
 function closestOption(name: string, isAttribute: boolean, element: Element) {
-  const attributeOptions = [...element.attributes.keys()].concat(
-      Array.from(sharedAttributes.keys()));
-  const propertyOptions = [...element.properties.keys()].concat(
-      Array.from(sharedProperties.keys()));
+  const attributeOptions =
+      [...element.attributes.keys(), ...sharedAttributes.keys()];
+  const propertyOptions =
+      [...element.properties.keys(), ...sharedProperties.keys()];
   const closestAttribute = closestSpelling(name, attributeOptions)!;
   const closestProperty = closestSpelling(name, propertyOptions)!;
   if (closestAttribute.minScore! === closestProperty.minScore) {
