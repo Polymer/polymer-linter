@@ -33,7 +33,7 @@ class DatabindWithUnknownProperty extends HtmlRule {
       Warns when a polymer databinding expression uses an undeclared property.
   `).trim();
 
-  async checkDocument(_parsed: ParsedHtmlDocument, document: Document) {
+  async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
     const warnings: Warning[] = [];
     const domModules = document.getFeatures({kind: 'dom-module'});
     for (const domModule of domModules) {
@@ -49,14 +49,14 @@ class DatabindWithUnknownProperty extends HtmlRule {
       const element = elements.values().next().value;
 
       const explicitlyKnownProperties =
-          new Set(element.properties.map((p) => p.name)
-                      .concat(element.methods.map((m) => m.name))
+          new Set([...element.properties.keys()]
+                      .concat([...element.methods.keys()])
                       .concat(Array.from(sharedProperties)));
       const scopedProperties: {scope: SourceRange, property: string}[] = [];
       const domRepeats = dom5.nodeWalkAll(
           domModule.astNode, isDomRepeat, [], dom5.childNodesIncludeTemplate);
       for (const domRepeat of domRepeats) {
-        const scope = _parsed.sourceRangeForNode(domRepeat)!;
+        const scope = parsedDocument.sourceRangeForNode(domRepeat)!;
         const itemProperty = dom5.getAttribute(domRepeat, 'as') || 'item';
         const indexProperty =
             dom5.getAttribute(domRepeat, 'indexAs') || 'index';
@@ -105,14 +105,15 @@ class DatabindWithUnknownProperty extends HtmlRule {
         if (usesOfProperty.length === 1) {
           const bestGuess =
               closestSpelling(firstUse.name, explicitlyKnownProperties)!.min;
-          warnings.push({
+          warnings.push(new Warning({
+            parsedDocument,
             code: this.code,
             severity: Severity.WARNING,
             sourceRange: firstUse.sourceRange,
             message:
                 `${firstUse.name} is not declared or used more than once. ` +
                 `Did you mean: ${bestGuess}`
-          });
+          }));
           continue;
         }
         const hasWrite = !!usesOfProperty.find((use) => {
@@ -131,14 +132,15 @@ class DatabindWithUnknownProperty extends HtmlRule {
           continue;
         }
         for (const use of usesOfProperty) {
-          warnings.push({
+          warnings.push(new Warning({
+            parsedDocument,
             code: this.code,
             severity: Severity.WARNING,
             sourceRange: use.sourceRange,
             message: `${use.name} is not declared and is only read from, ` +
                 `never written to. If it's part of the element's API ` +
                 `it should be a declared property.`
-          });
+          }));
         }
       }
     }
