@@ -1,0 +1,22 @@
+<!-- Super simple cases: -->
+<paper-header-panel>
+  <paper-toolbar slot="header"></paper-toolbar>
+</paper-header-panel>
+
+<paper-header-panel>
+  <div class="paper-header" slot="header"></div>
+</paper-header-panel>
+
+
+<!-- Trickier cases -->
+
+<paper-header-panel>
+  <paper-toolbar slot="header"></paper-toolbar>
+  <paper-toolbar class="paper-header" slot="header"></paper-toolbar>
+  <paper-toolbar slot="header"></paper-toolbar>
+  <paper-toolbar slot="ignoreme"></paper-toolbar>
+  <paper-toolbar
+      attr1
+      attr2
+      attr3 slot="header"></paper-toolbar>
+</paper-header-panel>
