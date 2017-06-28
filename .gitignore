@@ -1,4 +1,5 @@
 lib
 node_modules
 yarn.lock
+package-lock.json
 test/integration/bower_components

@@ -3,6 +3,9 @@
   "version": "2.0.2",
   "description": "Lint Polymer!",
   "main": "lib/linter.js",
+  "bin": {
+    "lintfix": "lib/lint-fix-command.js"
+  },
   "typings": "lib/linter.d.ts",
   "dependencies": {
     "@types/escodegen": "0.0.6",
