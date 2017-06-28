@@ -67,14 +67,16 @@ class ContentToSlot extends HtmlRule {
           fix.push({range, replacementText: withSlotAttr});
         }
       }
-      const warning = new FixableWarning({
-        code: 'content-to-slot-usage-site',
-        message: ``, parsedDocument,
-        severity: Severity.WARNING,
-        sourceRange: parsedDocument.sourceRangeForStartTag(reference.astNode)!
-      });
-      warning.fix = fix;
-      warnings.push(warning);
+      if (fix.length > 0) {
+        const warning = new FixableWarning({
+          code: 'content-to-slot-usage-site',
+          message: ``, parsedDocument,
+          severity: Severity.WARNING,
+          sourceRange: parsedDocument.sourceRangeForStartTag(reference.astNode)!
+        });
+        warning.fix = fix;
+        warnings.push(warning);
+      }
     }
 
     // rictic: DO NOT MERGE without checking for _declarations_ of <content>
