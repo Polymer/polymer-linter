@@ -26,24 +26,33 @@ const p = dom5.predicates;
 const config =
     new Map<string, Array<{predicate: dom5.Predicate, slot: string}>>();
 
-// config.set('paper-header-panel', [{
-//              predicate: p.OR(
-//                  p.hasTagName('paper-toolbar'), p.hasClass('paper-header')),
-//              slot: 'header'
-//            }]);
+function addPredicate(
+    tagname: string, slots: Array<{selector: string, slot: string}>) {
+  config.set(
+      tagname, slots.map((s) => ({
+                           predicate: simpleSelectorToPredicate(s.selector),
+                           slot: s.slot
+                         })));
+}
 
-// config.set('paper-scroll-header-panel', [
-//   {
-//     predicate: p.OR(p.hasTagName('paper-toolbar'),
-//     p.hasClass('paper-header')), slot: 'header'
-//   },
-//   {predicate: () => true, slot: 'content'}
+// addPredicate(
+//     'paper-header-panel',
+//     [{selector: 'paper-toolbar, .paper-header', slot: 'header'}]);
+
+// addPredicate('paper-scroll-header-panel', [
+//   {selector: 'paper-toolbar, .paper-header', slot: 'header'},
+//   {selector: '*', slot: 'content'}
 // ]);
 
-config.set('paper-toolbar', [
-  {predicate: p.hasClass('middle'), slot: 'middle'},
-  {predicate: p.hasClass('bottom'), slot: 'bottom'},
-  {predicate: () => true, slot: 'top'}
+// addPredicate('paper-toolbar', [
+//   {selector: '.middle', slot: 'middle'},
+//   {selector: '.bottom', slot: 'bottom'},
+//   {selector: '*', slot: 'top'}
+// ]);
+
+addPredicate('paper-drawer-panel', [
+  {selector: '[drawer]', slot: 'drawer'},
+  {selector: '[main]', slot: 'main'}
 ]);
 
 class ContentToSlot extends HtmlRule {
@@ -104,6 +113,26 @@ class ContentToSlot extends HtmlRule {
 
     return warnings;
   }
+}
+
+// NOTE(rictic): This only works for very, very simple selectors. Do something
+//   smarter here.
+function simpleSelectorToPredicate(simpleSelector: string): dom5.Predicate {
+  simpleSelector = simpleSelector.trim();
+  const pieces = simpleSelector.split(',');
+  if (pieces.length > 1) {
+    return p.OR(...pieces.map(simpleSelectorToPredicate));
+  }
+  if (simpleSelector[0] === '.') {
+    return p.hasClass(simpleSelector.slice(1));
+  }
+  if (simpleSelector.startsWith('[') && simpleSelector.endsWith(']')) {
+    return p.hasAttr(simpleSelector.slice(1, -1));
+  }
+  if (simpleSelector === '*') {
+    return () => true;
+  }
+  return p.hasTagName(simpleSelector);
 }
 
 registry.register(new ContentToSlot());
