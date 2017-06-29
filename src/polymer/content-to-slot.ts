@@ -26,11 +26,19 @@ const p = dom5.predicates;
 const config =
     new Map<string, Array<{predicate: dom5.Predicate, slot: string}>>();
 
-config.set('paper-header-panel', [{
-             predicate: p.OR(
-                 p.hasTagName('paper-toolbar'), p.hasClass('paper-header')),
-             slot: 'header'
-           }]);
+// config.set('paper-header-panel', [{
+//              predicate: p.OR(
+//                  p.hasTagName('paper-toolbar'), p.hasClass('paper-header')),
+//              slot: 'header'
+//            }]);
+
+config.set('paper-scroll-header-panel', [
+  {
+    predicate: p.OR(p.hasTagName('paper-toolbar'), p.hasClass('paper-header')),
+    slot: 'header'
+  },
+  {predicate: () => true, slot: 'content'}
+]);
 
 class ContentToSlot extends HtmlRule {
   code = 'content-to-slot';
@@ -48,8 +56,10 @@ class ContentToSlot extends HtmlRule {
         continue;
       }
       const fix: Edit = [];
+      const matchedSoFar = new Set<dom5.Node>();
       for (const {predicate, slot} of contentDescriptors) {
-        const lightContents = dom5.queryAll(reference.astNode, predicate);
+        const lightContents =
+            (reference.astNode.childNodes || []).filter(predicate);
         for (const lightContent of lightContents) {
           if (dom5.hasAttribute(lightContent, 'slot')) {
             continue;
@@ -58,6 +68,10 @@ class ContentToSlot extends HtmlRule {
           if (!range) {
             continue;
           }
+          if (matchedSoFar.has(lightContent)) {
+            continue;
+          }
+          matchedSoFar.add(lightContent);
           const [startOffset, endOffset] =
               parsedDocument.sourceRangeToOffsets(range);
           const originalText =
