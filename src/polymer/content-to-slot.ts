@@ -50,10 +50,12 @@ function addPredicate(
 //   {selector: '*', slot: 'top'}
 // ]);
 
-addPredicate('paper-drawer-panel', [
-  {selector: '[drawer]', slot: 'drawer'},
-  {selector: '[main]', slot: 'main'}
-]);
+// addPredicate('paper-drawer-panel', [
+//   {selector: '[drawer]', slot: 'drawer'},
+//   {selector: '[main]', slot: 'main'}
+// ]);
+
+addPredicate('paper-icon-item', [{selector: '[item-icon]', slot: 'item-icon'}]);
 
 class ContentToSlot extends HtmlRule {
   code = 'content-to-slot';
