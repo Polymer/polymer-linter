@@ -32,12 +32,18 @@ const config =
 //              slot: 'header'
 //            }]);
 
-config.set('paper-scroll-header-panel', [
-  {
-    predicate: p.OR(p.hasTagName('paper-toolbar'), p.hasClass('paper-header')),
-    slot: 'header'
-  },
-  {predicate: () => true, slot: 'content'}
+// config.set('paper-scroll-header-panel', [
+//   {
+//     predicate: p.OR(p.hasTagName('paper-toolbar'),
+//     p.hasClass('paper-header')), slot: 'header'
+//   },
+//   {predicate: () => true, slot: 'content'}
+// ]);
+
+config.set('paper-toolbar', [
+  {predicate: p.hasClass('middle'), slot: 'middle'},
+  {predicate: p.hasClass('bottom'), slot: 'bottom'},
+  {predicate: () => true, slot: 'top'}
 ]);
 
 class ContentToSlot extends HtmlRule {
