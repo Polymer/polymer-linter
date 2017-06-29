@@ -55,7 +55,13 @@ function addPredicate(
 //   {selector: '[main]', slot: 'main'}
 // ]);
 
-addPredicate('paper-icon-item', [{selector: '[item-icon]', slot: 'item-icon'}]);
+// addPredicate('paper-icon-item', [{selector: '[item-icon]', slot:
+// 'item-icon'}]);
+
+addPredicate('paper-menu-button', [
+  {selector: '.dropdown-trigger', slot: 'dropdown-trigger'},
+  {selector: '.dropdown-content', slot: 'dropdown-content'},
+]);
 
 class ContentToSlot extends HtmlRule {
   code = 'content-to-slot';
