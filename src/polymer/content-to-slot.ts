@@ -63,21 +63,21 @@ function addPredicate(
 //   {selector: '.dropdown-content', slot: 'dropdown-content'},
 // ]);
 
-addPredicate(
-    'iron-dropdown',
-    [{selector: '.dropdown-content', slot: 'dropdown-content'}]);
+// addPredicate(
+//     'iron-dropdown',
+//     [{selector: '.dropdown-content', slot: 'dropdown-content'}]);
 
-// addPredicate('paper-input', [
-//   {selector: '[prefix]', slot: 'prefix'},
-//   {selector: '[suffix]', slot: 'suffix'},
-// ]);
+addPredicate('paper-input', [
+  {selector: '[prefix]', slot: 'prefix'},
+  {selector: '[suffix]', slot: 'suffix'},
+]);
 
-// addPredicate('paper-input-container', [
-//   {selector: '[prefix]', slot: 'prefix'},
-//   {selector: '[suffix]', slot: 'suffix'},
-//   {selector: '[add-on]', slot: 'add-on'},
-//   {selector: '*', slot: 'input'},
-// ]);
+addPredicate('paper-input-container', [
+  {selector: '[prefix]', slot: 'prefix'},
+  {selector: '[suffix]', slot: 'suffix'},
+  {selector: '[add-on]', slot: 'add-on'},
+  {selector: '*', slot: 'input'},
+]);
 
 class ContentToSlot extends HtmlRule {
   code = 'content-to-slot';
