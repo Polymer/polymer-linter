@@ -35,37 +35,36 @@ function addPredicate(
                          })));
 }
 
-// addPredicate(
-//     'paper-header-panel',
-//     [{selector: 'paper-toolbar, .paper-header', slot: 'header'}]);
+addPredicate(
+    'paper-header-panel',
+    [{selector: 'paper-toolbar, .paper-header', slot: 'header'}]);
 
-// addPredicate('paper-scroll-header-panel', [
-//   {selector: 'paper-toolbar, .paper-header', slot: 'header'},
-//   {selector: '*', slot: 'content'}
-// ]);
+addPredicate('paper-scroll-header-panel', [
+  {selector: 'paper-toolbar, .paper-header', slot: 'header'},
+  {selector: '*', slot: 'content'}
+]);
 
-// addPredicate('paper-toolbar', [
-//   {selector: '.middle', slot: 'middle'},
-//   {selector: '.bottom', slot: 'bottom'},
-//   {selector: '*', slot: 'top'}
-// ]);
+addPredicate('paper-toolbar', [
+  {selector: '.middle', slot: 'middle'},
+  {selector: '.bottom', slot: 'bottom'},
+  {selector: '*', slot: 'top'}
+]);
 
-// addPredicate('paper-drawer-panel', [
-//   {selector: '[drawer]', slot: 'drawer'},
-//   {selector: '[main]', slot: 'main'}
-// ]);
+addPredicate('paper-drawer-panel', [
+  {selector: '[drawer]', slot: 'drawer'},
+  {selector: '[main]', slot: 'main'}
+]);
 
-// addPredicate('paper-icon-item', [{selector: '[item-icon]', slot:
-// 'item-icon'}]);
+addPredicate('paper-icon-item', [{selector: '[item-icon]', slot: 'item-icon'}]);
 
-// addPredicate('paper-menu-button', [
-//   {selector: '.dropdown-trigger', slot: 'dropdown-trigger'},
-//   {selector: '.dropdown-content', slot: 'dropdown-content'},
-// ]);
+addPredicate('paper-menu-button', [
+  {selector: '.dropdown-trigger', slot: 'dropdown-trigger'},
+  {selector: '.dropdown-content', slot: 'dropdown-content'},
+]);
 
-// addPredicate(
-//     'iron-dropdown',
-//     [{selector: '.dropdown-content', slot: 'dropdown-content'}]);
+addPredicate(
+    'iron-dropdown',
+    [{selector: '.dropdown-content', slot: 'dropdown-content'}]);
 
 addPredicate('paper-input', [
   {selector: '[prefix]', slot: 'prefix'},
@@ -78,6 +77,10 @@ addPredicate('paper-input-container', [
   {selector: '[add-on]', slot: 'add-on'},
   {selector: '*', slot: 'input'},
 ]);
+
+addPredicate(
+    'paper-dropdown-menu',
+    [{selector: '.dropdown-content', slot: 'dropdown-content'}]);
 
 class ContentToSlot extends HtmlRule {
   code = 'content-to-slot';
@@ -115,7 +118,19 @@ class ContentToSlot extends HtmlRule {
               parsedDocument.sourceRangeToOffsets(range);
           const originalText =
               parsedDocument.contents.slice(startOffset, endOffset);
-          const withSlotAttr = originalText.slice(0, -1) + ` slot="${slot}">`;
+          if (!originalText.endsWith('>')) {
+            // Something weird is going on, don't make any changes.
+            continue;
+          }
+          let justBeforeTagClose = -1;
+          let tagCloseSyntax = '>';
+          if (originalText.endsWith('/>')) {
+            justBeforeTagClose = -2;
+            tagCloseSyntax = '/>';
+          }
+
+          const withSlotAttr = originalText.slice(0, justBeforeTagClose) +
+              ` slot="${slot}"${tagCloseSyntax}`;
 
           fix.push({range, replacementText: withSlotAttr});
         }
