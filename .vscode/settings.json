@@ -15,5 +15,6 @@
       "url": "./lib/analysis.schema.json"
     }
   ],
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "html.format.enable": false
 }
