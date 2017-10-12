@@ -14,7 +14,7 @@
 
 import {assert} from 'chai';
 import {knuthShuffle} from 'knuth-shuffle';
-import {Analyzer, ParsedDocument, UrlLoader} from 'polymer-analyzer';
+import {Analyzer, Document, ParsedDocument, UrlLoader} from 'polymer-analyzer';
 
 import {applyEdits, Replacement} from '../warning';
 
@@ -90,7 +90,8 @@ suite('applyEdits', () => {
     memoryMap.mapFile('test.html', 'abc');
     const analyzer = new Analyzer({urlLoader: memoryMap});
     loader = async(url: string) => {
-      const document = await analyzer.analyze(url);
+      const analysis = await analyzer.analyze([url]);
+      const document = analysis.getDocument(url) as Document;
       return document.parsedDocument;
     };
   });
