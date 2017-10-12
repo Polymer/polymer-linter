@@ -17,6 +17,10 @@
 import {comparePositionAndRange, isPositionInsideRange, ParsedDocument, SourceRange, Warning} from 'polymer-analyzer';
 
 
+/**
+ * A warning that may include information on how to mechanically
+ * fix it.
+ */
 export interface FixableWarning extends Warning {
   /**
    * If the problem has a single automatic fix, this is it.
@@ -28,13 +32,23 @@ export interface FixableWarning extends Warning {
   fix?: Edit;
 }
 
-export type Edit = Array<Replacement>;
-
+/**
+ * Represents an action for replacing a range in a document with some text.
+ *
+ * This is sufficient to represent all operations on text files, including
+ * inserting and deleting text (using empty ranges or empty replacement
+ * text, respectively).
+ */
 export interface Replacement {
   range: SourceRange;
   replacementText: string;
 }
 
+
+/**
+ * A set of replacements that must all be applied as a single atomic unit.
+ */
+export type Edit = ReadonlyArray<Replacement>;
 
 export interface EditResult {
   /** The edits that had no conflicts, and are reflected in editedFiles. */
