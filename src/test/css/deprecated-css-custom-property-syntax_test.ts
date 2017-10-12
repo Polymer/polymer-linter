@@ -83,5 +83,6 @@ suite('deprecated-css-custom-property-syntax', () => {
             'deprecated-css-custom-property-syntax/before-fixes.html'),
         (await loader('deprecated-css-custom-property-syntax/after-fixes.html'))
             .contents);
+    assert.deepEqual(result.incompatibleEdits, []);
   });
 });

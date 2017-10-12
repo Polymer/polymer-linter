@@ -17,21 +17,15 @@ import {Document, ParsedCssDocument, Warning} from 'polymer-analyzer';
 import {Rule} from '../rule';
 
 /**
- * An abstract rule that operates only over Css files.
+ * An abstract rule that operates only over CSS files.
  */
 export abstract class CssRule extends Rule {
   async check(document: Document): Promise<Warning[]> {
-    const warnings = [];
-    for (const doc of document.getFeatures(
-             {kind: 'css-document', imported: false})) {
-      const parsedDocument = doc.parsedDocument;
-
-      if (!(parsedDocument instanceof ParsedCssDocument)) {
-        continue;
-      }
-      warnings.push(...await this.checkDocument(parsedDocument, doc));
+    const parsedDocument = document.parsedDocument;
+    if (!(parsedDocument instanceof ParsedCssDocument)) {
+      return [];
     }
-    return warnings;
+    return this.checkDocument(parsedDocument, document);
   }
 
   /**
