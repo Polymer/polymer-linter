@@ -18,8 +18,8 @@ import {Analyzer, FSUrlLoader} from 'polymer-analyzer';
 
 import {Linter} from '../../linter';
 import {registry} from '../../registry';
-import {applyEdits} from '../../warning';
-import {parsedLoaderFromAnalyzer, WarningPrettyPrinter} from '../util';
+import {applyEdits, makeParseLoader} from '../../warning';
+import {WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
 
@@ -76,7 +76,7 @@ suite('deprecated-css-custom-property-syntax', () => {
     const warnings = await linter.lint(
         ['deprecated-css-custom-property-syntax/before-fixes.html']);
     const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
-    const loader = parsedLoaderFromAnalyzer(analyzer);
+    const loader = makeParseLoader(await analyzer.analyze([]), analyzer);
     const result = await applyEdits(edits, loader);
     assert.deepEqual(
         result.editedFiles.get(
