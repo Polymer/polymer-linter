@@ -21,11 +21,17 @@ import {Rule} from '../rule';
  */
 export abstract class CssRule extends Rule {
   async check(document: Document): Promise<Warning[]> {
-    const parsedDocument = document.parsedDocument;
-    if (!(parsedDocument instanceof ParsedCssDocument)) {
-      return [];
+    const warnings = [];
+    const cssDocuments =
+        document.getFeatures({kind: 'css-document', imported: false});
+    for (const cssDocument of cssDocuments) {
+      if (!(cssDocument.parsedDocument instanceof ParsedCssDocument)) {
+        continue;
+      }
+      warnings.push(
+          ...await this.checkDocument(cssDocument.parsedDocument, cssDocument));
     }
-    return this.checkDocument(parsedDocument, document);
+    return warnings;
   }
 
   /**

@@ -59,6 +59,11 @@ export class Linter {
   private async _lintDocuments(documents: Iterable<Document>) {
     const warnings: FixableWarning[] = [];
     for (const document of documents) {
+      if (document.isInline) {
+        // We lint the toplevel documents. If a rule wants to check inline
+        // documents, it can. getFeatures makes that pretty easy.
+        continue;
+      }
       for (const rule of this._rules) {
         try {
           warnings.push(...await rule.check(document));
@@ -77,6 +82,7 @@ export class Linter {
 
   private async _analyzeAll(files: string[]) {
     const analysis = await this._analyzer.analyze(files);
+    const documents = [];
     const warnings = [];
 
 
@@ -85,14 +91,11 @@ export class Linter {
       if (!result) {
         continue;
       } else if (result instanceof Document) {
+        documents.push(result);
       } else {
         warnings.push(result);
       }
     }
-
-    const urlSet = new Set(files.map((f) => this._analyzer.resolveUrl(f)));
-    const documents = [...analysis.getFeatures({kind: 'document'})].filter(
-        (d) => urlSet.has(d.url));
 
     return {documents, warnings};
   }
