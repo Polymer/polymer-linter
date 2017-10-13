@@ -169,11 +169,13 @@ function areRangesEqual(a: SourceRange, b: SourceRange) {
       a.end.line === b.end.line && a.end.column === b.end.column;
 }
 
-export function makeParseLoader(analysis: Analysis, analyzer: Analyzer) {
+export function makeParseLoader(analyzer: Analyzer, analysis?: Analysis) {
   return async(url: string) => {
-    const cachedResult = analysis.getDocument(url);
-    if (cachedResult instanceof Document) {
-      return cachedResult.parsedDocument;
+    if (analysis) {
+      const cachedResult = analysis.getDocument(url);
+      if (cachedResult instanceof Document) {
+        return cachedResult.parsedDocument;
+      }
     }
     const result = (await analyzer.analyze([url])).getDocument(url);
     if (result instanceof Document) {

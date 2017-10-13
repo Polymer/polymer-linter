@@ -76,7 +76,7 @@ suite('deprecated-css-custom-property-syntax', () => {
     const warnings = await linter.lint(
         ['deprecated-css-custom-property-syntax/before-fixes.html']);
     const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
-    const loader = makeParseLoader(await analyzer.analyze([]), analyzer);
+    const loader = makeParseLoader(analyzer, await analyzer.analyze([]));
     const result = await applyEdits(edits, loader);
     assert.deepEqual(
         result.editedFiles.get(
