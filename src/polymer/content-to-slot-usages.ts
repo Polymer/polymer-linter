@@ -25,12 +25,12 @@ import stripIndent = require('strip-indent');
 
 const p = dom5.predicates;
 
-const config =
+const staticConfig =
     new Map<string, Array<{predicate: dom5.Predicate, slot: string}>>();
 
 function addPredicate(
     tagname: string, slots: Array<{selector: string, slot: string}>) {
-  config.set(
+  staticConfig.set(
       tagname, slots.map((s) => ({
                            predicate: simpleSelectorToPredicate(s.selector),
                            slot: s.slot
@@ -84,6 +84,35 @@ addPredicate(
     'paper-dropdown-menu',
     [{selector: '.dropdown-content', slot: 'dropdown-content'}]);
 
+function getContentDescriptors(tagName: string, document: Document):
+    Array<{slot: string, predicate: dom5.Predicate}>|undefined {
+  const descriptors = [];
+  const [element, ] = document.getFeatures({
+    kind: 'polymer-element',
+    id: tagName,
+    imported: true,
+    externalPackages: true
+  });
+  if (element && element.domModule) {
+    for (const slot of element.slots) {
+      if (slot.astNode) {
+        const selector =
+            dom5.getAttribute(slot.astNode, 'old-content-selector');
+        if (!selector) {
+          continue;
+        }
+        descriptors.push(
+            {predicate: simpleSelectorToPredicate(selector), slot: slot.name});
+      }
+    }
+  }
+
+  if (descriptors.length > 0) {
+    return descriptors;
+  }
+  return staticConfig.get(tagName);
+}
+
 class ContentToSlot extends HtmlRule {
   code = 'content-to-slot-usages';
   description = stripIndent(`
@@ -106,7 +135,8 @@ class ContentToSlot extends HtmlRule {
       warnings: FixableWarning[]) {
     const references = document.getFeatures({kind: 'element-reference'});
     for (const reference of references) {
-      const contentDescriptors = config.get(reference.tagName);
+      const contentDescriptors =
+          getContentDescriptors(reference.tagName, document);
       if (!contentDescriptors) {
         continue;
       }
