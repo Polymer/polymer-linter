@@ -58,7 +58,6 @@ suite(code, () => {
     const warnings = await linter.lint([`${code}/before-fixes.html`]);
     const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
     const loader = makeParseLoader(analyzer, await analyzer.analyze([]));
-    console.log(JSON.stringify(edits, null, 2));
     const result = await applyEdits(edits, loader);
     assert.deepEqual(result.incompatibleEdits, []);
     assert.deepEqual(
