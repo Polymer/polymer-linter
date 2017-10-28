@@ -14,7 +14,7 @@
 
 import './collections';
 
-import {Analyzer, Document, ParsedDocument, Severity, Warning, WarningCarryingException} from 'polymer-analyzer';
+import {Analyzer, Document} from 'polymer-analyzer';
 
 import {Rule} from './rule';
 import {FixableWarning} from './warning';
@@ -65,16 +65,16 @@ export class Linter {
         continue;
       }
       for (const rule of this._rules) {
-        try {
-          warnings.push(...await rule.check(document));
-        } catch (e) {
-          warnings.push(this._getWarningFromError(
-              document.parsedDocument,
-              e,
-              document.url,
-              'internal-lint-error',
-              `Internal error during linting: ${e ? e.message : e}`));
-        }
+        // try {
+        warnings.push(...await rule.check(document));
+        // } catch (e) {
+        //   warnings.push(this._getWarningFromError(
+        //       document.parsedDocument,
+        //       e,
+        //       document.url,
+        //       'internal-lint-error',
+        //       `Internal error during linting: ${e ? e.message : e}`));
+        // }
       }
     }
     return warnings;
@@ -100,19 +100,19 @@ export class Linter {
     return {documents, warnings};
   }
 
-  private _getWarningFromError(
-      parsedDocument: ParsedDocument<any, any>, e: any, file: string,
-      code: string, message: string) {
-    if (e instanceof WarningCarryingException) {
-      return e.warning;
-    }
-    return new Warning({
-      parsedDocument,
-      code,
-      message,
-      severity: Severity.WARNING,
-      sourceRange:
-          {file, start: {line: 0, column: 0}, end: {line: 0, column: 0}}
-    });
-  }
+  // private _getWarningFromError(
+  //     parsedDocument: ParsedDocument<any, any>, e: any, file: string,
+  //     code: string, message: string) {
+  //   if (e instanceof WarningCarryingException) {
+  //     return e.warning;
+  //   }
+  //   return new Warning({
+  //     parsedDocument,
+  //     code,
+  //     message,
+  //     severity: Severity.WARNING,
+  //     sourceRange:
+  //         {file, start: {line: 0, column: 0}, end: {line: 0, column: 0}}
+  //   });
+  // }
 }
