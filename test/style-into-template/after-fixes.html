@@ -1,0 +1,35 @@
+<dom-module id="foo-bar">
+  <template>
+    <style>
+    div {
+      color: blue
+    }
+  </style>
+    <div>Hello</div>
+  </template>
+  <script>
+    customElements.define('foo-bar', class extends Polymer.Element {});
+  </script>
+</dom-module>
+
+<dom-module id="bar-baz">
+  <template><style>
+    div {
+      color: blue
+    }
+  </style><div>Hello</div></template>
+  <script>
+    customElements.define('bar-baz', class extends Polymer.Element {});
+  </script>
+</dom-module>
+
+<dom-module id="zim-zam">
+
+  <template>
+    <link rel="stylesheet" href="./foo.css">
+    <div>Hello</div>
+  </template>
+  <script>
+    customElements.define('zim-zam', class extends Polymer.Element {});
+  </script>
+</dom-module>
