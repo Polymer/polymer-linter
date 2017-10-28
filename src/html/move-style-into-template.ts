@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as clone from 'clone';
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
 import {Document, ParsedHtmlDocument, Severity, SourceRange} from 'polymer-analyzer';
@@ -77,12 +78,34 @@ class MoveStyleIntoTemplate extends HtmlRule {
         const templateContentStart =
             parsedDocument.sourceRangeForStartTag(template)!.end;
 
-        const [start, end] = parsedDocument.sourceRangeToOffsets(
-            parsedDocument.sourceRangeForNode(child)!);
-        const serializedStyle = parsedDocument.contents.slice(start, end);
+        const styleIndentation = getIndentationInside(child);
+        const templateIndentation = getIndentationInside(
+            parse5.treeAdapters.default.getTemplateContent(template));
+        const clonedStyle = clone(child);
+        const contents = clonedStyle.childNodes;
+        if (styleIndentation === templateIndentation && contents != null &&
+            contents.every(dom5.isTextNode)) {
+          const additionalIndentation = '  ';
+          for (const textNode of contents) {
+            const text = dom5.getTextContent(textNode);
+            const indentedText = text.split('\n')
+                                     .map((line) => {
+                                       return line.match(/^\s/) ?
+                                           additionalIndentation + line :
+                                           line;
+                                     })
+                                     .join('\n');
+            dom5.setTextContent(textNode, indentedText);
+          }
+        }
+
+        const docFrag = parse5.treeAdapters.default.createDocumentFragment();
+        dom5.append(docFrag, clonedStyle);
+        const serializedStyle = parse5.serialize(docFrag);
+
         const edit: Replacement[] = [];
 
-        // Delete trailing whitespace we would leave behind.
+        // Delete trailing whitespace that we would leave behind.
         const prevNode = moduleChildren[moduleChildren.indexOf(child)! - 1];
         if (prevNode && dom5.isTextNode(prevNode)) {
           const whitespaceReplacement =
@@ -98,19 +121,17 @@ class MoveStyleIntoTemplate extends HtmlRule {
           replacementText: ''
         });
 
-        let indentation = getIndentationInside(
-            parse5.treeAdapters.default.getTemplateContent(template));
-        if (indentation) {
-          indentation = '\n' + indentation;
-        }
         // Insert that same text inside the template element
+        const whitespaceBefore = templateIndentation ?
+            `\n${templateIndentation}` :
+            templateIndentation;
         edit.push({
           range: {
             file: parsedDocument.url,
             start: templateContentStart,
             end: templateContentStart
           },
-          replacementText: indentation + serializedStyle
+          replacementText: whitespaceBefore + serializedStyle
         });
 
         warning.fix = edit;
