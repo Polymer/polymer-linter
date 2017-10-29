@@ -71,13 +71,13 @@
 
 <dom-module id="foo-bar">
   <template>
-    <slot></slot>
     <slot name="foo" old-content-selector=".foo">
       Foo
     </slot>
     <slot name="bar" old-content-selector=".bar">
       Bar
     </slot>
+    <slot></slot>
   </template>
   <script>
     Polymer({
