@@ -27,7 +27,13 @@ import stripIndent = require('strip-indent');
 const p = dom5.predicates;
 const isStyleTag = p.OR(
     p.hasTagName('style'),
-    p.AND(p.hasTagName('link'), p.hasAttrValue('rel', 'stylesheet')));
+    p.AND(
+        p.hasTagName('link'),
+        p.OR(
+            p.hasAttrValue('rel', 'stylesheet'),
+            p.AND(
+                p.hasAttrValue('rel', 'import'),
+                p.hasAttrValue('type', 'css')))));
 
 class MoveStyleIntoTemplate extends HtmlRule {
   code = 'style-into-template';
