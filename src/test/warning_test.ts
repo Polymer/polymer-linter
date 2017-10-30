@@ -18,7 +18,7 @@ import {Analyzer, Document, InMemoryOverlayUrlLoader, ParsedDocument} from 'poly
 
 import {applyEdits, Replacement} from '../warning';
 
-suite.only('applyEdits', () => {
+suite('applyEdits', () => {
   let memoryMap: InMemoryOverlayUrlLoader;
   let loader: (url: string) => Promise<ParsedDocument<any, any>>;
 
@@ -124,5 +124,19 @@ suite.only('applyEdits', () => {
           Array.from(result.editedFiles.entries()),
           [['test.html', '0000111334']]);
     }
+  });
+
+  testName = 'can do two inserts into the same location without conflict';
+  test(testName, async() => {
+    const edits = [
+      [makeTestReplacement(0, 0, 0, 0, 'xxxx')],
+      [makeTestReplacement(0, 0, 0, 0, 'yyyy')],
+    ];
+    const result = await applyEdits(edits, loader);
+    assert.deepEqual(result.appliedEdits, edits);
+    assert.deepEqual(result.incompatibleEdits, []);
+    assert.deepEqual(
+        Array.from(result.editedFiles.entries()),
+        [['test.html', 'yyyyxxxxabc']]);
   });
 });
