@@ -16,6 +16,7 @@
 
 import {Analysis, Analyzer, comparePositionAndRange, Document, isPositionInsideRange, ParsedDocument, SourceRange, Warning} from 'polymer-analyzer';
 
+import stable = require('stable');
 
 /**
  * A warning that may include information on how to mechanically
@@ -86,9 +87,7 @@ export async function applyEdits(
     }
   }
 
-  for (const entry of replacementsByFile) {
-    const file = entry[0];
-    const replacements = entry[1];
+  for (const [file, replacements] of replacementsByFile) {
     const document = await loader(file);
     let contents = document.contents;
     /**
@@ -96,8 +95,11 @@ export async function applyEdits(
      * so in order for their source ranges in the file to all be valid at the
      * time we apply them, we simply need to apply them starting from the end
      * of the document and working backwards to the beginning.
+     *
+     * To preserve ordering of insertions to the same position, we use a stable
+     * sort.
      */
-    replacements.sort((a, b) => {
+    stable.inplace(replacements, (a, b) => {
       const leftEdgeComp =
           comparePositionAndRange(b.range.start, a.range, true);
       if (leftEdgeComp !== 0) {
