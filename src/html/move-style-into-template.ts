@@ -25,15 +25,19 @@ import {HtmlRule} from './rule';
 import stripIndent = require('strip-indent');
 
 const p = dom5.predicates;
-const isStyleTag = p.OR(
+const styleMustBeInside = p.OR(
     p.hasTagName('style'),
-    p.AND(
-        p.hasTagName('link'),
-        p.OR(
-            p.hasAttrValue('rel', 'stylesheet'),
-            p.AND(
-                p.hasAttrValue('rel', 'import'),
-                p.hasAttrValue('type', 'css')))));
+    p.AND(p.hasTagName('link'), p.hasAttrValue('rel', 'stylesheet')));
+
+const mustBeOutsideTemplate =
+    p.AND(p.hasTagName('link'), p.hasAttrValue('rel', 'import'));
+
+// Discoveries:
+//   <style> does not work outside of template. Polymer 2.0 logs a warning.
+//   <link rel="stylesheet"> does not work outside of template.
+//       No runtime warning.
+//   <link rel="import" type="css"> *only* works outside of template.
+//       Polymer 2.0 logs a warning when you place one inside.
 
 class MoveStyleIntoTemplate extends HtmlRule {
   code = 'style-into-template';
@@ -68,7 +72,7 @@ class MoveStyleIntoTemplate extends HtmlRule {
       }
       const moduleChildren = domModule.astNode.childNodes || [];
       for (const child of moduleChildren) {
-        if (!isStyleTag(child)) {
+        if (!styleMustBeInside(child)) {
           continue;
         }
         const warning = new FixableWarning({
@@ -141,6 +145,28 @@ class MoveStyleIntoTemplate extends HtmlRule {
         });
 
         warning.fix = edit;
+      }
+
+      const linksInShadowDom = dom5.nodeWalkAll(
+          template, mustBeOutsideTemplate, [], dom5.childNodesIncludeTemplate);
+      for (const linkInShadowDom of linksInShadowDom) {
+        let message;
+        let code;
+        if (dom5.getAttribute(linkInShadowDom, 'type') === 'css') {
+          code = 'css-import-in-shadow';
+          message = 'CSS imports inside shadow roots are ignored. ' +
+              'This should be placed inside the <dom-module>, ' +
+              'not in the <template>.';
+        } else {
+          code = 'import-in-shadow';
+          message = 'Imports inside shadow roots are ignored.';
+        }
+        warnings.push(new FixableWarning({
+          code,
+          message,
+          severity: Severity.WARNING, parsedDocument,
+          sourceRange: parsedDocument.sourceRangeForNode(linkInShadowDom)!
+        }));
       }
     }
 

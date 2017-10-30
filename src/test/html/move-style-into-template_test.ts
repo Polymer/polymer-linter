@@ -49,9 +49,17 @@ suite(code, () => {
   test('warns for a file with a style outside template', async() => {
     const warnings =
         await linter.lint([`${code}/style-child-of-dom-module.html`]);
-    assert.deepEqual(warningPrinter.prettyPrint(warnings), [`
+    assert.deepEqual(warningPrinter.prettyPrint(warnings), [
+      `
   <style>
-  ~~~~~~~`]);
+  ~~~~~~~`,
+      `
+  <link rel="import" type="css" href="./foo.css">
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+      `
+  <link rel="import" href="./bar.css">
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
+    ]);
   });
 
   test('applies automatic-safe fixes', async() => {
