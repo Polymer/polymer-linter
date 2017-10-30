@@ -51,14 +51,14 @@ suite(code, () => {
         await linter.lint([`${code}/style-child-of-dom-module.html`]);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
-  <style>
-  ~~~~~~~`,
+  <link rel="import" href="./bar.css">
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
       `
   <link rel="import" type="css" href="./foo.css">
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
       `
-  <link rel="import" href="./bar.css">
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
+  <style>
+  ~~~~~~~`,
     ]);
   });
 

@@ -170,7 +170,9 @@ class MoveStyleIntoTemplate extends HtmlRule {
       }
     }
 
-    return warnings;
+    // Reverse here so that when we apply the fixes we move multiple
+    // styles into the template we preserve their order.
+    return warnings.reverse();
   }
 }
 
@@ -203,9 +205,18 @@ function getIndentationInside(parentNode: dom5.Node) {
   if (!dom5.isTextNode(firstChild)) {
     return '';
   }
-  const match = dom5.getTextContent(firstChild).match(/(^|\n)([ \t]+)/);
+  const text = dom5.getTextContent(firstChild);
+  const match = text.match(/(^|\n)([ \t]+)/);
   if (!match) {
     return '';
+  }
+  // If the it's an empty node with just one line of whitespace, like this:
+  //     <div>
+  //     </div>
+  // Then the indentation of actual content inside is one level deeper than
+  // the whitespace on that second line.
+  if (parentNode.childNodes.length === 1 && text.match(/^\n[ \t]+$/)) {
+    return match[2] + '  ';
   }
   return match[2];
 }
