@@ -47,10 +47,14 @@ suite(ruleId, () => {
       `
 <link rel="import" href="./iron-flex-layout/classes/iron-flex-layout.html">
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+      `
+<link rel="import" href="./iron-flex-layout/classes/iron-shadow-flex-layout.html">
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
-      './iron-flex-layout/classes/iron-flex-layout.html import is deprecated. Replace with ./iron-flex-layout/iron-flex-layout-classes.html import.'
+      './iron-flex-layout/classes/iron-flex-layout.html import is deprecated. Replace with ./iron-flex-layout/iron-flex-layout-classes.html import.',
+      './iron-flex-layout/classes/iron-shadow-flex-layout.html import is deprecated. Replace with ./iron-flex-layout/iron-flex-layout-classes.html import.',
     ]);
   });
 

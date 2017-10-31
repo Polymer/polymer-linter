@@ -69,6 +69,7 @@ class IronFlexLayoutClasses extends HtmlRule {
         continue;
       }
       // Does it use any of the iron-flex-layout classes?
+      // TODO(valdrin) group by style modules used instead of adding them all.
       const templateContent = treeAdapters.default.getTemplateContent(template);
       if (!dom5.query(templateContent, ironFlexLayoutClasses)) {
         continue;
