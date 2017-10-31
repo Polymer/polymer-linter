@@ -27,4 +27,5 @@ import './polymer/databind-with-unknown-property';
 import './polymer/element-before-dom-module';
 import './polymer/set-unknown-attribute';
 import './polymer/unbalanced-delimiters';
+import './polymer/iron-flex-layout-import';
 import './polymer/iron-flex-layout-classes';

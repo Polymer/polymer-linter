@@ -1,13 +1,74 @@
-<link rel="import" href="./iron-flex-layout/iron-flex-layout-classes.html">
-
-<dom-module id="my-el">
+<dom-module id="no-style">
   <template>
     <style include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning"></style>
-    <div class="layout horizontal">my el</div>
+    <div class="layout horizontal">
+      <p>lorem</p>
+      <p>ipsum</p>
+    </div>
   </template>
   <script>
     Polymer({
-      is: "my-el"
+      is: "no-style"
+    });
+  </script>
+</dom-module>
+
+
+<dom-module id="with-style">
+  <template>
+    <style include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+       :host {
+        display: block;
+      }
+    </style>
+    <div class="layout horizontal">
+      <p>lorem</p>
+      <p>ipsum</p>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      is: "with-style"
+    });
+  </script>
+</dom-module>
+
+
+<dom-module id="with-style-include">
+  <template>
+    <style include="awesome-style-module iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+       :host {
+        display: block;
+      }
+    </style>
+    <div class="layout horizontal">
+      <p>lorem</p>
+      <p>ipsum</p>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      is: "with-style-include"
+    });
+  </script>
+</dom-module>
+
+
+<dom-module id="with-partial-iron-flex-include">
+  <template>
+    <style include="awesome-style-module iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+       :host {
+        display: block;
+      }
+    </style>
+    <div class="layout horizontal-reverse">
+      <p>lorem</p>
+      <p>ipsum</p>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      is: "with-partial-iron-flex-include"
     });
   </script>
 </dom-module>

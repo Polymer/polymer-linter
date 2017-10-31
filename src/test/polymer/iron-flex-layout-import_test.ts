@@ -23,17 +23,7 @@ import {WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
 
-const ruleId = 'iron-flex-layout-classes';
-
-const warningMsg = `Missing style includes for iron-flex-layout classes. Include these style modules:
-
-            <dom-module id="my-element">
-              <template>
-                <style include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
-                  ...
-                </style>
-                ...
-              </template>`;
+const ruleId = 'iron-flex-layout-import';
 
 suite(ruleId, () => {
   let analyzer: Analyzer;
@@ -55,21 +45,12 @@ suite(ruleId, () => {
     const warnings = await linter.lint([`${ruleId}/before-fixes.html`]);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
-<dom-module id="no-style">
-~~~~~~~~~~~~~~~~~~~~~~~~~~`,
-      `
-<dom-module id="with-style">
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
-      `
-<dom-module id="with-style-include">
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
-      `
-<dom-module id="with-partial-iron-flex-include">
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+<link rel="import" href="./iron-flex-layout/classes/iron-flex-layout.html">
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
-      warningMsg, warningMsg, warningMsg, warningMsg
+      './iron-flex-layout/classes/iron-flex-layout.html import is deprecated. Replace with ./iron-flex-layout/iron-flex-layout-classes.html import.'
     ]);
   });
 

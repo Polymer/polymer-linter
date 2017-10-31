@@ -26,31 +26,30 @@ import cssWhat = require('css-what');
 
 const p = dom5.predicates;
 
-const deprecatedImport = 'iron-flex-layout/classes/iron-flex-layout.html';
-const replacementImport = 'iron-flex-layout/iron-flex-layout-classes.html';
-
-const validModules = {
-  'iron-flex': elementSelectorToPredicate('.layout.horizontal, .layout.vertical, .layout.inline, .layout.wrap, .layout.no-wrap, .layout.center, .layout.center-center, .layout.center-justified, .flex, .flex-auto, .flex-none'),
-  'iron-flex-reverse': elementSelectorToPredicate('.layout.horizontal-reverse, .layout.vertical-reverse, .layout.wrap-reverse'),
-  'iron-flex-alignment': elementSelectorToPredicate('.layout.start, .layout.center, .layout.center-center, .layout.end, .layout.baseline, .layout.start-justified, .layout.center-justified, .layout.center-center, .layout.end-justified, .layout.around-justified, .layout.justified, .self-start, .self-center, .self-end, .self-stretch, .self-baseline, .layout.start-aligned, .layout.end-aligned, .layout.center-aligned, .layout.between-aligned, .layout.around-aligned'),
-  'iron-flex-factors': elementSelectorToPredicate('.flex-1, .flex-2, .flex-3, .flex-4, .flex-5, .flex-6, .flex-7, .flex-8, .flex-9, .flex-10, .flex-11, .flex-12'),
-  'iron-positioning': elementSelectorToPredicate('.block, [hidden], .invisible, .relative, .fit, body.fullbleed, .scroll, .fixed-bottom, .fixed-left, .fixed-top, .fixed-right'),
-};
-const flexLayoutClassesSelector = p.OR(...Object.values(validModules));
-const flexLayoutModules = 'iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning';
-
+const styleIncludeModules = ['iron-flex', 'iron-flex-reverse', 'iron-flex-alignment', 'iron-flex-factors', 'iron-positioning'];
+const styleIncludeValue = styleIncludeModules.join(' ');
+const ironFlexLayoutClasses = p.OR(
+  // iron-flex
+  elementSelectorToPredicate('.layout.horizontal, .layout.vertical, .layout.inline, .layout.wrap, .layout.no-wrap, .layout.center, .layout.center-center, .layout.center-justified, .flex, .flex-auto, .flex-none'),
+  // iron-flex-reverse
+  elementSelectorToPredicate('.layout.horizontal-reverse, .layout.vertical-reverse, .layout.wrap-reverse'),
+  // iron-flex-alignment
+  elementSelectorToPredicate('.layout.start, .layout.center, .layout.center-center, .layout.end, .layout.baseline, .layout.start-justified, .layout.center-justified, .layout.center-center, .layout.end-justified, .layout.around-justified, .layout.justified, .self-start, .self-center, .self-end, .self-stretch, .self-baseline, .layout.start-aligned, .layout.end-aligned, .layout.center-aligned, .layout.between-aligned, .layout.around-aligned'),
+  // iron-flex-factors
+  elementSelectorToPredicate('.flex-1, .flex-2, .flex-3, .flex-4, .flex-5, .flex-6, .flex-7, .flex-8, .flex-9, .flex-10, .flex-11, .flex-12'),
+  // iron-positioning
+  elementSelectorToPredicate('.block, [hidden], .invisible, .relative, .fit, body.fullbleed, .scroll, .fixed-bottom, .fixed-left, .fixed-top, .fixed-right'),
+);
 
 class IronFlexLayoutClasses extends HtmlRule {
   code = 'iron-flex-layout-classes';
   description = stripIndent(`
-      Warns when classes/iron-flex-layout.html is not needed.
+      Warns when iron-flex-layout classes are used without including the style modules.
   `).trim();
 
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
     const warnings: FixableWarning[] = [];
 
-    // 1. replace import classes/iron-(shadow-)flex-layout.html with iron-flex-layout.html
-    // 2. check if uses any of the style classes
     this.convertDeclarations(parsedDocument, document, warnings);
 
     return warnings;
@@ -59,148 +58,96 @@ class IronFlexLayoutClasses extends HtmlRule {
   convertDeclarations(
       parsedDocument: ParsedHtmlDocument, document: Document,
       warnings: FixableWarning[]) {
-    const imports = document.getFeatures({ kind: 'import' });
-    for (const imp of imports) {
-      const node = imp.astNode;
-      // 1. look if it imports classes/iron-flex-layout.html
-      const href = dom5.getAttribute(node, 'href');
-      if (!href || !href.endsWith(deprecatedImport)) {
+    for (const element of document.getFeatures({ kind: 'polymer-element' })) {
+      const domModule = element.domModule;
+      if (!domModule) {
         continue;
       }
-      // 2. look if it uses the classes in the template.
-      const hrefRange = parsedDocument.sourceRangeForAttributeValue(node, 'href')!;
-      const modules = modulesUsingFlexLayoutClasses(document);
-      if (modules.length) {
-        // Replace import with the correct one.
-        const fix = [];
-        fix.push({
-          // excludeQuotes = true returns a range that is 1 index too big, so include the quotes
-          // in the range and in the replacement text.
-          replacementText: `"${href.replace(deprecatedImport, replacementImport)}"`,
-          range: hrefRange
-        });
-        // Update style include for each module
-        for (const domModule of modules) {
-          const template = dom5.query(domModule, p.hasTagName('template'))!;
-          let styleNode = dom5.query(
-            treeAdapters.default.getTemplateContent(template),
-            p.hasTagName('style'));
-          if (styleNode) {
-            if (dom5.hasAttribute(styleNode, 'include')) {
-              const includesAttr = dom5.getAttribute(styleNode, 'include')!;
-              fix.push({
-                replacementText: `"${includesAttr} ${flexLayoutModules}"`,
-                range: parsedDocument.sourceRangeForAttributeValue(styleNode, 'include')!
-              });
-            } else {
-              const tagRange = parsedDocument.sourceRangeForStartTag(styleNode)!;
-              fix.push({
-                replacementText: ` include="${flexLayoutModules}"`,
-                range: {
-                  file: tagRange.file,
-                  start: { line: tagRange.end.line, column: tagRange.end.column - 1 },
-                  end: { line: tagRange.end.line, column: tagRange.end.column - 1 }
-                }
-              });
-            }
-          } else {
-            const tagRange = parsedDocument.sourceRangeForStartTag(template)!;
-            // TODO(valdrin): indent properly would be nice...
-            fix.push({
-              replacementText: `\n<style include="${flexLayoutModules}"></style>`,
-              range: {
-                file: tagRange.file,
-                start: { line: tagRange.end.line, column: tagRange.end.column },
-                end: { line: tagRange.end.line, column: tagRange.end.column }
-              }
-            });
-          }
-        }
-        // TODO(valdrin) go through all the dependencies to see if they need the same fixes.
-        const warning = new FixableWarning({
-          code: 'iron-flex-layout-classes',
-          message:
-              `${deprecatedImport} import is deprecated. ` +
-              `Replace with ${replacementImport} import.`,
-          parsedDocument,
-          severity: Severity.WARNING,
-          sourceRange: hrefRange
-        });
-        warning.fix = fix;
-        warnings.push(warning);
-      } else {
-        // Suggest to remove the import as it's not used.
-        const warning = new FixableWarning({
-          code: 'iron-flex-layout-classes',
-          message:
-              `Remove ${deprecatedImport} import as it's deprecated ` +
-              `and not used in this module.`,
-          parsedDocument,
-          severity: Severity.WARNING,
-          sourceRange: hrefRange
-        });
-        // TODO implement fix that removes the import.
-        warnings.push(warning);
+      // Does it have a template?
+      const template = dom5.query(domModule, p.hasTagName('template'));
+      if (!template) {
+        continue;
       }
+      // Does it use any of the iron-flex-layout classes?
+      const templateContent = treeAdapters.default.getTemplateContent(template);
+      if (!dom5.query(templateContent, ironFlexLayoutClasses)) {
+        continue;
+      }
+      // Does it already have all the required style includes?
+      const styleNode = dom5.query(templateContent, p.hasTagName('style'));
+      let includes: string[] = [];
+      if (styleNode && dom5.hasAttribute(styleNode, 'include')) {
+        includes = dom5.getAttribute(styleNode, 'include')!.split(' ');
+        let hasRequiredIncludes = true;
+        styleIncludeModules.forEach((module) => {
+          if (includes.indexOf(module) === -1) {
+            includes.push(module);
+            hasRequiredIncludes = false;
+          }
+        });
+        if (hasRequiredIncludes) {
+          continue;
+        }
+      }
+
+      const warning = new FixableWarning({
+        code: 'iron-flex-layout-classes',
+        message:
+            `Missing style includes for iron-flex-layout classes. ` +
+            `Include these style modules:
+
+            <dom-module id="my-element">
+              <template>
+                <style include="${styleIncludeValue}">
+                  ...
+                </style>
+                ...
+              </template>`,
+        parsedDocument,
+        severity: Severity.WARNING,
+        sourceRange: parsedDocument.sourceRangeForStartTag(domModule)!
+      });
+      if (!styleNode) {
+        const indent = getIndentationInside(templateContent);
+        warning.fix = [{
+          replacementText: `\n${indent}<style include="${styleIncludeValue}"></style>`,
+          range: sourceRangeForPrependContent(parsedDocument, template)
+        }];
+      } else if (includes.length) {
+        warning.fix = [{
+          replacementText: `"${includes.join(' ')}"`,
+          range: parsedDocument.sourceRangeForAttributeValue(styleNode, 'include')!
+        }];
+      } else {
+        warning.fix = [{
+          replacementText: ` include="${styleIncludeValue}"`,
+          range: sourceRangeForAddAttribute(parsedDocument, styleNode)
+        }];
+      }
+      warnings.push(warning);
     }
   }
 }
 
-/**
- * Looks for dom-modules that use iron-flex-layout classes (e.g. <div class="layout horizontal">)
- */
-function modulesUsingFlexLayoutClasses(document: Document) {
-  const modules: dom5.Node[] = [];
-  for (const element of document.getFeatures({ kind: 'polymer-element' })) {
-    const domModule = element.domModule;
-    if (!domModule) {
-      continue;
-    }
-    const template = dom5.query(domModule, p.hasTagName('template'));
-    if (!template) {
-      continue;
-    }
-    if (dom5.query(
-          treeAdapters.default.getTemplateContent(template),
-          flexLayoutClassesSelector)) {
-      modules.push(domModule);
-    }
-  }
-  return modules;
+function sourceRangeForAddAttribute(parsedDocument: ParsedHtmlDocument, node: dom5.Node) {
+  const tagRange = parsedDocument.sourceRangeForStartTag(node)!;
+  return {
+    file: tagRange.file,
+    start: { line: tagRange.end.line, column: tagRange.end.column - 1 },
+    end: { line: tagRange.end.line, column: tagRange.end.column - 1 }
+  };
 }
 
-/**
- * Looks for dom-modules that use iron-flex-layout classes (e.g. <div class="layout horizontal">) without
- * including the required styles via <style include=""></style>.
- */
-// function modulesRequiringStyleIncludes(document: Document) {
-//   const modules: dom5.Node[] = [];
-//   for (const element of document.getFeatures({ kind: 'polymer-element' })) {
-//     const domModule = element.domModule;
-//     if (!domModule) {
-//       continue;
-//     }
-//     const template = dom5.query(domModule, p.hasTagName('template'));
-//     if (!template) {
-//       continue;
-//     }
-//     const templateContent = treeAdapters.default.getTemplateContent(template);
-//     const styleNode = dom5.query(templateContent, p.hasTagName('style'));
-//     const styleInclude = styleNode ? dom5.getAttribute(styleNode, 'include') || '' : '';
-//     const styleModulesToInclude = [];
-//     for (const module in validModules) {
-//       if (styleInclude.indexOf(module) === -1 &&
-//         dom5.query(templateContent, validModules[module])) {
-//         styleModulesToInclude.push(module);
-//       }
-//     }
-//     if (styleModulesToInclude.length) {
-//       modules.push(domModule);
-//     }
-//   }
-//   return modules;
-// }
+function sourceRangeForPrependContent(parsedDocument: ParsedHtmlDocument, node: dom5.Node) {
+  const tagRange = parsedDocument.sourceRangeForStartTag(node)!;
+  return {
+    file: tagRange.file,
+    start: { line: tagRange.end.line, column: tagRange.end.column },
+    end: { line: tagRange.end.line, column: tagRange.end.column }
+  };
+}
 
+registry.register(new IronFlexLayoutClasses());
 
 // TODO(valdrin) move this in commons or something.
 /* ---- START copy-pasted from content-to-slot-usages. --- */
@@ -268,4 +215,29 @@ function attributeSelectorToPredicate(selector: cssWhat.Attribute):
 }
 /* ---- END copy-paste from content-to-slot-usages. --- */
 
-registry.register(new IronFlexLayoutClasses());
+// TODO(valdrin) move this in commons or something.
+/* ---- START copy-paste from move-style-into-template. ---- */
+function getIndentationInside(parentNode: dom5.Node) {
+  if (!parentNode.childNodes || parentNode.childNodes.length === 0) {
+    return '';
+  }
+  const firstChild = parentNode.childNodes[0];
+  if (!dom5.isTextNode(firstChild)) {
+    return '';
+  }
+  const text = dom5.getTextContent(firstChild);
+  const match = text.match(/(^|\n)([ \t]+)/);
+  if (!match) {
+    return '';
+  }
+  // If the it's an empty node with just one line of whitespace, like this:
+  //     <div>
+  //     </div>
+  // Then the indentation of actual content inside is one level deeper than
+  // the whitespace on that second line.
+  if (parentNode.childNodes.length === 1 && text.match(/^\n[ \t]+$/)) {
+    return match[2] + '  ';
+  }
+  return match[2];
+}
+/* ---- END copy-paste from move-style-into-template. ---- */
