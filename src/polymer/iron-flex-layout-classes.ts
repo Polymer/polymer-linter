@@ -26,20 +26,22 @@ import cssWhat = require('css-what');
 
 const p = dom5.predicates;
 
-const styleIncludeModules = ['iron-flex', 'iron-flex-reverse', 'iron-flex-alignment', 'iron-flex-factors', 'iron-positioning'];
-const styleIncludeValue = styleIncludeModules.join(' ');
-const ironFlexLayoutClasses = p.OR(
-  // iron-flex
-  elementSelectorToPredicate('.layout.horizontal, .layout.vertical, .layout.inline, .layout.wrap, .layout.no-wrap, .layout.center, .layout.center-center, .layout.center-justified, .flex, .flex-auto, .flex-none'),
-  // iron-flex-reverse
-  elementSelectorToPredicate('.layout.horizontal-reverse, .layout.vertical-reverse, .layout.wrap-reverse'),
-  // iron-flex-alignment
-  elementSelectorToPredicate('.layout.start, .layout.center, .layout.center-center, .layout.end, .layout.baseline, .layout.start-justified, .layout.center-justified, .layout.center-center, .layout.end-justified, .layout.around-justified, .layout.justified, .self-start, .self-center, .self-end, .self-stretch, .self-baseline, .layout.start-aligned, .layout.end-aligned, .layout.center-aligned, .layout.between-aligned, .layout.around-aligned'),
-  // iron-flex-factors
-  elementSelectorToPredicate('.flex-1, .flex-2, .flex-3, .flex-4, .flex-5, .flex-6, .flex-7, .flex-8, .flex-9, .flex-10, .flex-11, .flex-12'),
-  // iron-positioning
-  elementSelectorToPredicate('.block, [hidden], .invisible, .relative, .fit, body.fullbleed, .scroll, .fixed-bottom, .fixed-left, .fixed-top, .fixed-right'),
-);
+const styleModules = [{
+  name: 'iron-flex',
+  selector: elementSelectorToPredicate('.layout.horizontal, .layout.vertical, .layout.inline, .layout.wrap, .layout.no-wrap, .layout.center, .layout.center-center, .layout.center-justified, .flex, .flex-auto, .flex-none')
+}, {
+  name: 'iron-flex-reverse',
+  selector: elementSelectorToPredicate('.layout.horizontal-reverse, .layout.vertical-reverse, .layout.wrap-reverse')
+}, {
+  name: 'iron-flex-alignment',
+  selector: elementSelectorToPredicate('.layout.start, .layout.center, .layout.center-center, .layout.end, .layout.baseline, .layout.start-justified, .layout.center-justified, .layout.center-center, .layout.end-justified, .layout.around-justified, .layout.justified, .self-start, .self-center, .self-end, .self-stretch, .self-baseline, .layout.start-aligned, .layout.end-aligned, .layout.center-aligned, .layout.between-aligned, .layout.around-aligned')
+}, {
+  name: 'iron-flex-factors',
+  selector: elementSelectorToPredicate('.flex-1, .flex-2, .flex-3, .flex-4, .flex-5, .flex-6, .flex-7, .flex-8, .flex-9, .flex-10, .flex-11, .flex-12')
+}, {
+  name: 'iron-positioning',
+  selector: elementSelectorToPredicate('.block, [hidden], .invisible, .relative, .fit, body.fullbleed, .scroll, .fixed-bottom, .fixed-left, .fixed-top, .fixed-right')
+}];
 
 class IronFlexLayoutClasses extends HtmlRule {
   code = 'iron-flex-layout-classes';
@@ -69,41 +71,33 @@ class IronFlexLayoutClasses extends HtmlRule {
         continue;
       }
       // Does it use any of the iron-flex-layout classes?
-      // TODO(valdrin) group by style modules used instead of adding them all.
       const templateContent = treeAdapters.default.getTemplateContent(template);
-      if (!dom5.query(templateContent, ironFlexLayoutClasses)) {
+      const usedModules = styleModules.filter((m) => !!dom5.query(templateContent, m.selector));
+      if (!usedModules.length) {
         continue;
       }
-      // Does it already have all the required style includes?
+      // Does it already have all the required style modules?
       const styleNode = dom5.query(templateContent, p.hasTagName('style'));
-      let includes: string[] = [];
+      let currentModules: string[] = [];
       if (styleNode && dom5.hasAttribute(styleNode, 'include')) {
-        includes = dom5.getAttribute(styleNode, 'include')!.split(' ');
-        let hasRequiredIncludes = true;
-        styleIncludeModules.forEach((module) => {
-          if (includes.indexOf(module) === -1) {
-            includes.push(module);
-            hasRequiredIncludes = false;
-          }
-        });
-        if (hasRequiredIncludes) {
-          continue;
-        }
+        currentModules = dom5.getAttribute(styleNode, 'include')!.split(' ');
       }
-
+      const missingModules = usedModules
+        .filter((m) => currentModules.indexOf(m.name) === -1)
+        .map((m) => m.name)
+        .join(' ');
+      if (!missingModules.length) {
+        continue;
+      }
+      const multi = missingModules.indexOf(' ') > -1;
       const warning = new FixableWarning({
         code: 'iron-flex-layout-classes',
         message:
-            `Missing style includes for iron-flex-layout classes. ` +
-            `Include these style modules:
+        `${multi ? 'These' : 'This'} style module${multi ? 's are' : ' is'} used but not imported:
 
-            <dom-module id="my-element">
-              <template>
-                <style include="${styleIncludeValue}">
-                  ...
-                </style>
-                ...
-              </template>`,
+  ${missingModules}
+
+Import ${multi ? 'them' : 'it'} in the template style include.`,
         parsedDocument,
         severity: Severity.WARNING,
         sourceRange: parsedDocument.sourceRangeForStartTag(domModule)!
@@ -111,23 +105,32 @@ class IronFlexLayoutClasses extends HtmlRule {
       if (!styleNode) {
         const indent = getIndentationInside(templateContent);
         warning.fix = [{
-          replacementText: `\n${indent}<style include="${styleIncludeValue}"></style>`,
+          replacementText: `\n${indent}<style include="${missingModules}"></style>`,
           range: sourceRangeForPrependContent(parsedDocument, template)
         }];
-      } else if (includes.length) {
+      } else if (currentModules.length) {
         warning.fix = [{
-          replacementText: `"${includes.join(' ')}"`,
-          range: parsedDocument.sourceRangeForAttributeValue(styleNode, 'include')!
+          replacementText: ` ${missingModules}`,
+          range: sourceRangeForAppendAttributeValue(parsedDocument, styleNode, 'include')!
         }];
       } else {
         warning.fix = [{
-          replacementText: ` include="${styleIncludeValue}"`,
+          replacementText: ` include="${missingModules}"`,
           range: sourceRangeForAddAttribute(parsedDocument, styleNode)
         }];
       }
       warnings.push(warning);
     }
   }
+}
+
+function sourceRangeForAppendAttributeValue(parsedDocument: ParsedHtmlDocument, node: dom5.Node, attr: string) {
+  const tagRange = parsedDocument.sourceRangeForAttributeValue(node, attr)!;
+  return {
+    file: tagRange.file,
+    start: { line: tagRange.end.line, column: tagRange.end.column - 1 },
+    end: { line: tagRange.end.line, column: tagRange.end.column - 1 }
+  };
 }
 
 function sourceRangeForAddAttribute(parsedDocument: ParsedHtmlDocument, node: dom5.Node) {
@@ -207,7 +210,7 @@ function attributeSelectorToPredicate(selector: cssWhat.Attribute):
     case 'any':
       return (el) => {
         const attrValue = dom5.getAttribute(el, selector.name);
-        return attrValue != null && attrValue.includes(selector.value);
+        return attrValue != null && attrValue.currentModules(selector.value);
       };
   }
   const never: never = selector.action;

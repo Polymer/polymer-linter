@@ -25,16 +25,6 @@ const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
 
 const ruleId = 'iron-flex-layout-classes';
 
-const warningMsg = `Missing style includes for iron-flex-layout classes. Include these style modules:
-
-            <dom-module id="my-element">
-              <template>
-                <style include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
-                  ...
-                </style>
-                ...
-              </template>`;
-
 suite(ruleId, () => {
   let analyzer: Analyzer;
   let warningPrinter: WarningPrettyPrinter;
@@ -61,15 +51,34 @@ suite(ruleId, () => {
 <dom-module id="with-style">
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
       `
-<dom-module id="with-style-include">
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+<dom-module id="with-include">
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
       `
-<dom-module id="with-partial-iron-flex-include">
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+<dom-module id="with-partial-include">
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
-      warningMsg, warningMsg, warningMsg, warningMsg
+      `This style module is used but not imported:
+
+  iron-flex
+
+Import it in the template style include.`,
+      `This style module is used but not imported:
+
+  iron-flex
+
+Import it in the template style include.`,
+      `This style module is used but not imported:
+
+  iron-flex
+
+Import it in the template style include.`,
+      `These style modules are used but not imported:
+
+  iron-flex-reverse iron-flex-factors
+
+Import them in the template style include.`,
     ]);
   });
 

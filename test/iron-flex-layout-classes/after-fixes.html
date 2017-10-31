@@ -1,4 +1,4 @@
-<dom-module id="no-style-no-layout">
+<dom-module id="no-classes">
   <template>
     <div>
       <p>lorem</p>
@@ -7,7 +7,7 @@
   </template>
   <script>
     Polymer({
-      is: "no-style-no-layout"
+      is: "no-classes"
     });
   </script>
 </dom-module>
@@ -15,7 +15,7 @@
 
 <dom-module id="no-style">
   <template>
-    <style include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning"></style>
+    <style include="iron-flex"></style>
     <div class="layout horizontal">
       <p>lorem</p>
       <p>ipsum</p>
@@ -31,7 +31,7 @@
 
 <dom-module id="with-style">
   <template>
-    <style include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+    <style include="iron-flex">
        :host {
         display: block;
       }
@@ -49,9 +49,9 @@
 </dom-module>
 
 
-<dom-module id="with-style-include">
+<dom-module id="with-include">
   <template>
-    <style include="awesome-style-module iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+    <style include="awesome-style iron-flex">
        :host {
         display: block;
       }
@@ -63,27 +63,27 @@
   </template>
   <script>
     Polymer({
-      is: "with-style-include"
+      is: "with-include"
     });
   </script>
 </dom-module>
 
 
-<dom-module id="with-partial-iron-flex-include">
+<dom-module id="with-partial-include">
   <template>
-    <style include="awesome-style-module iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+    <style include="awesome-style iron-flex iron-flex-reverse iron-flex-factors">
        :host {
         display: block;
       }
     </style>
     <div class="layout horizontal-reverse">
-      <p>lorem</p>
-      <p>ipsum</p>
+      <p class="layout vertical">lorem</p>
+      <p class="flex-1">ipsum</p>
     </div>
   </template>
   <script>
     Polymer({
-      is: "with-partial-iron-flex-include"
+      is: "with-partial-include"
     });
   </script>
 </dom-module>
