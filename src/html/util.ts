@@ -12,6 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as dom5 from 'dom5';
+
 // Attributes that are on every HTMLElement.
 export const sharedAttributes = new Set([
   // From https://html.spec.whatwg.org/multipage/dom.html#htmlelement
@@ -110,3 +112,22 @@ export const sharedProperties = new Set([
 
   'is',
 ]);
+
+/**
+ * If the given node is a text node, add the given addition indentation to
+ * each line of its contents.
+ */
+export function addIndentation(
+    textNode: dom5.Node, additionalIndentation = '  ') {
+  if (!dom5.isTextNode(textNode)) {
+    return;
+  }
+  const text = dom5.getTextContent(textNode);
+  const indentedText =
+      text.split('\n')
+          .map((line) => {
+            return line.length > 0 ? additionalIndentation + line : line;
+          })
+          .join('\n');
+  dom5.setTextContent(textNode, indentedText);
+}

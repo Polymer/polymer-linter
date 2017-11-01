@@ -21,6 +21,7 @@ import {registry} from '../registry';
 import {FixableWarning, Replacement} from '../warning';
 
 import {HtmlRule} from './rule';
+import {addIndentation} from './util';
 
 import stripIndent = require('strip-indent');
 
@@ -65,12 +66,11 @@ class MoveStyleIntoTemplate extends HtmlRule {
     const warnings: FixableWarning[] = [];
     const domModules = document.getFeatures({kind: 'dom-module'});
     for (const domModule of domModules) {
-      const template = (domModule.astNode.childNodes ||
-                        []).find((n) => n.tagName === 'template');
+      const moduleChildren = domModule.astNode.childNodes || [];
+      const template = moduleChildren.find((n) => n.tagName === 'template');
       if (!template) {
         continue;
       }
-      const moduleChildren = domModule.astNode.childNodes || [];
       for (const child of moduleChildren) {
         if (!styleMustBeInside(child)) {
           continue;
@@ -93,19 +93,9 @@ class MoveStyleIntoTemplate extends HtmlRule {
             parse5.treeAdapters.default.getTemplateContent(template));
         const clonedStyle = clone(child);
         const contents = clonedStyle.childNodes;
-        if (styleIndentation === templateIndentation && contents != null &&
-            contents.every(dom5.isTextNode)) {
-          const additionalIndentation = '  ';
+        if (styleIndentation === templateIndentation && contents != null) {
           for (const textNode of contents) {
-            const text = dom5.getTextContent(textNode);
-            const indentedText = text.split('\n')
-                                     .map((line) => {
-                                       return line.match(/^\s/) ?
-                                           additionalIndentation + line :
-                                           line;
-                                     })
-                                     .join('\n');
-            dom5.setTextContent(textNode, indentedText);
+            addIndentation(textNode, '  ');
           }
         }
 
