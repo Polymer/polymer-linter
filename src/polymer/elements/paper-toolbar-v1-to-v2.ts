@@ -155,10 +155,11 @@ class PaperToolbarV1ToV2 extends HtmlRule {
         const trimmedOffset = fullText.indexOf(trimmedText);
 
         const replacementText =
+          // leading whitespace:
           fullText.substring(0, trimmedOffset) +
-          '<span slot="top">' +
-          trimmedText +
-          '</span>' +
+          // wrapper and trimmed text:
+          '<span slot="top">' + trimmedText + '</span>' +
+          // trailing whitespace:
           fullText.substring(trimmedOffset + trimmedText.length);
 
         warning.fix = [{
