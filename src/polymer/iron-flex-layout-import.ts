@@ -21,8 +21,13 @@ import {FixableWarning} from '../warning';
 
 import stripIndent = require('strip-indent');
 
-const deprecatedBase = 'iron-flex-layout/classes';
+const deprecatedImports = /iron-flex-layout\/classes\/iron-(shadow-)?flex-layout.html/;
 const replacementImport = 'iron-flex-layout/iron-flex-layout-classes.html';
+
+const p = dom5.predicates;
+
+const isImport = p.AND(
+    p.hasTagName('link'), p.hasAttrValue('rel', 'import'), p.hasAttr('href'));
 
 class IronFlexLayoutImport extends HtmlRule {
   code = 'iron-flex-layout-import';
@@ -39,19 +44,18 @@ class IronFlexLayoutImport extends HtmlRule {
   }
 
   convertDeclarations(
-      parsedDocument: ParsedHtmlDocument, document: Document,
+      parsedDocument: ParsedHtmlDocument, _: Document,
       warnings: FixableWarning[]) {
-    const imports = document.getFeatures({kind: 'import'});
+    const imports = dom5.queryAll(parsedDocument.ast, isImport);
     for (const imp of imports) {
-      const href = dom5.getAttribute(imp.astNode, 'href') || '';
-      const i = href.indexOf(deprecatedBase);
-      if (i === -1) {
+      const href = dom5.getAttribute(imp, 'href')!;
+      if (!deprecatedImports.test(href)) {
         continue;
       }
-      const correctImport = href.replace(href.substr(i), replacementImport);
+      const correctImport = href.replace(deprecatedImports, replacementImport);
       // Use excludeQuotes = true when Polymer/polymer-analyzer#737 is fixed
       const hrefRange =
-          parsedDocument.sourceRangeForAttributeValue(imp.astNode, 'href')!;
+          parsedDocument.sourceRangeForAttributeValue(imp, 'href')!;
       const warning = new FixableWarning({
         code: 'iron-flex-layout-import',
         message: `${href} import is deprecated. ` +

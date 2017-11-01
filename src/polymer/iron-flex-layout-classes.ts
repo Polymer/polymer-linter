@@ -98,6 +98,8 @@ class IronFlexLayoutClasses extends HtmlRule {
       if (!missingModules) {
         continue;
       }
+      // TODO(valdrin): update the warning location to be at the spot where
+      // the class is used.
       const warning = createWarning(parsedDocument, domModule, missingModules);
       const styleNode = dom5.query(templateContent, p.hasTagName('style'));
       if (!styleNode) {
@@ -125,11 +127,16 @@ ${indent}<style include="${missingModules}"></style>`,
     if (!parsedDocument.ast)
       return;
     const body = dom5.query(parsedDocument.ast, p.hasTagName('body'));
-    if (!body)
+    // Handle files like `<dom-module></dom-module> <body><p>hello</p></body>`
+    // where a "fake" body node would be created by dom-module. Skip these
+    // cases, dear user please write proper HTML ¯\_(ツ)_/¯
+    if (!body || !body.__location)
       return;
     const missingModules = getMissingStyleModules(body);
     if (!missingModules)
       return;
+    // TODO(valdrin): update the warning location to be at the spot where
+    // the class is used.
     const warning = createWarning(parsedDocument, body, missingModules);
     const indent = getIndentationInside(body);
     warning.fix = [{
