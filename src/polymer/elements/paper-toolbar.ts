@@ -36,70 +36,103 @@ class PaperToolbar extends HtmlRule {
       dom5.childNodesIncludeTemplate
     );
 
+    const checkNode = (node: dom5.Node) => {
+      // Elements without a slot attribute, which were previously distributed
+      // into a default slot, now need to have `slot="top"`.
+      if (node.tagName !== undefined && !dom5.hasAttribute(node, 'slot')) {
+        const startTagSourceRange =
+          parsedDocument.sourceRangeForStartTag(node)!;
+        const warning = new FixableWarning({
+          parsedDocument,
+          code: this.code,
+          message: '<paper-toolbar> no longer has a default slot: this ' +
+            'element will not appear in the composed tree. Add `slot="top"` ' +
+            'to distribute to the same position as the previous default ' +
+            'content.',
+          severity: Severity.WARNING,
+          sourceRange: startTagSourceRange
+        });
+
+        const [startOffset, endOffset]
+          = parsedDocument.sourceRangeToOffsets(startTagSourceRange);
+
+        const startTagText =
+          parsedDocument.contents.slice(startOffset, endOffset);
+        const isSelfClosing = startTagText.endsWith('/>');
+
+        warning.fix = [{
+          range: startTagSourceRange,
+          replacementText: startTagText.slice(0, isSelfClosing ? -2 : -1) +
+            ` slot="top"` + (isSelfClosing ? '/' : '') + '>',
+        }];
+
+        warnings.push(warning);
+      }
+
+      // Non-whitespace-only text nodes, which were previously distributed into
+      // a default slot, now need to be wrapped in `<span slot="top">...</span>`.
+      if (node.nodeName === '#text' && node.value!.trim() !== '') {
+        const textNodeSourceRange = parsedDocument.sourceRangeForNode(node)!;
+
+        const warning = new FixableWarning({
+          parsedDocument,
+          code: this.code,
+          message: '<paper-toolbar> no longer has a default slot: this ' +
+            'text node will not appear in the composed tree. Wrap with ' +
+            '`<span slot="top">...</span>` to distribute to the same ' +
+            'position as the previous default content.',
+          severity: Severity.WARNING,
+          sourceRange: textNodeSourceRange
+        });
+
+        const fullText = node.value!;
+        const trimmedText = fullText.trim();
+        const trimmedOffset = fullText.indexOf(trimmedText);
+
+        const replacementText =
+          fullText.substring(0, trimmedOffset) +
+          '<span slot="top">' +
+          trimmedText +
+          '</span>' +
+          fullText.substring(trimmedOffset + trimmedText.length);
+
+        warning.fix = [{
+          range: textNodeSourceRange,
+          replacementText,
+        }];
+
+        warnings.push(warning);
+      }
+    };
+
     for (const paperToolbar of paperToolbars) {
-      for (const child of paperToolbar.childNodes!) {
-        if (child.tagName !== undefined && !dom5.hasAttribute(child, 'slot')) {
-          const startTagSourceRange =
-            parsedDocument.sourceRangeForStartTag(child)!;
-          const warning = new FixableWarning({
-            parsedDocument,
-            code: this.code,
-            message: '<paper-toolbar> no longer has a default slot: this ' +
-              'element will not appear in the composed tree. Add `slot="top"` ' +
-              'to distribute to the same position as the previous default ' +
-              'content.',
-            severity: Severity.WARNING,
-            sourceRange: startTagSourceRange
-          });
+      let suspectNodes = Array.from(paperToolbar.childNodes!);
 
-          const [startOffset, endOffset]
-            = parsedDocument.sourceRangeToOffsets(startTagSourceRange);
+      const nodeIsTemplateExtension = (node: dom5.Node) => {
+        if (!node.attrs) return false;
 
-          const startTagText =
-            parsedDocument.contents.slice(startOffset, endOffset);
-          const isSelfClosing = startTagText.endsWith('/>');
+        const isAttr = node.attrs.find(attr => attr.name === 'is');
+        return (
+          node.tagName === 'template' &&
+          isAttr &&
+          ['dom-bind', 'dom-if', 'dom-repeat'].includes(isAttr.value)
+        );
+      };
 
-          warning.fix = [{
-            range: startTagSourceRange,
-            replacementText: startTagText.slice(0, isSelfClosing ? -2 : -1) +
-              ` slot="top"` + (isSelfClosing ? '/' : '') + '>',
-          }];
+      while (suspectNodes.some(nodeIsTemplateExtension)) {
+        suspectNodes = suspectNodes
+          .map(node => {
+            if (nodeIsTemplateExtension(node)) {
+              return Array.from(dom5.childNodesIncludeTemplate(node)!);
+            }
 
-          warnings.push(warning);
-        }
+            return [node];
+          })
+          .reduce((a, b) => a.concat(b), []);
+      }
 
-        if (child.nodeName === '#text' && child.value!.trim() !== '') {
-          const textNodeSourceRange = parsedDocument.sourceRangeForNode(child)!;
-
-          const warning = new FixableWarning({
-            parsedDocument,
-            code: this.code,
-            message: '<paper-toolbar> no longer has a default slot: this ' +
-              'text node will not appear in the composed tree. Wrap with ' +
-              '`<span slot="top">...</span>` to distribute to the same ' +
-              'position as the previous default content.',
-            severity: Severity.WARNING,
-            sourceRange: textNodeSourceRange
-          });
-
-          const fullText = child.value!;
-          const trimmedText = fullText.trim();
-          const trimmedOffset = fullText.indexOf(trimmedText);
-
-          const replacementText =
-            fullText.substring(0, trimmedOffset) +
-            '<span slot="top">' +
-            trimmedText +
-            '</span>' +
-            fullText.substring(trimmedOffset + trimmedText.length);
-
-          warning.fix = [{
-            range: textNodeSourceRange,
-            replacementText,
-          }];
-
-          warnings.push(warning);
-        }
+      for (const node of suspectNodes) {
+        checkNode(node);
       }
     }
 
