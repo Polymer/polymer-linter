@@ -45,17 +45,20 @@ suite(ruleId, () => {
     const warnings = await linter.lint([`${ruleId}/before-fixes.html`]);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
-<dom-module id="no-style">
-~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+  <dom-module id="no-style">
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~`,
       `
-<dom-module id="with-style">
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+  <dom-module id="with-style">
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
       `
-<dom-module id="with-include">
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+  <dom-module id="with-include">
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
       `
-<dom-module id="with-partial-include">
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+  <dom-module id="with-partial-include">
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+      `
+<body class="fullbleed">
+~~~~~~~~~~~~~~~~~~~~~~~~`,
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
@@ -79,6 +82,11 @@ Import it in the template style include.`,
   iron-flex-reverse iron-flex-factors
 
 Import them in the template style include.`,
+      `Style module is used but not imported:
+
+  iron-positioning
+
+Import it in the template style include.`,
     ]);
   });
 

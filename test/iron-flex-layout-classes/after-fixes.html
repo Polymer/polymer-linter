@@ -1,89 +1,101 @@
-<dom-module id="no-classes">
-  <template>
-    <div>
-      <p>lorem</p>
-      <p>ipsum</p>
-    </div>
-  </template>
-  <script>
-    Polymer({
-      is: "no-classes"
-    });
-  </script>
-</dom-module>
+<html>
+
+<body class="fullbleed">
+  <custom-style>
+    <style is="custom-style" include="iron-positioning"></style>
+  </custom-style>
+  <p>main doc</p>
+
+  <dom-module id="no-classes">
+    <template>
+      <div>
+        <p>lorem</p>
+        <p>ipsum</p>
+      </div>
+    </template>
+    <script>
+      Polymer({
+        is: "no-classes"
+      });
+    </script>
+  </dom-module>
 
 
-<dom-module id="no-style">
-  <template>
-    <style include="iron-flex"></style>
-    <div class="layout horizontal">
-      <p>lorem</p>
-      <p>ipsum</p>
-    </div>
-  </template>
-  <script>
-    Polymer({
-      is: "no-style"
-    });
-  </script>
-</dom-module>
+  <dom-module id="no-style">
+    <template>
+      <style include="iron-flex"></style>
+      <div class="layout horizontal">
+        <p>lorem</p>
+        <p>ipsum</p>
+      </div>
+    </template>
+    <script>
+      Polymer({
+        is: "no-style"
+      });
+    </script>
+  </dom-module>
 
 
-<dom-module id="with-style">
-  <template>
-    <style include="iron-flex">
-       :host {
-        display: block;
-      }
-    </style>
-    <div class="layout horizontal">
-      <p>lorem</p>
-      <p>ipsum</p>
-    </div>
-  </template>
-  <script>
-    Polymer({
-      is: "with-style"
-    });
-  </script>
-</dom-module>
+  <dom-module id="with-style">
+    <template>
+      <style include="iron-flex">
+         :host {
+          display: block;
+        }
+      </style>
+      <div class="layout horizontal">
+        <p>lorem</p>
+        <p>ipsum</p>
+      </div>
+    </template>
+    <script>
+      Polymer({
+        is: "with-style"
+      });
+    </script>
+  </dom-module>
 
 
-<dom-module id="with-include">
-  <template>
-    <style include="awesome-style iron-flex">
-       :host {
-        display: block;
-      }
-    </style>
-    <div class="layout horizontal">
-      <p>lorem</p>
-      <p>ipsum</p>
-    </div>
-  </template>
-  <script>
-    Polymer({
-      is: "with-include"
-    });
-  </script>
-</dom-module>
+  <dom-module id="with-include">
+    <template>
+      <style include="awesome-style iron-flex">
+         :host {
+          display: block;
+        }
+      </style>
+      <div class="layout horizontal">
+        <p>lorem</p>
+        <p>ipsum</p>
+      </div>
+    </template>
+    <script>
+      Polymer({
+        is: "with-include"
+      });
+    </script>
+  </dom-module>
 
 
-<dom-module id="with-partial-include">
-  <template>
-    <style include="awesome-style iron-flex iron-flex-reverse iron-flex-factors">
-       :host {
-        display: block;
-      }
-    </style>
-    <div class="layout horizontal-reverse">
-      <p class="layout vertical">lorem</p>
-      <p class="flex-1">ipsum</p>
-    </div>
-  </template>
-  <script>
-    Polymer({
-      is: "with-partial-include"
-    });
-  </script>
-</dom-module>
+  <dom-module id="with-partial-include">
+    <template>
+      <style include="awesome-style iron-flex iron-flex-reverse iron-flex-factors">
+         :host {
+          display: block;
+        }
+      </style>
+      <div class="layout horizontal-reverse">
+        <p class="layout vertical">lorem</p>
+        <p class="flex-1">ipsum</p>
+      </div>
+    </template>
+    <script>
+      Polymer({
+        is: "with-partial-include"
+      });
+    </script>
+  </dom-module>
+
+</body>
+
+</html>

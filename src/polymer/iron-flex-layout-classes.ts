@@ -81,56 +81,31 @@ class IronFlexLayoutClasses extends HtmlRule {
   convertDeclarations(
       parsedDocument: ParsedHtmlDocument, document: Document,
       warnings: FixableWarning[]) {
+    // Search in the dom-modules.
     for (const element of document.getFeatures({kind: 'polymer-element'})) {
       const domModule = element.domModule;
       if (!domModule) {
         continue;
       }
-      // Does it have a template?
       const template = dom5.query(domModule, p.hasTagName('template'));
       if (!template) {
         continue;
       }
-      // Does it use any of the iron-flex-layout classes?
       const templateContent = treeAdapters.default.getTemplateContent(template);
-      const usedModules =
-          styleModules.filter((m) => !!dom5.query(templateContent, m.selector));
-      if (!usedModules.length) {
+      const missingModules = getMissingStyleModules(templateContent);
+      if (!missingModules) {
         continue;
       }
-      // Does it already have all the required style modules?
+      const warning = createWarning(parsedDocument, domModule, missingModules);
       const styleNode = dom5.query(templateContent, p.hasTagName('style'));
-      let currentModules: string[] = [];
-      if (styleNode && dom5.hasAttribute(styleNode, 'include')) {
-        currentModules = dom5.getAttribute(styleNode, 'include')!.split(' ');
-      }
-      const missingModules =
-          usedModules.filter((m) => currentModules.indexOf(m.name) === -1)
-              .map((m) => m.name)
-              .join(' ');
-      if (!missingModules.length) {
-        continue;
-      }
-      const multi = missingModules.indexOf(' ') > -1;
-      const warning = new FixableWarning({
-        code: 'iron-flex-layout-classes',
-        message: `Style module${multi ? 's are' : ' is'} used but not imported:
-
-  ${missingModules}
-
-Import ${multi ? 'them' : 'it'} in the template style include.`,
-        parsedDocument,
-        severity: Severity.WARNING,
-        sourceRange: parsedDocument.sourceRangeForStartTag(domModule)!
-      });
       if (!styleNode) {
         const indent = getIndentationInside(templateContent);
         warning.fix = [{
-          replacementText:
-              `\n${indent}<style include="${missingModules}"></style>`,
+          replacementText: `
+${indent}<style include="${missingModules}"></style>`,
           range: sourceRangeForPrependContent(parsedDocument, template)
         }];
-      } else if (currentModules.length) {
+      } else if (dom5.hasAttribute(styleNode, 'include')) {
         warning.fix = [{
           replacementText: ` ${missingModules}`,
           range: sourceRangeForAppendAttributeValue(
@@ -144,7 +119,63 @@ Import ${multi ? 'them' : 'it'} in the template style include.`,
       }
       warnings.push(warning);
     }
+    // Search in the main document.
+    if (!parsedDocument.ast)
+      return;
+    const body = dom5.query(parsedDocument.ast, p.hasTagName('body'));
+    if (!body)
+      return;
+    const missingModules = getMissingStyleModules(body);
+    if (!missingModules)
+      return;
+    const warning = createWarning(parsedDocument, body, missingModules);
+    const indent = getIndentationInside(body);
+    warning.fix = [{
+      replacementText: `
+${indent}<custom-style>
+${indent}  <style is="custom-style" include="${missingModules}"></style>
+${indent}</custom-style>`,
+      range: sourceRangeForPrependContent(parsedDocument, body)
+    }];
+    warnings.push(warning);
   }
+}
+
+function getMissingStyleModules(node: dom5.Node) {
+  const usedModules = styleModules.filter((m) => !!dom5.query(node, m.selector))
+                          .map((m) => m.name);
+  if (!usedModules.length) {
+    return;
+  }
+  const styleNodes = dom5.queryAll(node, p.hasTagName('style'));
+  let currentModules: string[] = [];
+  for (const style of styleNodes) {
+    const include = dom5.getAttribute(style, 'include') || '';
+    currentModules = [...currentModules, ...include.split(' ')];
+  }
+  const missingModules =
+      usedModules.filter((m) => currentModules.indexOf(m) === -1);
+  if (missingModules.length) {
+    return missingModules.join(' ');
+  }
+}
+
+function createWarning(
+    parsedDocument: ParsedHtmlDocument,
+    node: dom5.Node,
+    missingModules: string) {
+  const multi = missingModules.indexOf(' ') > -1;
+  return new FixableWarning({
+    code: 'iron-flex-layout-classes',
+    message: `Style module${multi ? 's are' : ' is'} used but not imported:
+
+  ${missingModules}
+
+Import ${multi ? 'them' : 'it'} in the template style include.`,
+    parsedDocument,
+    severity: Severity.WARNING,
+    sourceRange: parsedDocument.sourceRangeForStartTag(node)!
+  });
 }
 
 function sourceRangeForAppendAttributeValue(
