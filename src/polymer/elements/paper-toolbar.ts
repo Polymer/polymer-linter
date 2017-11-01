@@ -48,22 +48,32 @@ class PaperToolbar extends HtmlRule {
           message: '<paper-toolbar> no longer has a default slot: this ' +
             'element will not appear in the composed tree. Add `slot="top"` ' +
             'to distribute to the same position as the previous default ' +
-            'content.',
+            'content or `slot="middle"` / `slot="bottom"` to distribute to ' +
+            'the middle or bottom bar.',
           severity: Severity.WARNING,
           sourceRange: startTagSourceRange
         });
 
+        let desiredSlot = 'top';
+        if (dom5.hasSpaceSeparatedAttrValue('class', 'middle')(node)) {
+          desiredSlot = 'middle';
+        }
+        if (dom5.hasSpaceSeparatedAttrValue('class', 'bottom')(node)) {
+          desiredSlot = 'bottom';
+        }
+
         const [startOffset, endOffset]
           = parsedDocument.sourceRangeToOffsets(startTagSourceRange);
-
         const startTagText =
           parsedDocument.contents.slice(startOffset, endOffset);
         const isSelfClosing = startTagText.endsWith('/>');
 
         warning.fix = [{
           range: startTagSourceRange,
-          replacementText: startTagText.slice(0, isSelfClosing ? -2 : -1) +
-            ` slot="top"` + (isSelfClosing ? '/' : '') + '>',
+          replacementText:
+            startTagText.slice(0, isSelfClosing ? -2 : -1) +
+            ` slot="${desiredSlot}"` +
+            (isSelfClosing ? '/' : '') + '>',
         }];
 
         warnings.push(warning);
