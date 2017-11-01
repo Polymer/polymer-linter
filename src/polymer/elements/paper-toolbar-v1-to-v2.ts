@@ -37,8 +37,9 @@ class PaperToolbarV1ToV2 extends HtmlRule {
     );
 
     const checkNode = (node: dom5.Node) => {
-      // Elements without a slot attribute, which were previously distributed
-      // into a default slot, now need to have `slot="top"`.
+      // Add the appropriate slot for the element: `slot="middle"` or
+      // `slot="bottom"` for elements with a 'middle' or 'bottom' class,
+      // `slot="top"` for all others.
       if (node.tagName !== undefined && !dom5.hasAttribute(node, 'slot')) {
         const startTagSourceRange =
           parsedDocument.sourceRangeForStartTag(node)!;
