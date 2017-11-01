@@ -12,8 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as util from 'util';
-
 import * as dom5 from 'dom5';
 import stripIndent = require('strip-indent');
 
@@ -39,7 +37,7 @@ class PaperToolbar extends HtmlRule {
     );
 
     for (const paperToolbar of paperToolbars) {
-      for (const child of paperToolbar.childNodes) {
+      for (const child of paperToolbar.childNodes!) {
         if (child.tagName !== undefined && !dom5.hasAttribute(child, 'slot')) {
           const startTagSourceRange =
             parsedDocument.sourceRangeForStartTag(child)!;
@@ -70,7 +68,7 @@ class PaperToolbar extends HtmlRule {
           warnings.push(warning);
         }
 
-        if (child.nodeName === '#text' && child.value.trim() !== '') {
+        if (child.nodeName === '#text' && child.value!.trim() !== '') {
           const textNodeSourceRange = parsedDocument.sourceRangeForNode(child)!;
 
           const warning = new FixableWarning({
@@ -84,7 +82,7 @@ class PaperToolbar extends HtmlRule {
             sourceRange: textNodeSourceRange
           });
 
-          const fullText = child.value;
+          const fullText = child.value!;
           const trimmedText = fullText.trim();
           const trimmedOffset = fullText.indexOf(trimmedText);
 
