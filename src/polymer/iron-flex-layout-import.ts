@@ -41,7 +41,7 @@ class IronFlexLayoutImport extends HtmlRule {
   convertDeclarations(
       parsedDocument: ParsedHtmlDocument, document: Document,
       warnings: FixableWarning[]) {
-    const imports = document.getFeatures({ kind: 'import' });
+    const imports = document.getFeatures({kind: 'import'});
     for (const imp of imports) {
       const href = dom5.getAttribute(imp.astNode, 'href') || '';
       const i = href.indexOf(deprecatedBase);
@@ -50,20 +50,17 @@ class IronFlexLayoutImport extends HtmlRule {
       }
       const correctImport = href.replace(href.substr(i), replacementImport);
       // Use excludeQuotes = true when Polymer/polymer-analyzer#737 is fixed
-      const hrefRange = parsedDocument.sourceRangeForAttributeValue(imp.astNode, 'href')!;
+      const hrefRange =
+          parsedDocument.sourceRangeForAttributeValue(imp.astNode, 'href')!;
       const warning = new FixableWarning({
         code: 'iron-flex-layout-import',
-        message:
-            `${href} import is deprecated. ` +
+        message: `${href} import is deprecated. ` +
             `Replace with ${correctImport} import.`,
         parsedDocument,
         severity: Severity.WARNING,
         sourceRange: hrefRange
       });
-      warning.fix = [{
-        replacementText: `"${correctImport}"`,
-        range: hrefRange
-      }];
+      warning.fix = [{replacementText: `"${correctImport}"`, range: hrefRange}];
       warnings.push(warning);
     }
   }

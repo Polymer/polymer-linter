@@ -22,31 +22,52 @@ import {FixableWarning} from '../warning';
 
 import stripIndent = require('strip-indent');
 
-import cssWhat = require('css-what');
+import {elementSelectorToPredicate} from '../html/util';
 
 const p = dom5.predicates;
 
-const styleModules = [{
-  name: 'iron-flex',
-  selector: elementSelectorToPredicate('.layout.horizontal, .layout.vertical, .layout.inline, .layout.wrap, .layout.no-wrap, .layout.center, .layout.center-center, .layout.center-justified, .flex, .flex-auto, .flex-none')
-}, {
-  name: 'iron-flex-reverse',
-  selector: elementSelectorToPredicate('.layout.horizontal-reverse, .layout.vertical-reverse, .layout.wrap-reverse')
-}, {
-  name: 'iron-flex-alignment',
-  selector: elementSelectorToPredicate('.layout.start, .layout.center, .layout.center-center, .layout.end, .layout.baseline, .layout.start-justified, .layout.center-justified, .layout.center-center, .layout.end-justified, .layout.around-justified, .layout.justified, .self-start, .self-center, .self-end, .self-stretch, .self-baseline, .layout.start-aligned, .layout.end-aligned, .layout.center-aligned, .layout.between-aligned, .layout.around-aligned')
-}, {
-  name: 'iron-flex-factors',
-  selector: elementSelectorToPredicate('.flex-1, .flex-2, .flex-3, .flex-4, .flex-5, .flex-6, .flex-7, .flex-8, .flex-9, .flex-10, .flex-11, .flex-12')
-}, {
-  name: 'iron-positioning',
-  selector: elementSelectorToPredicate('.block, [hidden], .invisible, .relative, .fit, body.fullbleed, .scroll, .fixed-bottom, .fixed-left, .fixed-top, .fixed-right')
-}];
+const styleModules = [
+  {
+    name: 'iron-flex',
+    selector: elementSelectorToPredicate(
+        '.layout.horizontal, .layout.vertical, .layout.inline, .layout.wrap,' +
+        '.layout.no-wrap, .layout.center, .layout.center-center, ' +
+        '.layout.center-justified, .flex, .flex-auto, .flex-none')
+  },
+  {
+    name: 'iron-flex-reverse',
+    selector: elementSelectorToPredicate(
+        '.layout.horizontal-reverse, .layout.vertical-reverse, ' +
+        '.layout.wrap-reverse')
+  },
+  {
+    name: 'iron-flex-alignment',
+    selector: elementSelectorToPredicate(
+        '.layout.start, .layout.center, .layout.center-center, .layout.end, ' +
+        '.layout.baseline, .layout.start-justified, .layout.center-justified, ' +
+        '.layout.center-center, .layout.end-justified, .layout.around-justified, ' +
+        '.layout.justified, .self-start, .self-center, .self-end, .self-stretch, ' +
+        '.self-baseline, .layout.start-aligned, .layout.end-aligned, ' +
+        '.layout.center-aligned, .layout.between-aligned, .layout.around-aligned')
+  },
+  {
+    name: 'iron-flex-factors',
+    selector: elementSelectorToPredicate(
+        '.flex-1, .flex-2, .flex-3, .flex-4, .flex-5, .flex-6, .flex-7, ' +
+        '.flex-8, .flex-9, .flex-10, .flex-11, .flex-12')
+  },
+  {
+    name: 'iron-positioning',
+    selector: elementSelectorToPredicate(
+        '.block, [hidden], .invisible, .relative, .fit, body.fullbleed, ' +
+        '.scroll, .fixed-bottom, .fixed-left, .fixed-top, .fixed-right')
+  }
+];
 
 class IronFlexLayoutClasses extends HtmlRule {
   code = 'iron-flex-layout-classes';
   description = stripIndent(`
-      Warns when iron-flex-layout classes are used without including the style modules.
+    Warns when iron-flex-layout classes are used without including the style modules.
   `).trim();
 
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
@@ -60,7 +81,7 @@ class IronFlexLayoutClasses extends HtmlRule {
   convertDeclarations(
       parsedDocument: ParsedHtmlDocument, document: Document,
       warnings: FixableWarning[]) {
-    for (const element of document.getFeatures({ kind: 'polymer-element' })) {
+    for (const element of document.getFeatures({kind: 'polymer-element'})) {
       const domModule = element.domModule;
       if (!domModule) {
         continue;
@@ -72,7 +93,8 @@ class IronFlexLayoutClasses extends HtmlRule {
       }
       // Does it use any of the iron-flex-layout classes?
       const templateContent = treeAdapters.default.getTemplateContent(template);
-      const usedModules = styleModules.filter((m) => !!dom5.query(templateContent, m.selector));
+      const usedModules =
+          styleModules.filter((m) => !!dom5.query(templateContent, m.selector));
       if (!usedModules.length) {
         continue;
       }
@@ -82,18 +104,17 @@ class IronFlexLayoutClasses extends HtmlRule {
       if (styleNode && dom5.hasAttribute(styleNode, 'include')) {
         currentModules = dom5.getAttribute(styleNode, 'include')!.split(' ');
       }
-      const missingModules = usedModules
-        .filter((m) => currentModules.indexOf(m.name) === -1)
-        .map((m) => m.name)
-        .join(' ');
+      const missingModules =
+          usedModules.filter((m) => currentModules.indexOf(m.name) === -1)
+              .map((m) => m.name)
+              .join(' ');
       if (!missingModules.length) {
         continue;
       }
       const multi = missingModules.indexOf(' ') > -1;
       const warning = new FixableWarning({
         code: 'iron-flex-layout-classes',
-        message:
-        `${multi ? 'These' : 'This'} style module${multi ? 's are' : ' is'} used but not imported:
+        message: `Style module${multi ? 's are' : ' is'} used but not imported:
 
   ${missingModules}
 
@@ -105,13 +126,15 @@ Import ${multi ? 'them' : 'it'} in the template style include.`,
       if (!styleNode) {
         const indent = getIndentationInside(templateContent);
         warning.fix = [{
-          replacementText: `\n${indent}<style include="${missingModules}"></style>`,
+          replacementText:
+              `\n${indent}<style include="${missingModules}"></style>`,
           range: sourceRangeForPrependContent(parsedDocument, template)
         }];
       } else if (currentModules.length) {
         warning.fix = [{
           replacementText: ` ${missingModules}`,
-          range: sourceRangeForAppendAttributeValue(parsedDocument, styleNode, 'include')!
+          range: sourceRangeForAppendAttributeValue(
+              parsedDocument, styleNode, 'include')!
         }];
       } else {
         warning.fix = [{
@@ -124,100 +147,37 @@ Import ${multi ? 'them' : 'it'} in the template style include.`,
   }
 }
 
-function sourceRangeForAppendAttributeValue(parsedDocument: ParsedHtmlDocument, node: dom5.Node, attr: string) {
+function sourceRangeForAppendAttributeValue(
+    parsedDocument: ParsedHtmlDocument, node: dom5.Node, attr: string) {
   const tagRange = parsedDocument.sourceRangeForAttributeValue(node, attr)!;
   return {
     file: tagRange.file,
-    start: { line: tagRange.end.line, column: tagRange.end.column - 1 },
-    end: { line: tagRange.end.line, column: tagRange.end.column - 1 }
+    start: {line: tagRange.end.line, column: tagRange.end.column - 1},
+    end: {line: tagRange.end.line, column: tagRange.end.column - 1}
   };
 }
 
-function sourceRangeForAddAttribute(parsedDocument: ParsedHtmlDocument, node: dom5.Node) {
+function sourceRangeForAddAttribute(
+    parsedDocument: ParsedHtmlDocument, node: dom5.Node) {
   const tagRange = parsedDocument.sourceRangeForStartTag(node)!;
   return {
     file: tagRange.file,
-    start: { line: tagRange.end.line, column: tagRange.end.column - 1 },
-    end: { line: tagRange.end.line, column: tagRange.end.column - 1 }
+    start: {line: tagRange.end.line, column: tagRange.end.column - 1},
+    end: {line: tagRange.end.line, column: tagRange.end.column - 1}
   };
 }
 
-function sourceRangeForPrependContent(parsedDocument: ParsedHtmlDocument, node: dom5.Node) {
+function sourceRangeForPrependContent(
+    parsedDocument: ParsedHtmlDocument, node: dom5.Node) {
   const tagRange = parsedDocument.sourceRangeForStartTag(node)!;
   return {
     file: tagRange.file,
-    start: { line: tagRange.end.line, column: tagRange.end.column },
-    end: { line: tagRange.end.line, column: tagRange.end.column }
+    start: {line: tagRange.end.line, column: tagRange.end.column},
+    end: {line: tagRange.end.line, column: tagRange.end.column}
   };
 }
 
 registry.register(new IronFlexLayoutClasses());
-
-// TODO(valdrin) move this in commons or something.
-/* ---- START copy-pasted from content-to-slot-usages. --- */
-function elementSelectorToPredicate(simpleSelector: string): dom5.Predicate {
-  const parsed = cssWhat(simpleSelector);
-  // The output of cssWhat is two levels of arrays. The outer level are any
-  // selectors joined with a comma, so it matches if any of the inner selectors
-  // match. The inner array are simple selectors like `.foo` and `#bar` which
-  // must all match.
-  return dom5.predicates.OR(...parsed.map((simpleSelectors) => {
-    return dom5.predicates.AND(
-        ...simpleSelectors.map(simpleSelectorToPredicate));
-  }));
-}
-
-function simpleSelectorToPredicate(selector: cssWhat.Simple) {
-  switch (selector.type) {
-    case 'adjacent':
-    case 'child':
-    case 'descendant':
-    case 'parent':
-    case 'sibling':
-    case 'pseudo':
-      throw new Error(`Unsupported CSS operator: ${selector.type}`);
-    case 'attribute':
-      return attributeSelectorToPredicate(selector);
-    case 'tag':
-      return dom5.predicates.hasTagName(selector.name);
-    case 'universal':
-      return () => true;
-  }
-  const never: never = selector;
-  throw new Error(`Unexpected node type from css parser: ${never}`);
-}
-
-function attributeSelectorToPredicate(selector: cssWhat.Attribute):
-    dom5.Predicate {
-  switch (selector.action) {
-    case 'exists':
-      return dom5.predicates.hasAttr(selector.name);
-    case 'equals':
-      return dom5.predicates.hasAttrValue(selector.name, selector.value);
-    case 'start':
-      return (el) => {
-        const attrValue = dom5.getAttribute(el, selector.name);
-        return attrValue != null && attrValue.startsWith(selector.value);
-      };
-    case 'end':
-      return (el) => {
-        const attrValue = dom5.getAttribute(el, selector.name);
-        return attrValue != null && attrValue.endsWith(selector.value);
-      };
-    case 'element':
-      return dom5.predicates.hasSpaceSeparatedAttrValue(
-          selector.name, selector.value);
-    case 'any':
-      return (el) => {
-        const attrValue = dom5.getAttribute(el, selector.name);
-        return attrValue != null && attrValue.currentModules(selector.value);
-      };
-  }
-  const never: never = selector.action;
-  throw new Error(
-      `Unexpected type of attribute matcher from CSS parser ${never}`);
-}
-/* ---- END copy-paste from content-to-slot-usages. --- */
 
 // TODO(valdrin) move this in commons or something.
 /* ---- START copy-paste from move-style-into-template. ---- */

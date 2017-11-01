@@ -59,22 +59,22 @@ suite(ruleId, () => {
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
-      `This style module is used but not imported:
+      `Style module is used but not imported:
 
   iron-flex
 
 Import it in the template style include.`,
-      `This style module is used but not imported:
+      `Style module is used but not imported:
 
   iron-flex
 
 Import it in the template style include.`,
-      `This style module is used but not imported:
+      `Style module is used but not imported:
 
   iron-flex
 
 Import it in the template style include.`,
-      `These style modules are used but not imported:
+      `Style modules are used but not imported:
 
   iron-flex-reverse iron-flex-factors
 
