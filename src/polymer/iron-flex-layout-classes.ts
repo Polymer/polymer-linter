@@ -64,6 +64,8 @@ const styleModules = [
   }
 ];
 
+const isStyleInclude = p.AND(p.hasTagName('style'), p.hasAttr('include'));
+
 class IronFlexLayoutClasses extends HtmlRule {
   code = 'iron-flex-layout-classes';
   description = stripIndent(`
@@ -147,11 +149,11 @@ function getMissingStyleModules(node: dom5.Node) {
   if (!usedModules.length) {
     return;
   }
-  const styleNodes = dom5.queryAll(node, p.hasTagName('style'));
+  const styleNodes = dom5.queryAll(node, isStyleInclude);
   let currentModules: string[] = [];
   for (const style of styleNodes) {
-    const include = dom5.getAttribute(style, 'include') || '';
-    currentModules = [...currentModules, ...include.split(' ')];
+    currentModules =
+        [...currentModules, ...dom5.getAttribute(style, 'include')!.split(' ')];
   }
   const missingModules =
       usedModules.filter((m) => currentModules.indexOf(m) === -1);
