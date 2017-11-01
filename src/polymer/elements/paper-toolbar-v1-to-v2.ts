@@ -20,8 +20,8 @@ import {HtmlRule} from '../../html/rule';
 import {ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 import {FixableWarning} from '../../warning';
 
-class PaperToolbar extends HtmlRule {
-  code = 'paper-toolbar';
+class PaperToolbarV1ToV2 extends HtmlRule {
+  code = 'paper-toolbar-v1-to-v2';
   description = stripIndent(`
     (description paper-toolbar)
   `).trim();
@@ -150,4 +150,4 @@ class PaperToolbar extends HtmlRule {
   }
 }
 
-registry.register(new PaperToolbar());
+registry.register(new PaperToolbarV1ToV2());
