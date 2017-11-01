@@ -23,7 +23,61 @@ import {FixableWarning} from '../../warning';
 class PaperToolbarV1ToV2 extends HtmlRule {
   code = 'paper-toolbar-v1-to-v2';
   description = stripIndent(`
-    (description paper-toolbar)
+    Warns when children of <paper-toolbar> do not have slots. <paper-toolbar>
+    v2 does not have a default slot and \`class="middle"\` / \`class="bottom"\`
+    no longer cause children to be distributed.
+
+    Child elements now need a slot; the 'top' slot is equivalent to the default
+    distribution position from v1, the 'middle' and 'bottom' slots correspond to
+    the distribution position for elements with 'middle' or 'bottom' as a class.
+
+    Non-whitespace-only child text nodes, which can't be distributed to a named
+    slot, should be have their non-whitespace portion wrapped in a span
+    distributed to the 'top' slot: \`<span slot="top">\` ... \`</span>\`.
+
+    Example usage of <paper-toolbar> v1:
+
+      <paper-toolbar>
+        <!-- 1 -->
+        <div>
+          This element is in the top bar (default).
+        </div>
+
+        <!-- 2 -->
+        <div class="middle">
+          This element is in the middle bar.
+        </div>
+
+        <!-- 3 -->
+        <div class="bottom">
+          This element is in the bottom bar.
+        </div>
+
+        <!-- 4 -->
+        This text node has non-whitespace characters.
+      </paper-toolbar>
+
+    After updating to <paper-toolbar> v2:
+
+      <paper-toolbar>
+        <!-- 1 -->
+        <div slot="top">
+          This element is in the top bar (default).
+        </div>
+
+        <!-- 2 -->
+        <div class="middle" slot="middle">
+          This element is in the middle bar.
+        </div>
+
+        <!-- 3 -->
+        <div class="bottom" slot="bottom">
+          This element is in the bottom bar.
+        </div>
+
+        <!-- 4 -->
+        <span slot="top">This text node has non-whitespace characters.</span>
+      </paper-toolbar>
   `).trim();
 
   async checkDocument(parsedDocument: ParsedHtmlDocument) {
