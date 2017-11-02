@@ -52,14 +52,16 @@ const styleModules = [
   },
   {
     name: 'iron-flex-factors',
+    // Purposefully skip `.flex` as it's already defined in the iron-flex module.
     selector: elementSelectorToPredicate(
         '.flex-1, .flex-2, .flex-3, .flex-4, .flex-5, .flex-6, .flex-7, ' +
         '.flex-8, .flex-9, .flex-10, .flex-11, .flex-12')
   },
   {
     name: 'iron-positioning',
+    // Purposefully skip `[hidden]` as it's too generic as selector.
     selector: elementSelectorToPredicate(
-        '.block, [hidden], .invisible, .relative, .fit, body.fullbleed, ' +
+        '.block, .invisible, .relative, .fit, body.fullbleed, ' +
         '.scroll, .fixed-bottom, .fixed-left, .fixed-top, .fixed-right')
   }
 ];
