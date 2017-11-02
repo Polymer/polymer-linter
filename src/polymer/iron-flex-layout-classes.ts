@@ -125,18 +125,17 @@ ${indent}<style include="${missingModules}"></style>`,
       }
       warnings.push(warning);
     }
-    // Search in the main document.
-    if (!parsedDocument.ast)
-      return;
     const body = dom5.query(parsedDocument.ast, p.hasTagName('body'));
     // Handle files like `<dom-module></dom-module> <body><p>hello</p></body>`
     // where a "fake" body node would be created by dom-module. Skip these
     // cases, dear user please write proper HTML ¯\_(ツ)_/¯
-    if (!body || !body.__location)
+    if (!body || !body.__location) {
       return;
+    }
     const missingModules = getMissingStyleModules(body);
-    if (!missingModules)
+    if (!missingModules) {
       return;
+    }
     // TODO(valdrin): update the warning location to be at the spot where
     // the class is used.
     const warning = createWarning(parsedDocument, body, missingModules);
