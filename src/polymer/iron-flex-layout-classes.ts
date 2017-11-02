@@ -67,6 +67,8 @@ const styleModules = [
   }
 ];
 
+const styleModulesRegex = /iron-(flex|positioning)/;
+
 const isStyleInclude = p.AND(p.hasTagName('style'), p.hasAttr('include'));
 
 class IronFlexLayoutClasses extends HtmlRule {
@@ -101,7 +103,7 @@ class IronFlexLayoutClasses extends HtmlRule {
       // the class is used.
       const warning =
           createWarning(parsedDocument, domModule.astNode, missingModules);
-      const styleNode = dom5.query(templateContent, p.hasTagName('style'));
+      const styleNode = getStyleNodeToEdit(templateContent);
       if (!styleNode) {
         const indent = getIndentationInside(templateContent);
         warning.fix = [{
@@ -185,6 +187,20 @@ Import ${multi ? 'them' : 'it'} in the template style include.`,
     severity: Severity.WARNING,
     sourceRange: parsedDocument.sourceRangeForStartTag(node)!
   });
+}
+
+function getStyleNodeToEdit(node: dom5.Node) {
+  let styleToEdit = null;
+  for (const style of dom5.queryAll(node, isStyleInclude)) {
+    // Get the first one of the styles with include attribute, otherwise
+    // prefer styles that already include iron-flex-layout modules.
+    if (!styleToEdit ||
+        styleModulesRegex.test(dom5.getAttribute(style, 'include')!)) {
+      styleToEdit = style;
+    }
+  }
+  // Fallback to style without include attribute.
+  return styleToEdit || dom5.query(node, p.hasTagName('style'));
 }
 
 function sourceRangeForAppendAttributeValue(

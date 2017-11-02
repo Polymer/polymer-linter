@@ -60,8 +60,8 @@
           display: block;
         }
       </style>
-      <div class="layout horizontal">
-        <p>lorem</p>
+      <div class="flex">
+        <p class="flex-1">lorem</p>
         <p>ipsum</p>
       </div>
     </template>
@@ -75,7 +75,8 @@
 
   <dom-module id="with-partial-include">
     <template>
-      <style include="awesome-style iron-flex">
+      <style include="awesome-style"></style>
+      <style include="iron-flex">
          :host {
           display: block;
         }

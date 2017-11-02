@@ -21,7 +21,8 @@ import {FixableWarning} from '../warning';
 
 import stripIndent = require('strip-indent');
 
-const deprecatedImports = /iron-flex-layout\/classes\/iron-(shadow-)?flex-layout.html/;
+const deprecatedImports =
+    /iron-flex-layout\/classes\/iron-(shadow-)?flex-layout.html/;
 const replacementImport = 'iron-flex-layout/iron-flex-layout-classes.html';
 
 const p = dom5.predicates;

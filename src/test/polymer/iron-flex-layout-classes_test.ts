@@ -72,11 +72,11 @@ Import it in the template style include.`,
   iron-flex
 
 Import it in the template style include.`,
-      `Style module is used but not imported:
+      `Style modules are used but not imported:
 
-  iron-flex
+  iron-flex iron-flex-factors
 
-Import it in the template style include.`,
+Import them in the template style include.`,
       `Style modules are used but not imported:
 
   iron-flex-reverse iron-flex-factors
