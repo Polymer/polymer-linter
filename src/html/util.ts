@@ -114,6 +114,7 @@ export const sharedProperties = new Set([
   'is',
 ]);
 
+/**
  * If the given node is a text node, add the given addition indentation to
  * each line of its contents.
  */
