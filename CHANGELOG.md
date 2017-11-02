@@ -13,10 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support warning about and automatically fixing element declarations that use `<content>` to use `<slot>` instead. This is a breaking change to an element,
 so it is not on by default.
   - It automatically adds the `old-content-selector` attribute to migrated `<slot>` elements, so uses can be automatically upgraded as well.
-- Support fixable warning about usage of deprecated `iron-flex-layout/classes/*.html` files via the new rule `iron-flex-layout-import`
-  - It automatically upgrades to import instead the `iron-flex-layout/iron-flex-layout-classes.html`
-- Support fixable warning about usage of iron-flex-layout classes without including the required style modules via the new rule `iron-flex-layout-classes`
-  - It automatically upgrades the element shadow root to include the iron-flex-layout style modules.
+- Support warning about and fixing usage of deprecated `iron-flex-layout/classes/*.html` files via the new rule `iron-flex-layout-import`
+  - It automatically upgrades to import the `iron-flex-layout/iron-flex-layout-classes.html` instead.
+- Support warning about and fixing usage of iron-flex-layout classes without including the required style modules via the new rule `iron-flex-layout-classes`
+  - It automatically upgrades the element template to include the iron-flex-layout style modules.
 
 ## [2.1.0] - 2017-10-13
 - Warn for old-style @apply without parentheses, and var() with a fallback value of a bare css variable.

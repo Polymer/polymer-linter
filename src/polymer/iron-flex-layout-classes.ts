@@ -22,7 +22,7 @@ import {FixableWarning} from '../warning';
 
 import stripIndent = require('strip-indent');
 
-import {elementSelectorToPredicate} from '../html/util';
+import {elementSelectorToPredicate, getIndentationInside} from '../html/util';
 
 const p = dom5.predicates;
 
@@ -80,21 +80,15 @@ class IronFlexLayoutClasses extends HtmlRule {
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
     const warnings: FixableWarning[] = [];
 
-    this.convertDeclarations(parsedDocument, document, warnings);
-
-    return warnings;
-  }
-
-  convertDeclarations(
-      parsedDocument: ParsedHtmlDocument, document: Document,
-      warnings: FixableWarning[]) {
     // Search in the dom-modules.
-    for (const domModule of document.getFeatures({ kind: 'dom-module' })) {
-      const misplacedStyle = dom5.query(domModule.astNode, p.hasTagName('style'))
+    for (const domModule of document.getFeatures({kind: 'dom-module'})) {
+      const misplacedStyle =
+          dom5.query(domModule.astNode, p.hasTagName('style'));
       if (misplacedStyle) {
         warnings.push(new FixableWarning({
           code: 'iron-flex-layout-classes',
-          message: `Style outside template. Run \`move-style-into-template\` rule.`,
+          message:
+              `Style outside template. Run \`move-style-into-template\` rule.`,
           parsedDocument,
           severity: Severity.ERROR,
           sourceRange: parsedDocument.sourceRangeForStartTag(misplacedStyle)!
@@ -123,10 +117,11 @@ ${indent}<style include="${missingModules}"></style>`,
           range: sourceRangeForPrependContent(parsedDocument, template)
         }];
       } else if (dom5.hasAttribute(styleNode, 'include')) {
+        const include = dom5.getAttribute(styleNode, 'include')!;
         warning.fix = [{
-          replacementText: ` ${missingModules}`,
-          range: sourceRangeForAppendAttributeValue(
-              parsedDocument, styleNode, 'include')!
+          replacementText: `"${include} ${missingModules}"`,
+          range:
+              parsedDocument.sourceRangeForAttributeValue(styleNode, 'include')!
         }];
       } else {
         warning.fix = [{
@@ -141,11 +136,11 @@ ${indent}<style include="${missingModules}"></style>`,
     // where a "fake" body node would be created by dom-module. Skip these
     // cases, dear user please write proper HTML ¯\_(ツ)_/¯
     if (!body || !body.__location) {
-      return;
+      return warnings;
     }
     const missingModules = getMissingStyleModules(body);
     if (!missingModules) {
-      return;
+      return warnings;
     }
     // TODO(valdrin): update the warning location to be at the spot where
     // the class is used.
@@ -159,26 +154,23 @@ ${indent}</custom-style>`,
       range: sourceRangeForPrependContent(parsedDocument, body)
     }];
     warnings.push(warning);
+    return warnings;
   }
 }
 
 function getMissingStyleModules(node: dom5.Node) {
-  const usedModules = styleModules.filter((m) => !!dom5.query(node, m.selector))
-                          .map((m) => m.name);
-  if (!usedModules.length) {
-    return;
+  let includes = '';
+  for (const style of dom5.queryAll(node, isStyleInclude)) {
+    includes += ' ' + dom5.getAttribute(style, 'include')!;
   }
-  const styleNodes = dom5.queryAll(node, isStyleInclude);
-  let currentModules: string[] = [];
-  for (const style of styleNodes) {
-    currentModules =
-        [...currentModules, ...dom5.getAttribute(style, 'include')!.split(' ')];
-  }
-  const missingModules =
-      usedModules.filter((m) => currentModules.indexOf(m) === -1);
-  if (missingModules.length) {
-    return missingModules.join(' ');
-  }
+  return styleModules
+      .map((m) => {
+        if (includes.indexOf(m.name) === -1 && dom5.query(node, m.selector)) {
+          return m.name;
+        }
+      })
+      .filter((m) => !!m)
+      .join(' ');
 }
 
 function createWarning(
@@ -213,16 +205,6 @@ function getStyleNodeToEdit(node: dom5.Node) {
   return styleToEdit || dom5.query(node, p.hasTagName('style'));
 }
 
-function sourceRangeForAppendAttributeValue(
-    parsedDocument: ParsedHtmlDocument, node: dom5.Node, attr: string) {
-  const tagRange = parsedDocument.sourceRangeForAttributeValue(node, attr)!;
-  return {
-    file: tagRange.file,
-    start: {line: tagRange.end.line, column: tagRange.end.column - 1},
-    end: {line: tagRange.end.line, column: tagRange.end.column - 1}
-  };
-}
-
 function sourceRangeForAddAttribute(
     parsedDocument: ParsedHtmlDocument, node: dom5.Node) {
   const tagRange = parsedDocument.sourceRangeForStartTag(node)!;
@@ -244,30 +226,3 @@ function sourceRangeForPrependContent(
 }
 
 registry.register(new IronFlexLayoutClasses());
-
-// TODO(valdrin) move this in commons or something.
-/* ---- START copy-paste from move-style-into-template. ---- */
-function getIndentationInside(parentNode: dom5.Node) {
-  if (!parentNode.childNodes || parentNode.childNodes.length === 0) {
-    return '';
-  }
-  const firstChild = parentNode.childNodes[0];
-  if (!dom5.isTextNode(firstChild)) {
-    return '';
-  }
-  const text = dom5.getTextContent(firstChild);
-  const match = text.match(/(^|\n)([ \t]+)/);
-  if (!match) {
-    return '';
-  }
-  // If the it's an empty node with just one line of whitespace, like this:
-  //     <div>
-  //     </div>
-  // Then the indentation of actual content inside is one level deeper than
-  // the whitespace on that second line.
-  if (parentNode.childNodes.length === 1 && text.match(/^\n[ \t]+$/)) {
-    return match[2] + '  ';
-  }
-  return match[2];
-}
-/* ---- END copy-paste from move-style-into-template. ---- */
