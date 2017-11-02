@@ -42,24 +42,25 @@ const styleModules = [
   },
   {
     name: 'iron-flex-alignment',
+    // Skip `.layout.center, .layout.center-center, .layout.center-justified`
+    // as they're already defined in the `iron-flex` module.
     selector: elementSelectorToPredicate(
-        '.layout.start, .layout.center, .layout.center-center, .layout.end, ' +
-        '.layout.baseline, .layout.start-justified, .layout.center-justified, ' +
-        '.layout.center-center, .layout.end-justified, .layout.around-justified, ' +
-        '.layout.justified, .self-start, .self-center, .self-end, .self-stretch, ' +
-        '.self-baseline, .layout.start-aligned, .layout.end-aligned, ' +
-        '.layout.center-aligned, .layout.between-aligned, .layout.around-aligned')
+        '.layout.start, .layout.end, .layout.baseline, .layout.start-justified, ' +
+        '.layout.end-justified, .layout.around-justified, .layout.justified, ' +
+        '.self-start, .self-center, .self-end, .self-stretch, .self-baseline, ' +
+        '.layout.start-aligned, .layout.end-aligned, .layout.center-aligned, ' +
+        '.layout.between-aligned, .layout.around-aligned')
   },
   {
     name: 'iron-flex-factors',
-    // Purposefully skip `.flex` as it's already defined in the iron-flex module.
+    // Skip `.flex` as it's already defined in the `iron-flex` module.
     selector: elementSelectorToPredicate(
         '.flex-1, .flex-2, .flex-3, .flex-4, .flex-5, .flex-6, .flex-7, ' +
         '.flex-8, .flex-9, .flex-10, .flex-11, .flex-12')
   },
   {
     name: 'iron-positioning',
-    // Purposefully skip `[hidden]` as it's too generic as selector.
+    // Skip `[hidden]` as it's a too generic selector.
     selector: elementSelectorToPredicate(
         '.block, .invisible, .relative, .fit, body.fullbleed, ' +
         '.scroll, .fixed-bottom, .fixed-left, .fixed-top, .fixed-right')
