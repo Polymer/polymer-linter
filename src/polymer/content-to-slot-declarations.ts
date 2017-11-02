@@ -47,12 +47,8 @@ class ContentToSlotDeclarations extends HtmlRule {
   convertDeclarations(
       parsedDocument: ParsedHtmlDocument, document: Document,
       warnings: FixableWarning[]) {
-    for (const element of document.getFeatures({kind: 'polymer-element'})) {
-      const domModule = element.domModule;
-      if (!domModule) {
-        continue;
-      }
-      const template = dom5.query(domModule, p.hasTagName('template'));
+    for (const domModule of document.getFeatures({kind: 'dom-module'})) {
+      const template = dom5.query(domModule.astNode, p.hasTagName('template'));
       if (!template) {
         continue;
       }
