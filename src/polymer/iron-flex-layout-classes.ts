@@ -84,12 +84,8 @@ class IronFlexLayoutClasses extends HtmlRule {
       parsedDocument: ParsedHtmlDocument, document: Document,
       warnings: FixableWarning[]) {
     // Search in the dom-modules.
-    for (const element of document.getFeatures({kind: 'polymer-element'})) {
-      const domModule = element.domModule;
-      if (!domModule) {
-        continue;
-      }
-      const template = dom5.query(domModule, p.hasTagName('template'));
+    for (const domModule of document.getFeatures({kind: 'dom-module'})) {
+      const template = dom5.query(domModule.astNode, p.hasTagName('template'));
       if (!template) {
         continue;
       }
@@ -100,7 +96,8 @@ class IronFlexLayoutClasses extends HtmlRule {
       }
       // TODO(valdrin): update the warning location to be at the spot where
       // the class is used.
-      const warning = createWarning(parsedDocument, domModule, missingModules);
+      const warning =
+          createWarning(parsedDocument, domModule.astNode, missingModules);
       const styleNode = dom5.query(templateContent, p.hasTagName('style'));
       if (!styleNode) {
         const indent = getIndentationInside(templateContent);
