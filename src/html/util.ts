@@ -131,3 +131,41 @@ export function addIndentation(
           .join('\n');
   dom5.setTextContent(textNode, indentedText);
 }
+
+/**
+ * Estimates the leading indentation of direct children inside the given node.
+ *
+ * Assumes that the given element is written in one of these styles:
+ *   <foo>
+ *   </foo>
+ *
+ *   <foo>
+ *     <bar></bar>
+ *   </foo>
+ *
+ * And not like:
+ *   <foo><bar></bar></bar>
+ */
+export function getIndentationInside(parentNode: dom5.Node) {
+  if (!parentNode.childNodes || parentNode.childNodes.length === 0) {
+    return '';
+  }
+  const firstChild = parentNode.childNodes[0];
+  if (!dom5.isTextNode(firstChild)) {
+    return '';
+  }
+  const text = dom5.getTextContent(firstChild);
+  const match = text.match(/(^|\n)([ \t]+)/);
+  if (!match) {
+    return '';
+  }
+  // If the it's an empty node with just one line of whitespace, like this:
+  //     <div>
+  //     </div>
+  // Then the indentation of actual content inside is one level deeper than
+  // the whitespace on that second line.
+  if (parentNode.childNodes.length === 1 && text.match(/^\n[ \t]+$/)) {
+    return match[2] + '  ';
+  }
+  return match[2];
+}

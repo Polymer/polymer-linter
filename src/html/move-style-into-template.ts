@@ -21,7 +21,7 @@ import {registry} from '../registry';
 import {FixableWarning, Replacement} from '../warning';
 
 import {HtmlRule} from './rule';
-import {addIndentation} from './util';
+import {addIndentation, getIndentationInside} from './util';
 
 import stripIndent = require('strip-indent');
 
@@ -185,30 +185,6 @@ function removeTrailingWhitespace(
     }
   };
   return {range: newRange, replacementText: ''};
-}
-
-function getIndentationInside(parentNode: dom5.Node) {
-  if (!parentNode.childNodes || parentNode.childNodes.length === 0) {
-    return '';
-  }
-  const firstChild = parentNode.childNodes[0];
-  if (!dom5.isTextNode(firstChild)) {
-    return '';
-  }
-  const text = dom5.getTextContent(firstChild);
-  const match = text.match(/(^|\n)([ \t]+)/);
-  if (!match) {
-    return '';
-  }
-  // If the it's an empty node with just one line of whitespace, like this:
-  //     <div>
-  //     </div>
-  // Then the indentation of actual content inside is one level deeper than
-  // the whitespace on that second line.
-  if (parentNode.childNodes.length === 1 && text.match(/^\n[ \t]+$/)) {
-    return match[2] + '  ';
-  }
-  return match[2];
 }
 
 registry.register(new MoveStyleIntoTemplate());
