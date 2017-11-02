@@ -97,6 +97,26 @@
     </script>
   </dom-module>
 
+
+  <dom-module id="with-style-outside">
+    <style>
+       :host {
+        display: block;
+      }
+    </style>
+    <template>
+      <div class="layout horizontal">
+        <p>lorem</p>
+        <p>ipsum</p>
+      </div>
+    </template>
+    <script>
+      Polymer({
+        is: "with-style"
+      });
+    </script>
+  </dom-module>
+
 </body>
 
 </html>

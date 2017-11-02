@@ -89,7 +89,18 @@ class IronFlexLayoutClasses extends HtmlRule {
       parsedDocument: ParsedHtmlDocument, document: Document,
       warnings: FixableWarning[]) {
     // Search in the dom-modules.
-    for (const domModule of document.getFeatures({kind: 'dom-module'})) {
+    for (const domModule of document.getFeatures({ kind: 'dom-module' })) {
+      const misplacedStyle = dom5.query(domModule.astNode, p.hasTagName('style'))
+      if (misplacedStyle) {
+        warnings.push(new FixableWarning({
+          code: 'iron-flex-layout-classes',
+          message: `Style outside template. Run \`move-style-into-template\` rule.`,
+          parsedDocument,
+          severity: Severity.ERROR,
+          sourceRange: parsedDocument.sourceRangeForStartTag(misplacedStyle)!
+        }));
+        continue;
+      }
       const template = dom5.query(domModule.astNode, p.hasTagName('template'));
       if (!template) {
         continue;

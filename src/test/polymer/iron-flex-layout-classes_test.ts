@@ -57,6 +57,9 @@ suite(ruleId, () => {
   <dom-module id="with-partial-include">
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
       `
+    <style>
+    ~~~~~~~`,
+      `
 <body class="fullbleed">
 ~~~~~~~~~~~~~~~~~~~~~~~~`,
     ]);
@@ -82,6 +85,7 @@ Import them in the template style include.`,
   iron-flex-reverse iron-flex-factors
 
 Import them in the template style include.`,
+  'Style outside template. Run `move-style-into-template` rule.',
       `Style module is used but not imported:
 
   iron-positioning
