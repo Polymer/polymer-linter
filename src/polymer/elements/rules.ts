@@ -12,4 +12,5 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import './paper-item-v1-to-v2';
 import './paper-toolbar-v1-to-v2';
