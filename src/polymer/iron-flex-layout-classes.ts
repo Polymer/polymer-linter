@@ -67,6 +67,11 @@ const styleModules = [
   }
 ];
 
+declare interface StyleModule {
+  module: string;
+  node: dom5.Node;
+}
+
 const styleModulesRegex = /iron-(flex|positioning)/;
 
 const isStyleInclude = p.AND(p.hasTagName('style'), p.hasAttr('include'));
@@ -159,8 +164,7 @@ ${indent}</custom-style>`,
   }
 }
 
-function getMissingStyleModules(rootNode: dom5.Node):
-    {module: string, node: dom5.Node}[] {
+function getMissingStyleModules(rootNode: dom5.Node): StyleModule[] {
   let includes = '';
   const modules = {};
   dom5.nodeWalkAll(rootNode, (node: dom5.Node) => {
@@ -187,8 +191,7 @@ function getMissingStyleModules(rootNode: dom5.Node):
 }
 
 function createWarning(
-    parsedDocument: ParsedHtmlDocument,
-    missingModules: {module: string, node: dom5.Node}[]) {
+    parsedDocument: ParsedHtmlDocument, missingModules: StyleModule[]) {
   const multi = missingModules.length > 1;
   const node = missingModules[0].node;
   const modules = missingModules.map((m) => m.module).join(' ');
