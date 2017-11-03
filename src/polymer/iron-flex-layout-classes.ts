@@ -138,7 +138,7 @@ ${indent}<style include="${missingModules}"></style>`,
     if (!body || !body.__location) {
       return warnings;
     }
-    const missingModules = getMissingStyleModules(body);
+    const missingModules = getMissingStyleModules(parsedDocument.ast);
     if (!missingModules) {
       return warnings;
     }
