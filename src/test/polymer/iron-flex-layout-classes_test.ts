@@ -45,17 +45,17 @@ suite(ruleId, () => {
     const warnings = await linter.lint([`${ruleId}/before-fixes.html`]);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
-  <dom-module id="no-style">
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+      <div class="layout horizontal">
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
       `
-  <dom-module id="with-style">
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+      <div class="layout horizontal">
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
       `
-  <dom-module id="with-include">
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+      <div class="flex">
+      ~~~~~~~~~~~~~~~~~~`,
       `
-  <dom-module id="with-partial-include">
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+      <div class="layout horizontal-reverse">
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
       `
     <style>
     ~~~~~~~`,

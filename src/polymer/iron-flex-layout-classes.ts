@@ -28,20 +28,20 @@ const p = dom5.predicates;
 
 const styleModules = [
   {
-    name: 'iron-flex',
+    module: 'iron-flex',
     selector: elementSelectorToPredicate(
         '.layout.horizontal, .layout.vertical, .layout.inline, .layout.wrap,' +
         '.layout.no-wrap, .layout.center, .layout.center-center, ' +
         '.layout.center-justified, .flex, .flex-auto, .flex-none')
   },
   {
-    name: 'iron-flex-reverse',
+    module: 'iron-flex-reverse',
     selector: elementSelectorToPredicate(
         '.layout.horizontal-reverse, .layout.vertical-reverse, ' +
         '.layout.wrap-reverse')
   },
   {
-    name: 'iron-flex-alignment',
+    module: 'iron-flex-alignment',
     // Skip `.layout.center, .layout.center-center, .layout.center-justified`
     // as they're already defined in the `iron-flex` module.
     selector: elementSelectorToPredicate(
@@ -52,14 +52,14 @@ const styleModules = [
         '.layout.between-aligned, .layout.around-aligned')
   },
   {
-    name: 'iron-flex-factors',
+    module: 'iron-flex-factors',
     // Skip `.flex` as it's already defined in the `iron-flex` module.
     selector: elementSelectorToPredicate(
         '.flex-1, .flex-2, .flex-3, .flex-4, .flex-5, .flex-6, .flex-7, ' +
         '.flex-8, .flex-9, .flex-10, .flex-11, .flex-12')
   },
   {
-    name: 'iron-positioning',
+    module: 'iron-positioning',
     // Skip `[hidden]` as it's a too generic selector.
     selector: elementSelectorToPredicate(
         '.block, .invisible, .relative, .fit, body.fullbleed, ' +
@@ -101,31 +101,31 @@ class IronFlexLayoutClasses extends HtmlRule {
       }
       const templateContent = treeAdapters.default.getTemplateContent(template);
       const missingModules = getMissingStyleModules(templateContent);
-      if (!missingModules) {
+      if (!missingModules.length) {
         continue;
       }
       // TODO(valdrin): update the warning location to be at the spot where
       // the class is used.
-      const warning =
-          createWarning(parsedDocument, domModule.astNode, missingModules);
+      const warning = createWarning(parsedDocument, missingModules);
+      const modules = missingModules.map((m) => m.module).join(' ');
       const styleNode = getStyleNodeToEdit(templateContent);
       if (!styleNode) {
         const indent = getIndentationInside(templateContent);
         warning.fix = [{
           replacementText: `
-${indent}<style include="${missingModules}"></style>`,
+${indent}<style include="${modules}"></style>`,
           range: sourceRangeForPrependContent(parsedDocument, template)
         }];
       } else if (dom5.hasAttribute(styleNode, 'include')) {
         const include = dom5.getAttribute(styleNode, 'include')!;
         warning.fix = [{
-          replacementText: `"${include} ${missingModules}"`,
+          replacementText: `"${include} ${modules}"`,
           range:
               parsedDocument.sourceRangeForAttributeValue(styleNode, 'include')!
         }];
       } else {
         warning.fix = [{
-          replacementText: ` include="${missingModules}"`,
+          replacementText: ` include="${modules}"`,
           range: sourceRangeForAddAttribute(parsedDocument, styleNode)
         }];
       }
@@ -139,17 +139,18 @@ ${indent}<style include="${missingModules}"></style>`,
       return warnings;
     }
     const missingModules = getMissingStyleModules(parsedDocument.ast);
-    if (!missingModules) {
+    if (!missingModules.length) {
       return warnings;
     }
     // TODO(valdrin): update the warning location to be at the spot where
     // the class is used.
-    const warning = createWarning(parsedDocument, body, missingModules);
+    const warning = createWarning(parsedDocument, missingModules);
+    const modules = missingModules.map((m) => m.module).join(' ');
     const indent = getIndentationInside(body);
     warning.fix = [{
       replacementText: `
 ${indent}<custom-style>
-${indent}  <style is="custom-style" include="${missingModules}"></style>
+${indent}  <style is="custom-style" include="${modules}"></style>
 ${indent}</custom-style>`,
       range: sourceRangeForPrependContent(parsedDocument, body)
     }];
@@ -158,31 +159,44 @@ ${indent}</custom-style>`,
   }
 }
 
-function getMissingStyleModules(node: dom5.Node) {
+function getMissingStyleModules(rootNode: dom5.Node):
+    {module: string, node: dom5.Node}[] {
   let includes = '';
-  for (const style of dom5.queryAll(node, isStyleInclude)) {
-    includes += ' ' + dom5.getAttribute(style, 'include')!;
+  const modules = {};
+  dom5.nodeWalkAll(rootNode, (node: dom5.Node) => {
+    if (dom5.isElement(node)) {
+      if (isStyleInclude(node)) {
+        includes += ' ' + dom5.getAttribute(node, 'include')!;
+      } else {
+        styleModules.forEach((m) => {
+          if (!modules[m.module] && m.selector(node)) {
+            modules[m.module] = node;
+          }
+        });
+      }
+    }
+    return false;
+  });
+  const res = [];
+  for (const module in modules) {
+    if (includes.indexOf(module) === -1) {
+      res.push({module, node: modules[module]});
+    }
   }
-  return styleModules
-      .map((m) => {
-        if (includes.indexOf(m.name) === -1 && dom5.query(node, m.selector)) {
-          return m.name;
-        }
-      })
-      .filter((m) => !!m)
-      .join(' ');
+  return res;
 }
 
 function createWarning(
     parsedDocument: ParsedHtmlDocument,
-    node: dom5.Node,
-    missingModules: string) {
-  const multi = missingModules.indexOf(' ') > -1;
+    missingModules: {module: string, node: dom5.Node}[]) {
+  const multi = missingModules.length > 1;
+  const node = missingModules[0].node;
+  const modules = missingModules.map((m) => m.module).join(' ');
   return new FixableWarning({
     code: 'iron-flex-layout-classes',
     message: `Style module${multi ? 's are' : ' is'} used but not imported:
 
-  ${missingModules}
+  ${modules}
 
 Import ${multi ? 'them' : 'it'} in the template style include.`,
     parsedDocument,
