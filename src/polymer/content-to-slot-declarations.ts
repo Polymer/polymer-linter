@@ -39,14 +39,6 @@ class ContentToSlotDeclarations extends HtmlRule {
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
     const warnings: FixableWarning[] = [];
 
-    this.convertDeclarations(parsedDocument, document, warnings);
-
-    return warnings;
-  }
-
-  convertDeclarations(
-      parsedDocument: ParsedHtmlDocument, document: Document,
-      warnings: FixableWarning[]) {
     for (const domModule of document.getFeatures({kind: 'dom-module'})) {
       const template = dom5.query(domModule.astNode, p.hasTagName('template'));
       if (!template) {
@@ -54,7 +46,9 @@ class ContentToSlotDeclarations extends HtmlRule {
       }
       const contentElements = dom5.queryAll(
           treeAdapters.default.getTemplateContent(template),
-          p.hasTagName('content'));
+          p.hasTagName('content'),
+          [],
+          dom5.childNodesIncludeTemplate);
       const slotNames = new Set<string>();
       for (const contentElement of contentElements) {
         const warning = new FixableWarning({
@@ -83,6 +77,7 @@ class ContentToSlotDeclarations extends HtmlRule {
         warnings.push(warning);
       }
     }
+    return warnings;
   }
 }
 
