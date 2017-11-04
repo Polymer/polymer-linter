@@ -18,7 +18,7 @@ import {Document, ParsedHtmlDocument, Severity} from 'polymer-analyzer';
 
 import {HtmlRule} from '../html/rule';
 import {registry} from '../registry';
-import {FixableWarning} from '../warning';
+import {FixableWarning, Replacement} from '../warning';
 
 import stripIndent = require('strip-indent');
 
@@ -140,11 +140,8 @@ class IronFlexLayoutClasses extends HtmlRule {
       const styleNode = getStyleNodeToEdit(templateContent);
       if (!styleNode) {
         const indent = getIndentationInside(templateContent);
-        warning.fix = [{
-          replacementText: `
-${indent}<style include="${modules}"></style>`,
-          range: sourceRangeForPrependContent(parsedDocument, template)
-        }];
+        warning.fix = [prependContent(parsedDocument, template, `
+${indent}<style include="${modules}"></style>`)];
       } else if (dom5.hasAttribute(styleNode, 'include')) {
         const include = dom5.getAttribute(styleNode, 'include')!;
         warning.fix = [{
@@ -153,10 +150,8 @@ ${indent}<style include="${modules}"></style>`,
               parsedDocument.sourceRangeForAttributeValue(styleNode, 'include')!
         }];
       } else {
-        warning.fix = [{
-          replacementText: ` include="${modules}"`,
-          range: sourceRangeForAddAttribute(parsedDocument, styleNode)
-        }];
+        warning.fix =
+            [addAttribute(parsedDocument, styleNode, 'include', modules)];
       }
       warnings.push(warning);
     }
@@ -176,13 +171,10 @@ ${indent}<style include="${modules}"></style>`,
     const warning = createWarning(parsedDocument, missingModules);
     const modules = missingModules.map((m) => m.module).join(' ');
     const indent = getIndentationInside(body);
-    warning.fix = [{
-      replacementText: `
+    warning.fix = [prependContent(parsedDocument, body, `
 ${indent}<custom-style>
 ${indent}  <style is="custom-style" include="${modules}"></style>
-${indent}</custom-style>`,
-      range: sourceRangeForPrependContent(parsedDocument, body)
-    }];
+${indent}</custom-style>`)];
     warnings.push(warning);
     return warnings;
   }
@@ -246,24 +238,32 @@ function getStyleNodeToEdit(node: dom5.Node) {
   return styleToEdit || dom5.query(node, p.hasTagName('style'));
 }
 
-function sourceRangeForAddAttribute(
-    parsedDocument: ParsedHtmlDocument, node: dom5.Node) {
+function addAttribute(
+    parsedDocument: ParsedHtmlDocument,
+    node: dom5.Node,
+    attribute: string,
+    attributeValue: string): Replacement {
   const tagRange = parsedDocument.sourceRangeForStartTag(node)!;
-  return {
+  const range = {
     file: tagRange.file,
     start: {line: tagRange.end.line, column: tagRange.end.column - 1},
     end: {line: tagRange.end.line, column: tagRange.end.column - 1}
   };
+  const replacementText = ` ${attribute}="${attributeValue}"`;
+  return {replacementText, range};
 }
 
-function sourceRangeForPrependContent(
-    parsedDocument: ParsedHtmlDocument, node: dom5.Node) {
+function prependContent(
+    parsedDocument: ParsedHtmlDocument,
+    node: dom5.Node,
+    replacementText: string): Replacement {
   const tagRange = parsedDocument.sourceRangeForStartTag(node)!;
-  return {
+  const range = {
     file: tagRange.file,
     start: {line: tagRange.end.line, column: tagRange.end.column},
     end: {line: tagRange.end.line, column: tagRange.end.column}
   };
+  return {replacementText, range};
 }
 
 registry.register(new IronFlexLayoutClasses());
