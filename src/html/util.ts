@@ -14,6 +14,7 @@
 
 import * as dom5 from 'dom5';
 import cssWhat = require('css-what');
+import {ParsedHtmlDocument, SourceRange} from 'polymer-analyzer';
 
 // Attributes that are on every HTMLElement.
 export const sharedAttributes = new Set([
@@ -240,4 +241,25 @@ function attributeSelectorToPredicate(selector: cssWhat.Attribute):
   const never: never = selector.action;
   throw new Error(
       `Unexpected type of attribute matcher from CSS parser ${never}`);
+}
+
+export function removeTrailingWhitespace(
+    textNode: dom5.Node, parsedDocument: ParsedHtmlDocument) {
+  const prevText = dom5.getTextContent(textNode);
+  const match = prevText.match(/\n?[ \t]*$/);
+  if (!match) {
+    return;
+  }
+  const range = parsedDocument.sourceRangeForNode(textNode)!;
+  const lengthOfPreviousLine =
+      parsedDocument.newlineIndexes[range.end.line - 1] -
+      (parsedDocument.newlineIndexes[range.end.line - 2] || -1) - 1;
+  const newRange: SourceRange = {
+    ...range,
+    start: {
+      column: lengthOfPreviousLine,
+      line: range.end.line - 1,
+    }
+  };
+  return {range: newRange, replacementText: ''};
 }

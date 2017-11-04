@@ -53,10 +53,10 @@ suite(ruleId, () => {
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
-      `./iron-flex-layout/classes/iron-flex-layout.html import is deprecated in iron-flex-layout v1, and not shipped in iron-flex-layout v2.x.
+      `./iron-flex-layout/classes/iron-flex-layout.html import is deprecated in iron-flex-layout v1, and not shipped in iron-flex-layout v2.
 Replace it with ./iron-flex-layout/iron-flex-layout-classes.html import.
 Run \`iron-flex-layout-classes\` to include the required style modules.`,
-      `./iron-flex-layout/classes/iron-shadow-flex-layout.html import is deprecated in iron-flex-layout v1, and not shipped in iron-flex-layout v2.x.
+      `./iron-flex-layout/classes/iron-shadow-flex-layout.html import is deprecated in iron-flex-layout v1, and not shipped in iron-flex-layout v2.
 Replace it with ./iron-flex-layout/iron-flex-layout-classes.html import.
 Run \`iron-flex-layout-classes\` to include the required style modules.`,
     ]);

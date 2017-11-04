@@ -79,7 +79,31 @@ const isStyleInclude = p.AND(p.hasTagName('style'), p.hasAttr('include'));
 class IronFlexLayoutClasses extends HtmlRule {
   code = 'iron-flex-layout-classes';
   description = stripIndent(`
-    Warns when iron-flex-layout classes are used without including the style modules.
+      Warns when iron-flex-layout classes are used without including the style modules.
+
+      This:
+
+          <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
+          <dom-module>
+            <template>
+              <style>
+                :host { diplay: block; }
+              </style>
+              <div class="layout vertical">hello</div>
+            </template>
+          <dom-module>
+
+      Should instead be written as:
+
+          <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
+          <dom-module>
+            <template>
+              <style include="iron-flex">
+                :host { diplay: block; }
+              </style>
+              <div class="layout vertical">hello</div>
+            </template>
+          <dom-module>
   `).trim();
 
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
