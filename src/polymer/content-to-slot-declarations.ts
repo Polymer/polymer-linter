@@ -62,18 +62,20 @@ class ContentToSlotDeclarations extends HtmlRule {
         });
         const slotElementText =
             getSerializedSlotElement(contentElement, slotNames);
-        const slotElementStartTag =
-            slotElementText.slice(0, -7); /* cut </slot> off the end */
-        warning.fix = [
-          {
-            replacementText: slotElementStartTag,
-            range: parsedDocument.sourceRangeForStartTag(contentElement)!
-          },
-          {
-            replacementText: '</slot>',
-            range: parsedDocument.sourceRangeForEndTag(contentElement)!
-          }
-        ];
+        if (slotElementText != null) {
+          const slotElementStartTag =
+              slotElementText.slice(0, -7); /* cut </slot> off the end */
+          warning.fix = [
+            {
+              replacementText: slotElementStartTag,
+              range: parsedDocument.sourceRangeForStartTag(contentElement)!
+            },
+            {
+              replacementText: '</slot>',
+              range: parsedDocument.sourceRangeForEndTag(contentElement)!
+            }
+          ];
+        }
         warnings.push(warning);
       }
     }
@@ -90,7 +92,11 @@ class ContentToSlotDeclarations extends HtmlRule {
  * end tags.
  */
 function getSerializedSlotElement(
-    contentElement: dom5.Node, slotNames: Set<string>) {
+    contentElement: dom5.Node, slotNames: Set<string>): string|undefined {
+  if (dom5.hasAttribute(contentElement, 'select$')) {
+    // We can't automatically fix a dynamic select statement.
+    return undefined;
+  }
   const attrs = [...contentElement.attrs];
   const selectorAttr = attrs.find((a) => a.name === 'select');
   const selector = selectorAttr && selectorAttr.value;
