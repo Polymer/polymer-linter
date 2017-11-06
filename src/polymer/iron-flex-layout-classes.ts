@@ -67,11 +67,6 @@ const styleModules = [
   }
 ];
 
-declare interface StyleModule {
-  module: string;
-  node: dom5.Node;
-}
-
 const styleModulesRegex = /iron-(flex|positioning)/;
 
 const isStyleInclude = p.AND(p.hasTagName('style'), p.hasAttr('include'));
@@ -129,31 +124,28 @@ class IronFlexLayoutClasses extends HtmlRule {
         continue;
       }
       const templateContent = treeAdapters.default.getTemplateContent(template);
-      const missingModules = getMissingStyleModules(templateContent);
-      if (!missingModules.length) {
+      const missingModules =
+          getMissingStyleModules(parsedDocument, templateContent, warnings);
+      if (!missingModules) {
         continue;
       }
-      // TODO(valdrin): update the warning location to be at the spot where
-      // the class is used.
-      const warning = createWarning(parsedDocument, missingModules);
-      const modules = missingModules.map((m) => m.module).join(' ');
+      const warning = warnings[warnings.length - 1];
       const styleNode = getStyleNodeToEdit(templateContent);
       if (!styleNode) {
         const indent = getIndentationInside(templateContent);
         warning.fix = [prependContent(parsedDocument, template, `
-${indent}<style include="${modules}"></style>`)];
+${indent}<style include="${missingModules}"></style>`)];
       } else if (dom5.hasAttribute(styleNode, 'include')) {
         const include = dom5.getAttribute(styleNode, 'include')!;
         warning.fix = [{
-          replacementText: `"${include} ${modules}"`,
+          replacementText: `"${include} ${missingModules}"`,
           range:
               parsedDocument.sourceRangeForAttributeValue(styleNode, 'include')!
         }];
       } else {
-        warning.fix =
-            [addAttribute(parsedDocument, styleNode, 'include', modules)];
+        warning.fix = [addAttribute(
+            parsedDocument, styleNode, 'include', missingModules)];
       }
-      warnings.push(warning);
     }
     const body = dom5.query(parsedDocument.ast, p.hasTagName('body'));
     // Handle files like `<dom-module></dom-module> <body><p>hello</p></body>`
@@ -162,25 +154,25 @@ ${indent}<style include="${modules}"></style>`)];
     if (!body || !body.__location) {
       return warnings;
     }
-    const missingModules = getMissingStyleModules(parsedDocument.ast);
-    if (!missingModules.length) {
+    const missingModules =
+        getMissingStyleModules(parsedDocument, parsedDocument.ast, warnings);
+    if (!missingModules) {
       return warnings;
     }
-    // TODO(valdrin): update the warning location to be at the spot where
-    // the class is used.
-    const warning = createWarning(parsedDocument, missingModules);
-    const modules = missingModules.map((m) => m.module).join(' ');
+    const warning = warnings[warnings.length - 1];
     const indent = getIndentationInside(body);
     warning.fix = [prependContent(parsedDocument, body, `
 ${indent}<custom-style>
-${indent}  <style is="custom-style" include="${modules}"></style>
+${indent}  <style is="custom-style" include="${missingModules}"></style>
 ${indent}</custom-style>`)];
-    warnings.push(warning);
     return warnings;
   }
 }
 
-function getMissingStyleModules(rootNode: dom5.Node): StyleModule[] {
+function getMissingStyleModules(
+    parsedDocument: ParsedHtmlDocument,
+    rootNode: dom5.Node,
+    warnings: FixableWarning[]): string {
   let includes = '';
   const modules = {};
   dom5.nodeWalkAll(rootNode, (node: dom5.Node) => {
@@ -189,39 +181,33 @@ function getMissingStyleModules(rootNode: dom5.Node): StyleModule[] {
         includes += ' ' + dom5.getAttribute(node, 'include')!;
       } else {
         styleModules.forEach((m) => {
-          if (!modules[m.module] && m.selector(node)) {
-            modules[m.module] = node;
+          if (m.selector(node)) {
+            modules[m.module] = modules[m.module] || [];
+            modules[m.module].push(node);
           }
         });
       }
     }
     return false;
   });
-  const res = [];
+  let missingModules = '';
   for (const module in modules) {
     if (includes.indexOf(module) === -1) {
-      res.push({module, node: modules[module]});
+      modules[module].forEach((node: dom5.Node) => {
+        warnings.push(new FixableWarning({
+          code: 'iron-flex-layout-classes',
+          message: `"${module}" style module is used but not imported.
+Import it in the template style include.`,
+          parsedDocument,
+          severity: Severity.WARNING,
+          sourceRange:
+              parsedDocument.sourceRangeForAttributeValue(node, 'class')!
+        }));
+      });
+      missingModules += ' ' + module;
     }
   }
-  return res;
-}
-
-function createWarning(
-    parsedDocument: ParsedHtmlDocument, missingModules: StyleModule[]) {
-  const multi = missingModules.length > 1;
-  const node = missingModules[0].node;
-  const modules = missingModules.map((m) => m.module).join(' ');
-  return new FixableWarning({
-    code: 'iron-flex-layout-classes',
-    message: `Style module${multi ? 's are' : ' is'} used but not imported:
-
-  ${modules}
-
-Import ${multi ? 'them' : 'it'} in the template style include.`,
-    parsedDocument,
-    severity: Severity.WARNING,
-    sourceRange: parsedDocument.sourceRangeForStartTag(node)!
-  });
+  return missingModules.trim();
 }
 
 function getStyleNodeToEdit(node: dom5.Node) {

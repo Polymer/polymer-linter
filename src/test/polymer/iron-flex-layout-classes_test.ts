@@ -46,50 +46,50 @@ suite(ruleId, () => {
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
       <div class="layout horizontal">
-      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+                 ~~~~~~~~~~~~~~~~~~~`,
       `
       <div class="layout horizontal">
-      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+                 ~~~~~~~~~~~~~~~~~~~`,
+      `
+        <p class="flex">lorem</p>
+                 ~~~~~~`,
       `
       <div class="flex">
-      ~~~~~~~~~~~~~~~~~~`,
+                 ~~~~~~`,
+      `
+        <p class="flex-1">lorem</p>
+                 ~~~~~~~~`,
       `
       <div class="layout horizontal-reverse">
-      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+      `
+        <p class="flex-1">ipsum</p>
+                 ~~~~~~~~`,
       `
     <style>
     ~~~~~~~`,
       `
 <body class="fullbleed">
-~~~~~~~~~~~~~~~~~~~~~~~~`,
+            ~~~~~~~~~~~`,
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
-      `Style module is used but not imported:
-
-  iron-flex
-
+      `"iron-flex" style module is used but not imported.
 Import it in the template style include.`,
-      `Style module is used but not imported:
-
-  iron-flex
-
+      `"iron-flex" style module is used but not imported.
 Import it in the template style include.`,
-      `Style modules are used but not imported:
-
-  iron-flex iron-flex-factors
-
-Import them in the template style include.`,
-      `Style modules are used but not imported:
-
-  iron-flex-reverse iron-flex-factors
-
-Import them in the template style include.`,
+      `"iron-flex" style module is used but not imported.
+Import it in the template style include.`,
+      `"iron-flex" style module is used but not imported.
+Import it in the template style include.`,
+      `"iron-flex-factors" style module is used but not imported.
+Import it in the template style include.`,
+      `"iron-flex-reverse" style module is used but not imported.
+Import it in the template style include.`,
+      `"iron-flex-factors" style module is used but not imported.
+Import it in the template style include.`,
       'Style outside template. Run `move-style-into-template` rule.',
-      `Style module is used but not imported:
-
-  iron-positioning
-
+      `"iron-positioning" style module is used but not imported.
 Import it in the template style include.`,
     ]);
   });

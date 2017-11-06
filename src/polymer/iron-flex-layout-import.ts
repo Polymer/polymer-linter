@@ -76,7 +76,7 @@ class IronFlexLayoutImport extends HtmlRule {
         message: `${href} import is deprecated in iron-flex-layout v1, ` +
             `and not shipped in iron-flex-layout v2.
 Replace it with ${correctImport} import.
-Run \`iron-flex-layout-classes\` to include the required style modules.`,
+Run the lint rule \`iron-flex-layout-classes\` with \`--fix\` to include the required style modules.`,
         parsedDocument,
         severity: Severity.WARNING,
         sourceRange: parsedDocument.sourceRangeForAttributeValue(imp, 'href')!
