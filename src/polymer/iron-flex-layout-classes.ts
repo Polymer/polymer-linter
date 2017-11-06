@@ -129,6 +129,8 @@ class IronFlexLayoutClasses extends HtmlRule {
       if (!missingModules) {
         continue;
       }
+      // Add fix on last warning, we'll add all the missing modules in the same
+      // style node.
       const warning = warnings[warnings.length - 1];
       const styleNode = getStyleNodeToEdit(templateContent);
       if (!styleNode) {
@@ -159,6 +161,8 @@ ${indent}<style include="${missingModules}"></style>`)];
     if (!missingModules) {
       return warnings;
     }
+    // Add fix on last warning, we'll add all the missing modules in the same
+    // style node.
     const warning = warnings[warnings.length - 1];
     const indent = getIndentationInside(body);
     warning.fix = [prependContent(parsedDocument, body, `
