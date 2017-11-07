@@ -137,6 +137,25 @@
     </script>
   </dom-module>
 
+
+  <dom-module id="with-inner-template">
+    <template>
+      <iron-list>
+        <template>
+          <div class="layout horizontal">
+            <p>lorem</p>
+            <p>ipsum</p>
+          </div>
+        </template>
+      </iron-list>
+    </template>
+    <script>
+      Polymer({
+        is: "with-inner-template"
+      });
+    </script>
+  </dom-module>
+
 </body>
 
 </html>
