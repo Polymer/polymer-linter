@@ -177,23 +177,7 @@ function getMissingStyleModules(
     parsedDocument: ParsedHtmlDocument,
     rootNode: dom5.Node,
     warnings: FixableWarning[]): string {
-  let includes = '';
-  const modules = {};
-  dom5.nodeWalkAll(rootNode, (node: dom5.Node) => {
-    if (dom5.isElement(node)) {
-      if (isStyleInclude(node)) {
-        includes += ' ' + dom5.getAttribute(node, 'include')!;
-      } else {
-        styleModules.forEach((m) => {
-          if (m.selector(node)) {
-            modules[m.module] = modules[m.module] || [];
-            modules[m.module].push(node);
-          }
-        });
-      }
-    }
-    return false;
-  });
+  const {modules, includes} = searchUsedModulesAndIncludes(rootNode);
   let missingModules = '';
   for (const module in modules) {
     if (includes.indexOf(module) === -1) {
@@ -212,6 +196,37 @@ Import it in the template style include.`,
     }
   }
   return missingModules.trim();
+}
+
+function searchUsedModulesAndIncludes(
+    rootNode: dom5.Node, modules: Object = {}, includes: string[] = []):
+    {modules: Object, includes: string[]} {
+  dom5.nodeWalkAll(rootNode, (node: dom5.Node) => {
+    if (!dom5.isElement(node)) {
+      return false;
+    }
+    // Ensure we don't search into dom-module's templates.
+    if (p.hasTagName('template')(node) &&
+        !p.hasTagName('dom-module')(node.parentNode!)) {
+      const templateContent = treeAdapters.default.getTemplateContent(node);
+      searchUsedModulesAndIncludes(templateContent, modules, includes);
+    } else if (isStyleInclude(node)) {
+      dom5.getAttribute(node, 'include')!.split(' ').forEach((include) => {
+        if (includes.indexOf(include) === -1) {
+          includes.push(include);
+        }
+      });
+    } else {
+      styleModules.forEach((m) => {
+        if (m.selector(node)) {
+          modules[m.module] = modules[m.module] || [];
+          modules[m.module].push(node);
+        }
+      });
+    }
+    return false;
+  });
+  return {modules, includes};
 }
 
 function getStyleNodeToEdit(node: dom5.Node) {
