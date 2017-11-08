@@ -132,7 +132,9 @@ class IronFlexLayoutClasses extends HtmlRule {
       // Add fix on last warning, we'll add all the missing modules in the same
       // style node.
       const warning = warnings[warnings.length - 1];
-      const styleNode = getStyleNodeToEdit(templateContent);
+      // Fallback to style without include attribute.
+      const styleNode = getStyleNodeWithInclude(templateContent) ||
+          dom5.query(templateContent, p.hasTagName('style'));
       if (!styleNode) {
         const indent = getIndentationInside(templateContent);
         warning.fix = [prependContent(parsedDocument, template, `
@@ -164,11 +166,22 @@ ${indent}<style include="${missingModules}"></style>`)];
     // Add fix on last warning, we'll add all the missing modules in the same
     // style node.
     const warning = warnings[warnings.length - 1];
-    const indent = getIndentationInside(body);
-    warning.fix = [prependContent(parsedDocument, body, `
+    const styleNode = getStyleNodeWithInclude(parsedDocument.ast);
+    if (styleNode) {
+      const include = dom5.getAttribute(styleNode, 'include')!;
+      warning.fix = [{
+        replacementText: `"${include} ${missingModules}"`,
+        range:
+            parsedDocument.sourceRangeForAttributeValue(styleNode, 'include')!
+      }];
+    } else {
+      const indent = getIndentationInside(body);
+      warning.fix = [prependContent(parsedDocument, body, `
 ${indent}<custom-style>
 ${indent}  <style is="custom-style" include="${missingModules}"></style>
 ${indent}</custom-style>`)];
+    }
+
     return warnings;
   }
 }
@@ -229,7 +242,7 @@ function searchUsedModulesAndIncludes(
   return {modules, includes};
 }
 
-function getStyleNodeToEdit(node: dom5.Node) {
+function getStyleNodeWithInclude(node: dom5.Node) {
   let styleToEdit = null;
   for (const style of dom5.queryAll(node, isStyleInclude)) {
     // Get the first one of the styles with include attribute, otherwise
@@ -239,8 +252,7 @@ function getStyleNodeToEdit(node: dom5.Node) {
       styleToEdit = style;
     }
   }
-  // Fallback to style without include attribute.
-  return styleToEdit || dom5.query(node, p.hasTagName('style'));
+  return styleToEdit;
 }
 
 function addAttribute(
