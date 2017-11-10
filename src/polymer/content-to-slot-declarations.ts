@@ -19,7 +19,7 @@ import {Document, ParsedHtmlDocument, Severity} from 'polymer-analyzer';
 
 import {HtmlRule} from '../html/rule';
 import {registry} from '../registry';
-import {FixableWarning} from '../warning';
+import {Edit, FixableWarning} from '../warning';
 
 import stripIndent = require('strip-indent');
 
@@ -60,12 +60,12 @@ class ContentToSlotDeclarations extends HtmlRule {
           severity: Severity.WARNING,
           sourceRange: parsedDocument.sourceRangeForStartTag(contentElement)!
         });
-        const slotElementText =
-            getSerializedSlotElement(contentElement, slotNames);
-        if (slotElementText != null) {
+        const result = getSerializedSlotElement(contentElement, slotNames);
+        if (result !== undefined) {
+          const {slotElementText, isSafe} = result;
           const slotElementStartTag =
               slotElementText.slice(0, -7); /* cut </slot> off the end */
-          warning.fix = [
+          const edit: Edit = [
             {
               replacementText: slotElementStartTag,
               range: parsedDocument.sourceRangeForStartTag(contentElement)!
@@ -75,6 +75,23 @@ class ContentToSlotDeclarations extends HtmlRule {
               range: parsedDocument.sourceRangeForEndTag(contentElement)!
             }
           ];
+          if (isSafe) {
+            warning.fix = edit;
+          } else {
+            warning.actions = [{
+              kind: 'edit',
+              code: 'content-with-select',
+              description: stripIndent(`
+                Convert this <content> to a <slot>.
+
+                This changes the API of this element because the \`select\`
+                will become a slot name. Use the content-to-slot-usages lint
+                pass to convert usages of the element to conform to the new
+                API.
+            `).trim(),
+              edit
+            }];
+          }
         }
         warnings.push(warning);
       }
@@ -92,7 +109,7 @@ class ContentToSlotDeclarations extends HtmlRule {
  * end tags.
  */
 function getSerializedSlotElement(
-    contentElement: dom5.Node, slotNames: Set<string>): string|undefined {
+    contentElement: dom5.Node, slotNames: Set<string>) {
   if (dom5.hasAttribute(contentElement, 'select$')) {
     // We can't automatically fix a dynamic select statement.
     return undefined;
@@ -100,6 +117,7 @@ function getSerializedSlotElement(
   const attrs = [...contentElement.attrs];
   const selectorAttr = attrs.find((a) => a.name === 'select');
   const selector = selectorAttr && selectorAttr.value;
+  const isSafe = selector === undefined;
   let slotName = null;
   if (selector) {
     slotName = slotNameForSelector(selector);
@@ -117,7 +135,8 @@ function getSerializedSlotElement(
   dom5.removeAttribute(slotElement, 'select');
   const fragment = parse5.treeAdapters.default.createDocumentFragment();
   dom5.append(fragment, slotElement);
-  return parse5.serialize(fragment);
+  const slotElementText = parse5.serialize(fragment);
+  return {slotElementText, isSafe};
 }
 
 function slotNameForSelector(selector: string) {
