@@ -15,6 +15,7 @@
 import * as dom5 from 'dom5';
 import cssWhat = require('css-what');
 import {ParsedHtmlDocument, SourceRange} from 'polymer-analyzer';
+import {Replacement} from '../warning';
 
 // Attributes that are on every HTMLElement.
 export const sharedAttributes = new Set([
@@ -262,4 +263,62 @@ export function removeTrailingWhitespace(
     }
   };
   return {range: newRange, replacementText: ''};
+}
+
+export function addAttribute(
+    parsedDocument: ParsedHtmlDocument,
+    node: dom5.Node,
+    attribute: string,
+    attributeValue: string): Replacement {
+  const tagRange = parsedDocument.sourceRangeForStartTag(node)!;
+  const range = {
+    file: tagRange.file,
+    start: {line: tagRange.end.line, column: tagRange.end.column - 1},
+    end: {line: tagRange.end.line, column: tagRange.end.column - 1}
+  };
+  const replacementText = ` ${attribute}="${attributeValue}"`;
+  return {replacementText, range};
+}
+
+export function prependContentInto(
+    parsedDocument: ParsedHtmlDocument,
+    node: dom5.Node,
+    replacementText: string): Replacement {
+  const tagRange = parsedDocument.sourceRangeForStartTag(node)!;
+  const range = {
+    file: tagRange.file,
+    start: {line: tagRange.end.line, column: tagRange.end.column},
+    end: {line: tagRange.end.line, column: tagRange.end.column}
+  };
+  return {replacementText, range};
+}
+
+export function insertContentAfter(
+    parsedDocument: ParsedHtmlDocument,
+    node: dom5.Node,
+    replacementText: string): Replacement {
+  const tagRange = parsedDocument.sourceRangeForNode(node)!;
+  const range = {
+    file: tagRange.file,
+    start: {line: tagRange.end.line, column: tagRange.end.column},
+    end: {line: tagRange.end.line, column: tagRange.end.column}
+  };
+  return {replacementText, range};
+}
+
+export function removeNode(
+    parsedDocument: ParsedHtmlDocument, node: dom5.Node): Replacement[] {
+  const parentChildren = node.parentNode!.childNodes!;
+  const prevNode = parentChildren[parentChildren.indexOf(node)! - 1];
+  const fix: Replacement[] = [];
+  if (prevNode && dom5.isTextNode(prevNode)) {
+    const trailingWhiteSpace =
+        removeTrailingWhitespace(prevNode, parsedDocument);
+    if (trailingWhiteSpace) {
+      fix.push(trailingWhiteSpace);
+    }
+  }
+  fix.push(
+      {replacementText: '', range: parsedDocument.sourceRangeForNode(node)!});
+  return fix;
 }

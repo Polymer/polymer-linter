@@ -13,23 +13,32 @@
  */
 
 import * as dom5 from 'dom5';
+import {treeAdapters} from 'parse5';
 import {Document, ParsedHtmlDocument, Severity} from 'polymer-analyzer';
 
 import {HtmlRule} from '../html/rule';
-import {removeTrailingWhitespace} from '../html/util';
+import {getIndentationInside, insertContentAfter, removeNode} from '../html/util';
 import {registry} from '../registry';
 import {FixableWarning, Replacement} from '../warning';
 
 import stripIndent = require('strip-indent');
 
-const deprecatedImports =
-    /iron-flex-layout\/classes\/iron-(shadow-)?flex-layout.html/;
+// Capture any import file in the `classes` folder.
+const deprecatedImports = /iron-flex-layout\/classes\/.*/;
 const replacementImport = 'iron-flex-layout/iron-flex-layout-classes.html';
+const polymerLikeImport = /(iron|paper|app)-.*\/(iron|paper|app)-.*.html/;
 
 const p = dom5.predicates;
 
 const isImport = p.AND(
     p.hasTagName('link'), p.hasAttrValue('rel', 'import'), p.hasAttr('href'));
+
+const styleModulesRegex = /iron-(flex|positioning)/;
+const usesIronFlexStyleIncludes = p.AND(
+    p.hasTagName('style'),
+    p.hasAttr('include'),
+    (node: dom5.Node) =>
+        styleModulesRegex.test(dom5.getAttribute(node, 'include')!));
 
 class IronFlexLayoutImport extends HtmlRule {
   code = 'iron-flex-layout-import';
@@ -58,6 +67,8 @@ class IronFlexLayoutImport extends HtmlRule {
       parsedDocument: ParsedHtmlDocument, _: Document,
       warnings: FixableWarning[]) {
     const imports = dom5.queryAll(parsedDocument.ast, isImport);
+    // Assume base path to be current folder.
+    let polymerElementsBasePath: string = './';
     let goodImport: dom5.Node|null = null;
     const badImports: dom5.Node[] = [];
     for (const imp of imports) {
@@ -67,35 +78,75 @@ class IronFlexLayoutImport extends HtmlRule {
       } else if (deprecatedImports.test(href)) {
         badImports.push(imp);
       }
+      if (polymerLikeImport.test(href)) {
+        polymerElementsBasePath = href.replace(polymerLikeImport, '');
+      }
     }
+
+    const styleNode = getStyleNodeWithIronFlexInclude(parsedDocument.ast);
+    // Style modules are used, but not imported!
+    if (!badImports.length && !goodImport && styleNode) {
+      const warning = new FixableWarning({
+        code: 'iron-flex-layout-import',
+        message: `iron-flex-layout style modules are used but not imported.
+Import iron-flex-layout/iron-flex-layout-classes.html`,
+        parsedDocument,
+        severity: Severity.WARNING,
+        sourceRange:
+            parsedDocument.sourceRangeForAttributeValue(styleNode, 'include')!
+      });
+      const correctImport = polymerElementsBasePath + replacementImport;
+      if (imports.length) {
+        const lastImport = imports[imports.length - 1];
+        const indent = getIndentationInside(lastImport.parentNode!);
+        warning.fix = [insertContentAfter(parsedDocument, lastImport, `
+${indent}<link rel="import" href="${correctImport}">`)];
+      } else {
+        // If no imports present, assume we are in a file with only <dom-module>s
+        // as it doesn't make sense to be in a entry-point document w/o imports.
+        const range = {
+          file: parsedDocument.sourceRangeForStartTag(styleNode)!.file,
+          start: {line: 0, column: 0},
+          end: {line: 0, column: 0}
+        };
+        const replacementText = `<link rel="import" href="${correctImport}">\n`;
+        warning.fix = [{replacementText, range}];
+      }
+      warnings.push(warning);
+    }
+    // If there is a good import that is not used, remove it.
+    if (!styleNode && goodImport) {
+      const warning = new FixableWarning({
+        code: 'iron-flex-layout-import',
+        message:
+            `This import defines style modules that are not being used. Remove it.`,
+        parsedDocument,
+        severity: Severity.WARNING,
+        sourceRange: parsedDocument.sourceRangeForStartTag(goodImport)!
+      });
+      warning.fix = removeNode(parsedDocument, goodImport);
+      warnings.push(warning);
+    }
+    // If there are bad imports, ensure they're either fixed or removed.
     badImports.forEach((imp, i) => {
       const href = dom5.getAttribute(imp, 'href')!;
       const correctImport = href.replace(deprecatedImports, replacementImport);
+      const suggestedFix = styleNode ?
+          `Replace it with ${correctImport} import.` :
+          'Remove it as it is not used.';
       const warning = new FixableWarning({
         code: 'iron-flex-layout-import',
         message: `${href} import is deprecated in iron-flex-layout v1, ` +
             `and not shipped in iron-flex-layout v2.
-Replace it with ${correctImport} import.
+${suggestedFix}
 Run the lint rule \`iron-flex-layout-classes\` with \`--fix\` to include the required style modules.`,
         parsedDocument,
         severity: Severity.WARNING,
         sourceRange: parsedDocument.sourceRangeForAttributeValue(imp, 'href')!
       });
       const fix: Replacement[] = [];
-      if (goodImport || i > 0) {
-        const parentChildren = imp.parentNode!.childNodes!;
-        const prevNode = parentChildren[parentChildren.indexOf(imp)! - 1];
-        if (prevNode && dom5.isTextNode(prevNode)) {
-          const trailingWhiteSpace =
-              removeTrailingWhitespace(prevNode, parsedDocument);
-          if (trailingWhiteSpace) {
-            fix.push(trailingWhiteSpace);
-          }
-        }
-        fix.push({
-          replacementText: '',
-          range: parsedDocument.sourceRangeForNode(imp)!
-        });
+      if (!styleNode || goodImport || i > 0) {
+        fix.splice(0, 0, ...removeNode(parsedDocument, imp));
       } else {
         fix.push({
           replacementText: `"${correctImport}"`,
@@ -106,6 +157,22 @@ Run the lint rule \`iron-flex-layout-classes\` with \`--fix\` to include the req
       warnings.push(warning);
     });
   }
+}
+
+function getStyleNodeWithIronFlexInclude(rootNode: dom5.Node) {
+  let styleNode: dom5.Node|null = null;
+  dom5.nodeWalk(rootNode, (node: dom5.Node) => {
+    if (dom5.isElement(node)) {
+      if (p.hasTagName('template')(node)) {
+        const templateContent = treeAdapters.default.getTemplateContent(node);
+        styleNode = dom5.query(templateContent, usesIronFlexStyleIncludes);
+      } else if (usesIronFlexStyleIncludes(node)) {
+        styleNode = node;
+      }
+    }
+    return styleNode !== null;
+  });
+  return styleNode;
 }
 
 registry.register(new IronFlexLayoutImport());
