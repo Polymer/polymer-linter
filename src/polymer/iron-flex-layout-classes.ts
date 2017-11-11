@@ -18,11 +18,11 @@ import {Document, ParsedHtmlDocument, Severity} from 'polymer-analyzer';
 
 import {HtmlRule} from '../html/rule';
 import {registry} from '../registry';
-import {FixableWarning, Replacement} from '../warning';
+import {FixableWarning} from '../warning';
 
 import stripIndent = require('strip-indent');
 
-import {elementSelectorToPredicate, getIndentationInside} from '../html/util';
+import {elementSelectorToPredicate, getIndentationInside, addAttribute, prependContentInto} from '../html/util';
 
 const p = dom5.predicates;
 
@@ -137,7 +137,7 @@ class IronFlexLayoutClasses extends HtmlRule {
           dom5.query(templateContent, p.hasTagName('style'));
       if (!styleNode) {
         const indent = getIndentationInside(templateContent);
-        warning.fix = [prependContent(parsedDocument, template, `
+        warning.fix = [prependContentInto(parsedDocument, template, `
 ${indent}<style include="${missingModules}"></style>`)];
       } else if (dom5.hasAttribute(styleNode, 'include')) {
         const include = dom5.getAttribute(styleNode, 'include')!;
@@ -176,7 +176,7 @@ ${indent}<style include="${missingModules}"></style>`)];
       }];
     } else {
       const indent = getIndentationInside(body);
-      warning.fix = [prependContent(parsedDocument, body, `
+      warning.fix = [prependContentInto(parsedDocument, body, `
 ${indent}<custom-style>
 ${indent}  <style is="custom-style" include="${missingModules}"></style>
 ${indent}</custom-style>`)];
@@ -253,34 +253,6 @@ function getStyleNodeWithInclude(node: dom5.Node) {
     }
   }
   return styleToEdit;
-}
-
-function addAttribute(
-    parsedDocument: ParsedHtmlDocument,
-    node: dom5.Node,
-    attribute: string,
-    attributeValue: string): Replacement {
-  const tagRange = parsedDocument.sourceRangeForStartTag(node)!;
-  const range = {
-    file: tagRange.file,
-    start: {line: tagRange.end.line, column: tagRange.end.column - 1},
-    end: {line: tagRange.end.line, column: tagRange.end.column - 1}
-  };
-  const replacementText = ` ${attribute}="${attributeValue}"`;
-  return {replacementText, range};
-}
-
-function prependContent(
-    parsedDocument: ParsedHtmlDocument,
-    node: dom5.Node,
-    replacementText: string): Replacement {
-  const tagRange = parsedDocument.sourceRangeForStartTag(node)!;
-  const range = {
-    file: tagRange.file,
-    start: {line: tagRange.end.line, column: tagRange.end.column},
-    end: {line: tagRange.end.line, column: tagRange.end.column}
-  };
-  return {replacementText, range};
 }
 
 registry.register(new IronFlexLayoutClasses());
