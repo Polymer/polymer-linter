@@ -124,14 +124,15 @@ class IronFlexLayoutClasses extends HtmlRule {
         continue;
       }
       const templateContent = treeAdapters.default.getTemplateContent(template);
+      const fixIndex = warnings.length;
       const missingModules =
           getMissingStyleModules(parsedDocument, templateContent, warnings);
       if (!missingModules) {
         continue;
       }
-      // Add fix on last warning, we'll add all the missing modules in the same
+      // Add fix on first warning, we'll add all the missing modules in the same
       // style node.
-      const warning = warnings[warnings.length - 1];
+      const warning = warnings[fixIndex];
       // Fallback to style without include attribute.
       const styleNode = getStyleNodeWithInclude(templateContent) ||
           dom5.query(templateContent, p.hasTagName('style'));
@@ -158,14 +159,15 @@ ${indent}<style include="${missingModules}"></style>`)];
     if (!body || !body.__location) {
       return warnings;
     }
+    const fixIndex = warnings.length;
     const missingModules =
         getMissingStyleModules(parsedDocument, parsedDocument.ast, warnings);
     if (!missingModules) {
       return warnings;
     }
-    // Add fix on last warning, we'll add all the missing modules in the same
+    // Add fix on first warning, we'll add all the missing modules in the same
     // style node.
-    const warning = warnings[warnings.length - 1];
+    const warning = warnings[fixIndex];
     const styleNode = getStyleNodeWithInclude(parsedDocument.ast);
     if (styleNode) {
       const include = dom5.getAttribute(styleNode, 'include')!;
@@ -192,9 +194,9 @@ function getMissingStyleModules(
     warnings: FixableWarning[]): string {
   const {modules, includes} = searchUsedModulesAndIncludes(rootNode);
   let missingModules = '';
-  for (const module in modules) {
+  for (const [module, nodes] of modules) {
     if (includes.indexOf(module) === -1) {
-      modules[module].forEach((node: dom5.Node) => {
+      nodes.forEach((node: dom5.Node) => {
         warnings.push(new FixableWarning({
           code: 'iron-flex-layout-classes',
           message: `"${module}" style module is used but not imported.
@@ -212,8 +214,10 @@ Import it in the template style include.`,
 }
 
 function searchUsedModulesAndIncludes(
-    rootNode: dom5.Node, modules: Object = {}, includes: string[] = []):
-    {modules: Object, includes: string[]} {
+    rootNode: dom5.Node,
+    modules: Map<string, dom5.Node[]> = new Map(),
+    includes: string[] =
+        []): {modules: Map<string, dom5.Node[]>, includes: string[]} {
   dom5.nodeWalkAll(rootNode, (node: dom5.Node) => {
     if (!dom5.isElement(node)) {
       return false;
@@ -232,8 +236,11 @@ function searchUsedModulesAndIncludes(
     } else {
       styleModules.forEach((m) => {
         if (m.selector(node)) {
-          modules[m.module] = modules[m.module] || [];
-          modules[m.module].push(node);
+          if (!modules.has(m.module)) {
+            modules.set(m.module, [node]);
+          } else {
+            modules.get(m.module)!.push(node);
+          }
         }
       });
     }
