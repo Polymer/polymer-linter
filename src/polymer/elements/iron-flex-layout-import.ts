@@ -25,7 +25,7 @@ import stripIndent = require('strip-indent');
 // Capture any import file in the `classes` folder.
 const deprecatedImports = /iron-flex-layout\/classes\/.*/;
 const replacementImport = 'iron-flex-layout/iron-flex-layout-classes.html';
-const polymerLikeImport = /(iron|paper|app)-.*\/(iron|paper|app)-.*.html/;
+const polymerLikeImport = /(iron|paper|app)-.*\/(iron|paper|app)-.*\.html$/;
 
 const p = dom5.predicates;
 
