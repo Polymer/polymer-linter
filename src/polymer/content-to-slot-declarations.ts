@@ -19,9 +19,8 @@ import {Document, ParsedHtmlDocument, Severity} from 'polymer-analyzer';
 
 import {HtmlRule} from '../html/rule';
 import {registry} from '../registry';
+import {stripIndentation} from '../util';
 import {Edit, FixableWarning} from '../warning';
-
-import stripIndent = require('strip-indent');
 
 
 const p = dom5.predicates;
@@ -32,9 +31,16 @@ const p = dom5.predicates;
 
 class ContentToSlotDeclarations extends HtmlRule {
   code = 'content-to-slot-declarations';
-  description = stripIndent(`
+  description = stripIndentation(`
       Warns when using <content> instead of Shadow Dom v1's <slot> element.
-  `).trim();
+
+      This warning is automatically fixable, and also supports an edit action
+      to convert:
+          <content select=".foo"></content>
+
+      To:
+          <slot name="foo" old-content-selector=".foo"></slot>
+  `);
 
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
     const warnings: FixableWarning[] = [];
@@ -62,9 +68,9 @@ class ContentToSlotDeclarations extends HtmlRule {
         });
         const result = getSerializedSlotElement(contentElement, slotNames);
         if (result !== undefined) {
-          const {slotElementText, isSafe} = result;
-          const slotElementStartTag =
-              slotElementText.slice(0, -7); /* cut </slot> off the end */
+          const {slotElementStartTagText, isSafe} = result;
+          const slotElementStartTag = slotElementStartTagText.slice(
+              0, -7); /* cut </slot> off the end */
           const edit: Edit = [
             {
               replacementText: slotElementStartTag,
@@ -81,14 +87,13 @@ class ContentToSlotDeclarations extends HtmlRule {
             warning.actions = [{
               kind: 'edit',
               code: 'content-with-select',
-              description: stripIndent(`
+              description: stripIndentation(`
                 Convert this <content> to a <slot>.
 
                 This changes the API of this element because the \`select\`
-                will become a slot name. Use the content-to-slot-usages lint
-                pass to convert usages of the element to conform to the new
-                API.
-            `).trim(),
+                attribute will become a slot name. Use the content-to-slot-usages lint pass to convert usages of the
+                element to conform to the new API.
+              `),
               edit
             }];
           }
@@ -135,8 +140,8 @@ function getSerializedSlotElement(
   dom5.removeAttribute(slotElement, 'select');
   const fragment = parse5.treeAdapters.default.createDocumentFragment();
   dom5.append(fragment, slotElement);
-  const slotElementText = parse5.serialize(fragment);
-  return {slotElementText, isSafe};
+  const slotElementStartTagText = parse5.serialize(fragment);
+  return {slotElementStartTagText, isSafe};
 }
 
 function slotNameForSelector(selector: string) {
