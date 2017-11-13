@@ -16,13 +16,13 @@ import * as dom5 from 'dom5';
 import {treeAdapters} from 'parse5';
 import {Document, ParsedHtmlDocument, Severity} from 'polymer-analyzer';
 
-import {HtmlRule} from '../html/rule';
-import {registry} from '../registry';
-import {FixableWarning} from '../warning';
+import {HtmlRule} from '../../html/rule';
+import {registry} from '../../registry';
+import {FixableWarning} from '../../warning';
 
 import stripIndent = require('strip-indent');
 
-import {elementSelectorToPredicate, getIndentationInside, addAttribute, prependContentInto} from '../html/util';
+import {elementSelectorToPredicate, getIndentationInside, addAttribute, prependContentInto} from '../../html/util';
 
 const p = dom5.predicates;
 
