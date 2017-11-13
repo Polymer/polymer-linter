@@ -13,13 +13,12 @@
  */
 
 import * as dom5 from 'dom5';
-import {treeAdapters} from 'parse5';
 import {Document, ParsedHtmlDocument, Severity} from 'polymer-analyzer';
 
-import {HtmlRule} from '../html/rule';
-import {getIndentationInside, insertContentAfter, removeNode} from '../html/util';
-import {registry} from '../registry';
-import {FixableWarning, Replacement} from '../warning';
+import {HtmlRule} from '../../html/rule';
+import {getIndentationInside, insertContentAfter, removeNode} from '../../html/util';
+import {registry} from '../../registry';
+import {FixableWarning, Replacement} from '../../warning';
 
 import stripIndent = require('strip-indent');
 
@@ -83,7 +82,10 @@ class IronFlexLayoutImport extends HtmlRule {
       }
     }
 
-    const styleNode = getStyleNodeWithIronFlexInclude(parsedDocument.ast);
+    const styleNode = dom5.query(
+        parsedDocument.ast,
+        usesIronFlexStyleIncludes,
+        dom5.childNodesIncludeTemplate);
     // Style modules are used, but not imported!
     if (!badImports.length && !goodImport && styleNode) {
       const warning = new FixableWarning({
@@ -102,8 +104,9 @@ Import iron-flex-layout/iron-flex-layout-classes.html`,
         warning.fix = [insertContentAfter(parsedDocument, lastImport, `
 ${indent}<link rel="import" href="${correctImport}">`)];
       } else {
-        // If no imports present, assume we are in a file with only <dom-module>s
-        // as it doesn't make sense to be in a entry-point document w/o imports.
+        // If no imports present, assume we are in a file with only
+        // <dom-module>s as it doesn't make sense to be in a entry-point
+        // document w/o imports.
         const range = {
           file: parsedDocument.sourceRangeForStartTag(styleNode)!.file,
           start: {line: 0, column: 0},
@@ -119,7 +122,7 @@ ${indent}<link rel="import" href="${correctImport}">`)];
       const warning = new FixableWarning({
         code: 'iron-flex-layout-import',
         message:
-            `This import defines style modules that are not being used. Remove it.`,
+            `This import defines style modules that are not being used. It can be removed.`,
         parsedDocument,
         severity: Severity.WARNING,
         sourceRange: parsedDocument.sourceRangeForStartTag(goodImport)!
@@ -146,7 +149,7 @@ Run the lint rule \`iron-flex-layout-classes\` with \`--fix\` to include the req
       });
       const fix: Replacement[] = [];
       if (!styleNode || goodImport || i > 0) {
-        fix.splice(0, 0, ...removeNode(parsedDocument, imp));
+        fix.push(...removeNode(parsedDocument, imp));
       } else {
         fix.push({
           replacementText: `"${correctImport}"`,
@@ -157,22 +160,6 @@ Run the lint rule \`iron-flex-layout-classes\` with \`--fix\` to include the req
       warnings.push(warning);
     });
   }
-}
-
-function getStyleNodeWithIronFlexInclude(rootNode: dom5.Node) {
-  let styleNode: dom5.Node|null = null;
-  dom5.nodeWalk(rootNode, (node: dom5.Node) => {
-    if (dom5.isElement(node)) {
-      if (p.hasTagName('template')(node)) {
-        const templateContent = treeAdapters.default.getTemplateContent(node);
-        styleNode = dom5.query(templateContent, usesIronFlexStyleIncludes);
-      } else if (usesIronFlexStyleIncludes(node)) {
-        styleNode = node;
-      }
-    }
-    return styleNode !== null;
-  });
-  return styleNode;
 }
 
 registry.register(new IronFlexLayoutImport());
