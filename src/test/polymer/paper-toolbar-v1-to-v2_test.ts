@@ -33,7 +33,7 @@ suite(ruleId, () => {
     linter = new Linter(registry.getRules([ruleId]), analyzer);
   });
 
-  test('Child elements without slots or a special class have `slot="top"` added.',
+  test('adds `slot="top"` to child elements without slots or special classes',
     async() => {
       const warnings = await linter.lint([`${ruleId}/child-default-slot_before.html`]);
       const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
@@ -44,7 +44,7 @@ suite(ruleId, () => {
           (await loader(`${ruleId}/child-default-slot_after.html`)).contents);
     });
 
-  test('Child elements with the "middle" class have `slot="middle"` added.',
+  test('adds `slot="middle"` to child elements with `class="middle"`',
     async() => {
       const warnings = await linter.lint([`${ruleId}/child-middle-slot_before.html`]);
       const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
@@ -55,7 +55,7 @@ suite(ruleId, () => {
           (await loader(`${ruleId}/child-middle-slot_after.html`)).contents);
     });
 
-  test('Child elements with the "bottom" class have `slot="bottom"` added.',
+  test('adds `slot="bottom"` to child elements with `class="bottom"`',
     async() => {
       const warnings = await linter.lint([`${ruleId}/child-bottom-slot_before.html`]);
       const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
@@ -66,8 +66,8 @@ suite(ruleId, () => {
           (await loader(`${ruleId}/child-bottom-slot_after.html`)).contents);
     });
 
-    test('Child text nodes that are not completely whitespace are wrapped in a ' +
-      'div with `slot="top"`.', async() => {
+    test('wraps non-whitespace child text nodes with `<span slot="top">`...' +
+      '`</span>`', async() => {
         const warnings = await linter.lint([`${ruleId}/child-non-whitespace-text_before.html`]);
         const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
         const loader = makeParseLoader(analyzer);
