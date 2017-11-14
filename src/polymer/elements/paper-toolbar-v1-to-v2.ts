@@ -13,6 +13,7 @@
  */
 
 import * as dom5 from 'dom5';
+import * as parse5 from 'parse5';
 import stripIndent = require('strip-indent');
 
 import {registry} from '../../registry';
@@ -156,17 +157,33 @@ class PaperToolbarV1ToV2 extends HtmlRule {
         const trimmedText = fullText.trim();
         const trimmedOffset = fullText.indexOf(trimmedText);
 
-        const replacementText =
-          // leading whitespace:
-          fullText.substring(0, trimmedOffset) +
-          // wrapper and trimmed text:
-          '<span slot="top">' + trimmedText + '</span>' +
-          // trailing whitespace:
-          fullText.substring(trimmedOffset + trimmedText.length);
+        const treeAdapter = parse5.treeAdapters.default;
+        const fragment = treeAdapter.createDocumentFragment();
+
+        // Leading whitespace:
+        dom5.append(fragment, {
+          nodeName: '#text',
+          value: fullText.substring(0, trimmedOffset),
+        } as parse5.ASTNode);
+
+        // Wrapped text:
+        const span = treeAdapter.createElement('span', '', []);
+        dom5.setAttribute(span, 'slot', 'top');
+        dom5.append(span, {
+          nodeName: '#text',
+          value: trimmedText,
+        } as parse5.ASTNode);
+        dom5.append(fragment, span);
+
+        // Trailing whitespace:
+        dom5.append(fragment, {
+          nodeName: '#text',
+          value: fullText.substring(trimmedOffset + trimmedText.length),
+        } as parse5.ASTNode);
 
         warning.fix = [{
           range: textNodeSourceRange,
-          replacementText,
+          replacementText: parse5.serialize(fragment),
         }];
 
         warnings.push(warning);
