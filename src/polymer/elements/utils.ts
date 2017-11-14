@@ -13,11 +13,12 @@
  */
 
 import * as dom5 from 'dom5';
+import * as parse5 from 'parse5';
 
 const templateExtensionNames =
   ['dom-bind', 'dom-if', 'dom-repeat', 'dom-template'];
 
-export const nodeIsTemplateExtension = (node: dom5.Node) => {
+export const nodeIsTemplateExtension = (node: parse5.ASTNode) => {
   const isAttrValue = dom5.getAttribute(node, 'is');
   return !!(
     node.tagName === 'template' &&
