@@ -12,7 +12,15 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import './iron-flex-layout-classes';
-import './iron-flex-layout-import';
-import './paper-item-v1-to-v2';
-import './paper-toolbar-v1-to-v2';
+import * as dom5 from 'dom5';
+
+const templateExtensionNames =
+  ['dom-bind', 'dom-if', 'dom-repeat', 'dom-template'];
+
+export const nodeIsTemplateExtension = (node: dom5.Node) => {
+  const isAttrValue = dom5.getAttribute(node, 'is');
+  return !!(
+    node.tagName === 'template' &&
+    isAttrValue && templateExtensionNames.includes(isAttrValue)
+  );
+};

@@ -19,9 +19,8 @@ import {Document, ParsedHtmlDocument, Severity} from 'polymer-analyzer';
 
 import {HtmlRule} from '../html/rule';
 import {registry} from '../registry';
-import {FixableWarning} from '../warning';
-
-import stripIndent = require('strip-indent');
+import {stripIndentation} from '../util';
+import {Edit, FixableWarning} from '../warning';
 
 
 const p = dom5.predicates;
@@ -32,33 +31,30 @@ const p = dom5.predicates;
 
 class ContentToSlotDeclarations extends HtmlRule {
   code = 'content-to-slot-declarations';
-  description = stripIndent(`
+  description = stripIndentation(`
       Warns when using <content> instead of Shadow Dom v1's <slot> element.
-  `).trim();
+
+      This warning is automatically fixable, and also supports an edit action
+      to convert:
+          <content select=".foo"></content>
+
+      To:
+          <slot name="foo" old-content-selector=".foo"></slot>
+  `);
 
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
     const warnings: FixableWarning[] = [];
 
-    this.convertDeclarations(parsedDocument, document, warnings);
-
-    return warnings;
-  }
-
-  convertDeclarations(
-      parsedDocument: ParsedHtmlDocument, document: Document,
-      warnings: FixableWarning[]) {
-    for (const element of document.getFeatures({kind: 'polymer-element'})) {
-      const domModule = element.domModule;
-      if (!domModule) {
-        continue;
-      }
-      const template = dom5.query(domModule, p.hasTagName('template'));
+    for (const domModule of document.getFeatures({kind: 'dom-module'})) {
+      const template = dom5.query(domModule.astNode, p.hasTagName('template'));
       if (!template) {
         continue;
       }
       const contentElements = dom5.queryAll(
           treeAdapters.default.getTemplateContent(template),
-          p.hasTagName('content'));
+          p.hasTagName('content'),
+          [],
+          dom5.childNodesIncludeTemplate);
       const slotNames = new Set<string>();
       for (const contentElement of contentElements) {
         const warning = new FixableWarning({
@@ -70,23 +66,42 @@ class ContentToSlotDeclarations extends HtmlRule {
           severity: Severity.WARNING,
           sourceRange: parsedDocument.sourceRangeForStartTag(contentElement)!
         });
-        const slotElementText =
-            getSerializedSlotElement(contentElement, slotNames);
-        const slotElementStartTag =
-            slotElementText.slice(0, -7); /* cut </slot> off the end */
-        warning.fix = [
-          {
-            replacementText: slotElementStartTag,
-            range: parsedDocument.sourceRangeForStartTag(contentElement)!
-          },
-          {
-            replacementText: '</slot>',
-            range: parsedDocument.sourceRangeForEndTag(contentElement)!
+        const result = getSerializedSlotElement(contentElement, slotNames);
+        if (result !== undefined) {
+          const {slotElementStartTagText, isSafe} = result;
+          const slotElementStartTag = slotElementStartTagText.slice(
+              0, -7); /* cut </slot> off the end */
+          const edit: Edit = [
+            {
+              replacementText: slotElementStartTag,
+              range: parsedDocument.sourceRangeForStartTag(contentElement)!
+            },
+            {
+              replacementText: '</slot>',
+              range: parsedDocument.sourceRangeForEndTag(contentElement)!
+            }
+          ];
+          if (isSafe) {
+            warning.fix = edit;
+          } else {
+            warning.actions = [{
+              kind: 'edit',
+              code: 'content-with-select',
+              description: stripIndentation(`
+                Convert this <content> to a <slot>.
+
+                This changes the API of this element because the \`select\`
+                attribute will become a slot name. Use the content-to-slot-usages lint pass to convert usages of the
+                element to conform to the new API.
+              `),
+              edit
+            }];
           }
-        ];
+        }
         warnings.push(warning);
       }
     }
+    return warnings;
   }
 }
 
@@ -100,9 +115,14 @@ class ContentToSlotDeclarations extends HtmlRule {
  */
 function getSerializedSlotElement(
     contentElement: dom5.Node, slotNames: Set<string>) {
+  if (dom5.hasAttribute(contentElement, 'select$')) {
+    // We can't automatically fix a dynamic select statement.
+    return undefined;
+  }
   const attrs = [...contentElement.attrs];
   const selectorAttr = attrs.find((a) => a.name === 'select');
   const selector = selectorAttr && selectorAttr.value;
+  const isSafe = selector === undefined;
   let slotName = null;
   if (selector) {
     slotName = slotNameForSelector(selector);
@@ -120,7 +140,8 @@ function getSerializedSlotElement(
   dom5.removeAttribute(slotElement, 'select');
   const fragment = parse5.treeAdapters.default.createDocumentFragment();
   dom5.append(fragment, slotElement);
-  return parse5.serialize(fragment);
+  const slotElementStartTagText = parse5.serialize(fragment);
+  return {slotElementStartTagText, isSafe};
 }
 
 function slotNameForSelector(selector: string) {

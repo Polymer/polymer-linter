@@ -20,6 +20,8 @@ import {HtmlRule} from '../../html/rule';
 import {ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 import {FixableWarning} from '../../warning';
 
+import {nodeIsTemplateExtension} from './utils';
+
 class PaperToolbarV1ToV2 extends HtmlRule {
   code = 'paper-toolbar-v1-to-v2';
   description = stripIndent(`
@@ -173,17 +175,6 @@ class PaperToolbarV1ToV2 extends HtmlRule {
 
     for (const paperToolbar of paperToolbars) {
       let suspectNodes = Array.from(paperToolbar.childNodes!);
-
-      const nodeIsTemplateExtension = (node: dom5.Node) => {
-        if (!node.attrs) return false;
-
-        const isAttr = node.attrs.find(attr => attr.name === 'is');
-        return (
-          node.tagName === 'template' &&
-          isAttr &&
-          ['dom-bind', 'dom-if', 'dom-repeat'].includes(isAttr.value)
-        );
-      };
 
       while (suspectNodes.some(nodeIsTemplateExtension)) {
         suspectNodes = suspectNodes
