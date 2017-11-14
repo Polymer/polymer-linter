@@ -12,4 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import './iron-flex-layout-classes';
+import './iron-flex-layout-import';
 import './paper-toolbar-v1-to-v2';
