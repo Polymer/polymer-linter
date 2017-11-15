@@ -25,7 +25,22 @@ import {nodeIsTemplateExtension} from './utils';
 class PaperItemV1ToV2 extends HtmlRule {
   code = 'paper-item-v1-to-v2';
   description = stripIndent(`
-    ADD A DESCRIPTION
+    Warns when child elements of <paper-icon-item> with an \`item-icon\`
+    attribute do not have a \`slot="item-icon"\` attribute. <paper-icon-item>'s
+    contained \`<content select="[item-icon]">\` has been replaced with
+    \`<slot name="item-icon">\`.
+
+    Example usage of <paper-icon-item> v1:
+
+      <paper-icon-item>
+        <iron-icon icon="home" item-icon></iron-icon>
+      </paper-icon-item>
+
+    After updating to <paper-icon-item> v2:
+
+      <paper-icon-item>
+        <iron-icon icon="home" slot="item-icon"></iron-icon>
+      </paper-icon-item>
   `).trim();
 
   async checkDocument(parsedDocument: ParsedHtmlDocument) {
@@ -48,7 +63,9 @@ class PaperItemV1ToV2 extends HtmlRule {
         const warning = new FixableWarning({
           parsedDocument,
           code: this.code,
-          message: 'ADD MESSAGE',
+          message: 'Elements meant to be used as the icon for a ' +
+            '<paper-icon-item> must now have a `slot="item-icon"` attribute ' +
+            'instead of an `item-icon` attribute to be distributed correctly.',
           severity: Severity.WARNING,
           sourceRange: startTagSourceRange
         });
