@@ -159,16 +159,16 @@
 
   <dom-module id="with-class-binding">
     <template>
-      <div class$="layout horizontal [[customClass]]">
-        <p class="flex" class$="flex [[customClass]]">lorem</p>
-        <p class$="{{customClass}}">ipsum</p>
+      <div class$="layout horizontal [[flex]]">
+        <p class="flex" class$="flex [[flex]]">lorem</p>
+        <p class$="{{flex}}">ipsum</p>
       </div>
     </template>
     <script>
       Polymer({
         is: "with-class-binding",
         properties: {
-          customClass: String
+          flex: String
         }
       });
     </script>

@@ -72,11 +72,11 @@ suite(ruleId, () => {
           <div class="layout horizontal">
                      ~~~~~~~~~~~~~~~~~~~`,
       `
-      <div class$="layout horizontal [[customClass]]">
-                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+      <div class$="layout horizontal [[flex]]">
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
       `
-        <p class="flex" class$="flex [[customClass]]">lorem</p>
-                               ~~~~~~~~~~~~~~~~~~~~~~`,
+        <p class="flex" class$="flex [[flex]]">lorem</p>
+                               ~~~~~~~~~~~~~~~`,
       `
 <body class="fullbleed">
             ~~~~~~~~~~~`,
