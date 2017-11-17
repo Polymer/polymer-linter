@@ -23,9 +23,6 @@ import {stripIndentation} from '../../util';
 
 const p = dom5.predicates;
 
-const attributeAliases = {
-  'class': 'class$'
-};
 const styleModules = [
   {
     module: 'iron-flex',
@@ -33,14 +30,14 @@ const styleModules = [
         '.layout.horizontal, .layout.vertical, .layout.inline, .layout.wrap,' +
             '.layout.no-wrap, .layout.center, .layout.center-center, ' +
             '.layout.center-justified, .flex, .flex-auto, .flex-none',
-        attributeAliases)
+        true)
   },
   {
     module: 'iron-flex-reverse',
     selector: elementSelectorToPredicate(
         '.layout.horizontal-reverse, .layout.vertical-reverse, ' +
             '.layout.wrap-reverse',
-        attributeAliases)
+        true)
   },
   {
     module: 'iron-flex-alignment',
@@ -52,7 +49,7 @@ const styleModules = [
             '.self-start, .self-center, .self-end, .self-stretch, .self-baseline, ' +
             '.layout.start-aligned, .layout.end-aligned, .layout.center-aligned, ' +
             '.layout.between-aligned, .layout.around-aligned',
-        attributeAliases)
+        true)
   },
   {
     module: 'iron-flex-factors',
@@ -60,7 +57,7 @@ const styleModules = [
     selector: elementSelectorToPredicate(
         '.flex-1, .flex-2, .flex-3, .flex-4, .flex-5, .flex-6, .flex-7, ' +
             '.flex-8, .flex-9, .flex-10, .flex-11, .flex-12',
-        attributeAliases)
+        true)
   },
   {
     module: 'iron-positioning',
@@ -68,7 +65,7 @@ const styleModules = [
     selector: elementSelectorToPredicate(
         '.block, .invisible, .relative, .fit, body.fullbleed, ' +
             '.scroll, .fixed-bottom, .fixed-left, .fixed-top, .fixed-right',
-        attributeAliases)
+        true)
   }
 ];
 
@@ -203,7 +200,7 @@ function getMissingStyleModules(
   for (const [module, nodes] of modules) {
     if (includes.indexOf(module) === -1) {
       warnings.push(...nodes.map(
-          (node: dom5.Node) => new FixableWarning({
+          (node: dom5.Node) => new Warning({
             code: 'iron-flex-layout-classes',
             message: `"${module}" style module is used but not imported.
 Import it in the template style include.`,

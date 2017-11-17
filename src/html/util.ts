@@ -186,7 +186,7 @@ export interface AttributeAliases { [s: string]: string; }
  */
 export function elementSelectorToPredicate(
     simpleSelector: string,
-    attributeAliases: AttributeAliases = {}): dom5.Predicate {
+    isPolymerTemplate: boolean = false): dom5.Predicate {
   const parsed = cssWhat(simpleSelector);
   // The output of cssWhat is two levels of arrays. The outer level are any
   // selectors joined with a comma, so it matches if any of the inner selectors
@@ -194,12 +194,12 @@ export function elementSelectorToPredicate(
   // must all match.
   return dom5.predicates.OR(...parsed.map((simpleSelectors) => {
     return dom5.predicates.AND(...simpleSelectors.map(
-        (selector) => simpleSelectorToPredicate(selector, attributeAliases)));
+        (selector) => simpleSelectorToPredicate(selector, isPolymerTemplate)));
   }));
 }
 
 function simpleSelectorToPredicate(
-    selector: cssWhat.Simple, attributeAliases: AttributeAliases) {
+    selector: cssWhat.Simple, isPolymerTemplate: boolean) {
   switch (selector.type) {
     case 'adjacent':
     case 'child':
@@ -209,11 +209,11 @@ function simpleSelectorToPredicate(
     case 'pseudo':
       throw new Error(`Unsupported CSS operator: ${selector.type}`);
     case 'attribute':
-      const alias = attributeAliases[selector.name];
-      if (alias) {
+      if (isPolymerTemplate) {
         return dom5.predicates.OR(
             attributeSelectorToPredicate(selector),
-            attributeSelectorToPredicate({...selector, name: alias}));
+            attributeSelectorToPredicate(
+                {...selector, name: selector.name + '$'}));
       }
       return attributeSelectorToPredicate(selector);
     case 'tag':
