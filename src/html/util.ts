@@ -181,8 +181,11 @@ export interface AttributeAliases { [s: string]: string; }
  * in isolation, it does throws if the selector talks about relationships
  * between elements like `.foo .bar` or `.foo > .bar`.
  *
- * Pass `attributeAliases` to apply selectors in non-standard attributes, e.g.
- * <div class$="foo bar"></div>
+ * Set `isPolymerTemplate` to true to apply selectors in data-bound attributes,
+ * e.g. `.foo.bar` would return both nodes of the following template:
+ *
+ *     <div class="foo bar"></div>
+ *     <div class$="foo bar"></div>
  */
 export function elementSelectorToPredicate(
     simpleSelector: string,
