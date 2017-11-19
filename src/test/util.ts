@@ -12,11 +12,34 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Warning} from 'polymer-analyzer';
+import {assert} from 'chai';
+import {Analyzer, applyEdits, EditResult, makeParseLoader, Warning} from 'polymer-analyzer';
+
+import {Linter} from '../linter';
 
 export class WarningPrettyPrinter {
   prettyPrint(warnings: ReadonlyArray<Warning>): string[] {
     return warnings.map(
         (w) => '\n' + w.toString({verbosity: 'code-only', color: false}));
   }
+}
+
+export async function assertExpectedFixes(
+    linter: Linter, analyzer: Analyzer, inputFile: string, outputFile: string) {
+  const warnings = await linter.lint([inputFile]);
+  const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
+  const loader = makeParseLoader(analyzer);
+  const result = await applyEdits(edits, loader);
+  const inputFileContent =
+      result.editedFiles.get(analyzer.resolveUrl(inputFile)!);
+  const outputFileContent =
+      (await loader(analyzer.resolveUrl(outputFile)!)).contents;
+  assert.deepEqual(inputFileContent, outputFileContent);
+}
+
+export async function assertFileEdited(
+    analyzer: Analyzer, editResult: EditResult, before: string, after: string) {
+  assert.deepEqual(
+      editResult.editedFiles.get(analyzer.resolveUrl(before)!),
+      (await analyzer.load(analyzer.resolveUrl(after)!)));
 }
