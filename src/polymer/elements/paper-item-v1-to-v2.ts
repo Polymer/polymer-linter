@@ -18,7 +18,6 @@ import stripIndent = require('strip-indent');
 import {registry} from '../../registry';
 import {HtmlRule} from '../../html/rule';
 import {ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
-import {FixableWarning} from '../../warning';
 
 import {nodeIsTemplateExtension} from './utils';
 
@@ -60,31 +59,28 @@ class PaperItemV1ToV2 extends HtmlRule {
       ) {
         const startTagSourceRange =
           parsedDocument.sourceRangeForStartTag(node)!;
-        const warning = new FixableWarning({
-          parsedDocument,
-          code: this.code,
-          message: 'Elements meant to be used as the icon for a ' +
-            '<paper-icon-item> must now have a `slot="item-icon"` attribute ' +
-            'instead of an `item-icon` attribute to be distributed correctly.',
-          severity: Severity.WARNING,
-          sourceRange: startTagSourceRange
-        });
-
         const [startOffset, endOffset]
           = parsedDocument.sourceRangeToOffsets(startTagSourceRange);
         const startTagText =
           parsedDocument.contents.slice(startOffset, endOffset);
         const isSelfClosing = startTagText.endsWith('/>');
 
-        warning.fix = [{
-          range: startTagSourceRange,
-          replacementText:
-            startTagText.slice(0, isSelfClosing ? -2 : -1) +
-            ` slot="item-icon"` +
-            (isSelfClosing ? '/' : '') + '>',
-        }];
-
-        warnings.push(warning);
+        warnings.push(new Warning({
+          parsedDocument,
+          code: this.code,
+          message: 'Elements meant to be used as the icon for a ' +
+            '<paper-icon-item> must now have a `slot="item-icon"` attribute ' +
+            'instead of an `item-icon` attribute to be distributed correctly.',
+          severity: Severity.WARNING,
+          sourceRange: startTagSourceRange,
+          fix: [{
+            range: startTagSourceRange,
+            replacementText:
+              startTagText.slice(0, isSelfClosing ? -2 : -1) +
+              ` slot="item-icon"` +
+              (isSelfClosing ? '/' : '') + '>',
+          }],
+        }));
       }
     };
 
