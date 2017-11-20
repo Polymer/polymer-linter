@@ -69,4 +69,10 @@ suite(ruleId, () => {
           `${ruleId}/child-non-whitespace-text_before.html`,
           `${ruleId}/child-non-whitespace-text_after.html`);
       });
+
+  test('many children requiring different fixes are all fixed', async() => {
+      await assertFileChanges(
+        `${ruleId}/children-mixed_before.html`,
+        `${ruleId}/children-mixed_after.html`);
+    });
 });
