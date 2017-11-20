@@ -14,11 +14,10 @@
 
 import {assert} from 'chai';
 import * as path from 'path';
-import {Analyzer, FSUrlLoader} from 'polymer-analyzer';
+import {Analyzer, FSUrlLoader, applyEdits, makeParseLoader} from 'polymer-analyzer';
 
 import {Linter} from '../../linter';
 import {registry} from '../../registry';
-import {applyEdits, makeParseLoader} from '../../warning';
 
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
 
@@ -70,4 +69,10 @@ suite(ruleId, () => {
           `${ruleId}/child-non-whitespace-text_before.html`,
           `${ruleId}/child-non-whitespace-text_after.html`);
       });
+
+  test('many children requiring different fixes are all fixed', async() => {
+      await assertFileChanges(
+        `${ruleId}/children-mixed_before.html`,
+        `${ruleId}/children-mixed_after.html`);
+    });
 });

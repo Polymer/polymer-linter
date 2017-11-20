@@ -19,7 +19,6 @@ import stripIndent = require('strip-indent');
 import {registry} from '../../registry';
 import {HtmlRule} from '../../html/rule';
 import {ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
-import {FixableWarning} from '../../warning';
 
 import {nodeIsTemplateExtension} from './utils';
 
@@ -98,20 +97,6 @@ class PaperToolbarV1ToV2 extends HtmlRule {
       // `slot="bottom"` for elements with a 'middle' or 'bottom' class,
       // `slot="top"` for all others.
       if (node.tagName !== undefined && !dom5.hasAttribute(node, 'slot')) {
-        const startTagSourceRange =
-          parsedDocument.sourceRangeForStartTag(node)!;
-        const warning = new FixableWarning({
-          parsedDocument,
-          code: this.code,
-          message: '<paper-toolbar> no longer has a default slot: this ' +
-            'element will not appear in the composed tree. Add `slot="top"` ' +
-            'to distribute to the same position as the previous default ' +
-            'content or `slot="middle"` / `slot="bottom"` to distribute to ' +
-            'the middle or bottom bar.',
-          severity: Severity.WARNING,
-          sourceRange: startTagSourceRange
-        });
-
         let desiredSlot = 'top';
         if (dom5.hasSpaceSeparatedAttrValue('class', 'middle')(node)) {
           desiredSlot = 'middle';
@@ -120,38 +105,38 @@ class PaperToolbarV1ToV2 extends HtmlRule {
           desiredSlot = 'bottom';
         }
 
+        const startTagSourceRange =
+          parsedDocument.sourceRangeForStartTag(node)!;
         const [startOffset, endOffset]
           = parsedDocument.sourceRangeToOffsets(startTagSourceRange);
         const startTagText =
           parsedDocument.contents.slice(startOffset, endOffset);
         const isSelfClosing = startTagText.endsWith('/>');
 
-        warning.fix = [{
-          range: startTagSourceRange,
-          replacementText:
-            startTagText.slice(0, isSelfClosing ? -2 : -1) +
-            ` slot="${desiredSlot}"` +
-            (isSelfClosing ? '/' : '') + '>',
-        }];
-
-        warnings.push(warning);
+        warnings.push(new Warning({
+          parsedDocument,
+          code: this.code,
+          message: '<paper-toolbar> no longer has a default slot: this ' +
+            'element will not appear in the composed tree. Add `slot="top"` ' +
+            'to distribute to the same position as the previous default ' +
+            'content or `slot="middle"` / `slot="bottom"` to distribute to ' +
+            'the middle or bottom bar.',
+          severity: Severity.WARNING,
+          sourceRange: startTagSourceRange,
+          fix: [{
+            range: startTagSourceRange,
+            replacementText:
+              startTagText.slice(0, isSelfClosing ? -2 : -1) +
+              ` slot="${desiredSlot}"` +
+              (isSelfClosing ? '/' : '') + '>',
+          }],
+        }));
       }
 
       // Non-whitespace-only text nodes, which were previously distributed into
       // a default slot, now need to be wrapped in `<span slot="top">...</span>`.
       if (node.nodeName === '#text' && node.value!.trim() !== '') {
         const textNodeSourceRange = parsedDocument.sourceRangeForNode(node)!;
-
-        const warning = new FixableWarning({
-          parsedDocument,
-          code: this.code,
-          message: '<paper-toolbar> no longer has a default slot: this ' +
-            'text node will not appear in the composed tree. Wrap with ' +
-            '`<span slot="top">...</span>` to distribute to the same ' +
-            'position as the previous default content.',
-          severity: Severity.WARNING,
-          sourceRange: textNodeSourceRange
-        });
 
         const fullText = node.value!;
         const trimmedText = fullText.trim();
@@ -181,12 +166,20 @@ class PaperToolbarV1ToV2 extends HtmlRule {
           value: fullText.substring(trimmedOffset + trimmedText.length),
         } as parse5.ASTNode);
 
-        warning.fix = [{
-          range: textNodeSourceRange,
-          replacementText: parse5.serialize(fragment),
-        }];
-
-        warnings.push(warning);
+        warnings.push(new Warning({
+          parsedDocument,
+          code: this.code,
+          message: '<paper-toolbar> no longer has a default slot: this ' +
+            'text node will not appear in the composed tree. Wrap with ' +
+            '`<span slot="top">...</span>` to distribute to the same ' +
+            'position as the previous default content.',
+          severity: Severity.WARNING,
+          sourceRange: textNodeSourceRange,
+          fix: [{
+            range: textNodeSourceRange,
+            replacementText: parse5.serialize(fragment),
+          }],
+        }));
       }
     };
 

@@ -14,11 +14,10 @@
 
 import {assert} from 'chai';
 import * as path from 'path';
-import {Analyzer, FSUrlLoader} from 'polymer-analyzer';
+import {Analyzer, applyEdits, FSUrlLoader, makeParseLoader} from 'polymer-analyzer';
 
 import {Linter} from '../../linter';
 import {registry} from '../../registry';
-import {applyEdits, makeParseLoader} from '../../warning';
 
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
 
@@ -35,13 +34,13 @@ suite(ruleId, () => {
 
   test('works in the trivial case', async() => {
     const warnings = await linter.lint([]);
-    assert.deepEqual(warnings, []);
+    assert.deepEqual([...warnings], []);
   });
 
   test('applies automatic-safe fixes', async() => {
     const warnings = await linter.lint([`${ruleId}/before-fixes.html`]);
     const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
-    const loader = makeParseLoader(analyzer);
+    const loader = makeParseLoader(analyzer, warnings.analysis);
     const result = await applyEdits(edits, loader);
     assert.deepEqual(
         result.editedFiles.get(`${ruleId}/before-fixes.html`),
@@ -61,7 +60,7 @@ suite(ruleId, () => {
         }
       }
     }
-    const loader = makeParseLoader(analyzer);
+    const loader = makeParseLoader(analyzer, warnings.analysis);
     const result = await applyEdits(edits, loader);
     assert.deepEqual(
         result.editedFiles.get(`${ruleId}/before-fixes.html`),

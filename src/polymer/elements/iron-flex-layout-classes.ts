@@ -14,13 +14,12 @@
 
 import * as dom5 from 'dom5';
 import {treeAdapters} from 'parse5';
-import {Document, ParsedHtmlDocument, Severity} from 'polymer-analyzer';
+import {Document, Edit, ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 
 import {HtmlRule} from '../../html/rule';
 import {addAttribute, elementSelectorToPredicate, getIndentationInside, prependContentInto} from '../../html/util';
 import {registry} from '../../registry';
 import {stripIndentation} from '../../util';
-import {FixableWarning} from '../../warning';
 
 const p = dom5.predicates;
 
@@ -29,14 +28,16 @@ const styleModules = [
     module: 'iron-flex',
     selector: elementSelectorToPredicate(
         '.layout.horizontal, .layout.vertical, .layout.inline, .layout.wrap,' +
-        '.layout.no-wrap, .layout.center, .layout.center-center, ' +
-        '.layout.center-justified, .flex, .flex-auto, .flex-none')
+            '.layout.no-wrap, .layout.center, .layout.center-center, ' +
+            '.layout.center-justified, .flex, .flex-auto, .flex-none',
+        true)
   },
   {
     module: 'iron-flex-reverse',
     selector: elementSelectorToPredicate(
         '.layout.horizontal-reverse, .layout.vertical-reverse, ' +
-        '.layout.wrap-reverse')
+            '.layout.wrap-reverse',
+        true)
   },
   {
     module: 'iron-flex-alignment',
@@ -44,24 +45,27 @@ const styleModules = [
     // as they're already defined in the `iron-flex` module.
     selector: elementSelectorToPredicate(
         '.layout.start, .layout.end, .layout.baseline, .layout.start-justified, ' +
-        '.layout.end-justified, .layout.around-justified, .layout.justified, ' +
-        '.self-start, .self-center, .self-end, .self-stretch, .self-baseline, ' +
-        '.layout.start-aligned, .layout.end-aligned, .layout.center-aligned, ' +
-        '.layout.between-aligned, .layout.around-aligned')
+            '.layout.end-justified, .layout.around-justified, .layout.justified, ' +
+            '.self-start, .self-center, .self-end, .self-stretch, .self-baseline, ' +
+            '.layout.start-aligned, .layout.end-aligned, .layout.center-aligned, ' +
+            '.layout.between-aligned, .layout.around-aligned',
+        true)
   },
   {
     module: 'iron-flex-factors',
     // Skip `.flex` as it's already defined in the `iron-flex` module.
     selector: elementSelectorToPredicate(
         '.flex-1, .flex-2, .flex-3, .flex-4, .flex-5, .flex-6, .flex-7, ' +
-        '.flex-8, .flex-9, .flex-10, .flex-11, .flex-12')
+            '.flex-8, .flex-9, .flex-10, .flex-11, .flex-12',
+        true)
   },
   {
     module: 'iron-positioning',
     // Skip `[hidden]` as it's a too generic selector.
     selector: elementSelectorToPredicate(
         '.block, .invisible, .relative, .fit, body.fullbleed, ' +
-        '.scroll, .fixed-bottom, .fixed-left, .fixed-top, .fixed-right')
+            '.scroll, .fixed-bottom, .fixed-left, .fixed-top, .fixed-right',
+        true)
   }
 ];
 
@@ -100,14 +104,14 @@ class IronFlexLayoutClasses extends HtmlRule {
   `);
 
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
-    const warnings: FixableWarning[] = [];
+    const warnings: Warning[] = [];
 
     // Search in the dom-modules.
     for (const domModule of document.getFeatures({kind: 'dom-module'})) {
       const misplacedStyle =
           dom5.query(domModule.astNode, p.hasTagName('style'));
       if (misplacedStyle) {
-        warnings.push(new FixableWarning({
+        warnings.push(new Warning({
           code: 'iron-flex-layout-classes',
           message:
               `Style outside template. Run \`move-style-into-template\` rule.`,
@@ -130,7 +134,8 @@ class IronFlexLayoutClasses extends HtmlRule {
       }
       // Add fix on first warning, we'll add all the missing modules in the same
       // style node.
-      const warning = warnings[fixIndex];
+      // TODO: we should not mutate warning.fix like this.
+      const warning: {fix: Edit | undefined} = warnings[fixIndex];
       // Fallback to style without include attribute.
       const styleNode = getStyleNodeWithInclude(templateContent) ||
           dom5.query(templateContent, p.hasTagName('style'));
@@ -165,7 +170,7 @@ ${indent}<style include="${missingModules}"></style>`)];
     }
     // Add fix on first warning, we'll add all the missing modules in the same
     // style node.
-    const warning = warnings[fixIndex];
+    const warning: {fix: Edit | undefined} = warnings[fixIndex];
     const styleNode = getStyleNodeWithInclude(parsedDocument.ast);
     if (styleNode) {
       const include = dom5.getAttribute(styleNode, 'include')!;
@@ -189,22 +194,22 @@ ${indent}</custom-style>`)];
 function getMissingStyleModules(
     parsedDocument: ParsedHtmlDocument,
     rootNode: dom5.Node,
-    warnings: FixableWarning[]): string {
+    warnings: Warning[]): string {
   const {modules, includes} = searchUsedModulesAndIncludes(rootNode);
   let missingModules = '';
   for (const [module, nodes] of modules) {
     if (includes.indexOf(module) === -1) {
-      nodes.forEach((node: dom5.Node) => {
-        warnings.push(new FixableWarning({
-          code: 'iron-flex-layout-classes',
-          message: `"${module}" style module is used but not imported.
+      warnings.push(...nodes.map(
+          (node: dom5.Node) => new Warning({
+            code: 'iron-flex-layout-classes',
+            message: `"${module}" style module is used but not imported.
 Import it in the template style include.`,
-          parsedDocument,
-          severity: Severity.WARNING,
-          sourceRange:
-              parsedDocument.sourceRangeForAttributeValue(node, 'class')!
-        }));
-      });
+            parsedDocument,
+            severity: Severity.WARNING,
+            // Prefer warning on class$, as it will override any value of class.
+            sourceRange: parsedDocument.sourceRangeForAttributeValue(
+                node, `class${dom5.hasAttribute(node, 'class$') ? '$' : ''}`)!
+          })));
       missingModules += ' ' + module;
     }
   }
