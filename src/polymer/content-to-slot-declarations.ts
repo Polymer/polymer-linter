@@ -15,12 +15,11 @@
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
 import {treeAdapters} from 'parse5';
-import {Document, ParsedHtmlDocument, Severity} from 'polymer-analyzer';
+import {Action, Document, Edit, ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 
 import {HtmlRule} from '../html/rule';
 import {registry} from '../registry';
 import {stripIndentation} from '../util';
-import {Edit, FixableWarning} from '../warning';
 
 
 const p = dom5.predicates;
@@ -43,7 +42,7 @@ class ContentToSlotDeclarations extends HtmlRule {
   `);
 
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
-    const warnings: FixableWarning[] = [];
+    const warnings: Warning[] = [];
 
     for (const domModule of document.getFeatures({kind: 'dom-module'})) {
       const template = dom5.query(domModule.astNode, p.hasTagName('template'));
@@ -57,16 +56,9 @@ class ContentToSlotDeclarations extends HtmlRule {
           dom5.childNodesIncludeTemplate);
       const slotNames = new Set<string>();
       for (const contentElement of contentElements) {
-        const warning = new FixableWarning({
-          code: 'content-to-slot-declaration',
-          message:
-              `<content> tags are part of the deprecated Shadow Dom v0 API. ` +
-              `Replace with a <slot> tag.`,
-          parsedDocument,
-          severity: Severity.WARNING,
-          sourceRange: parsedDocument.sourceRangeForStartTag(contentElement)!
-        });
         const result = getSerializedSlotElement(contentElement, slotNames);
+        let fix = undefined;
+        let actions: undefined|Action[] = undefined;
         if (result !== undefined) {
           const {slotElementStartTagText, isSafe} = result;
           const slotElementStartTag = slotElementStartTagText.slice(
@@ -82,23 +74,34 @@ class ContentToSlotDeclarations extends HtmlRule {
             }
           ];
           if (isSafe) {
-            warning.fix = edit;
+            fix = edit;
           } else {
-            warning.actions = [{
+            actions = [{
               kind: 'edit',
               code: 'content-with-select',
               description: stripIndentation(`
-                Convert this <content> to a <slot>.
+                Convert to a <slot> element. This is a breaking change!
 
                 This changes the API of this element because the \`select\`
-                attribute will become a slot name. Use the content-to-slot-usages lint pass to convert usages of the
+                attribute will become a slot name. Use the
+                content-to-slot-usages lint pass to convert usages of the
                 element to conform to the new API.
               `),
               edit
             }];
           }
         }
-        warnings.push(warning);
+        warnings.push(new Warning({
+          code: 'content-to-slot-declaration',
+          message:
+              `<content> tags are part of the deprecated Shadow Dom v0 API. ` +
+              `Replace with a <slot> tag.`,
+          parsedDocument,
+          severity: Severity.WARNING,
+          sourceRange: parsedDocument.sourceRangeForStartTag(contentElement)!,
+          fix,
+          actions
+        }));
       }
     }
     return warnings;
