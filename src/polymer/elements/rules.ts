@@ -14,5 +14,4 @@
 
 import './iron-flex-layout-classes';
 import './iron-flex-layout-import';
-import './paper-item-v1-to-v2';
 import './paper-toolbar-v1-to-v2';
