@@ -27,6 +27,7 @@ const cssRule = `<!-- Remove this to enable the vertical alignment of button con
 <style id="linter-paper-button-style">
   paper-button {
     display: inline-block;
+    text-align: center;
   }
 </style>`;
 
