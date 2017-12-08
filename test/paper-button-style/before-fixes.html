@@ -49,3 +49,20 @@
     });
   </script>
 </dom-module>
+
+<dom-module id="no-dupes">
+  <template>
+    <!-- Remove this to enable the vertical alignment of button content -->
+    <style id="linter-paper-button-style">
+      paper-button {
+        display: inline-block;
+      }
+    </style>
+    <paper-button></paper-button>
+  </template>
+  <script>
+    Polymer({
+      is: "no-dupes"
+    });
+  </script>
+</dom-module>

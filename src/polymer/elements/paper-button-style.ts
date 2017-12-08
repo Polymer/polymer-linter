@@ -24,7 +24,7 @@ import {stripIndentation} from '../../util';
 const p = dom5.predicates;
 
 const cssRule = `<!-- Remove this to enable the vertical alignment of button content -->
-<style>
+<style id="linter-paper-button-style">
   paper-button {
     display: inline-block;
   }
@@ -50,6 +50,9 @@ class PaperMaterialUsage extends HtmlRule {
         continue;
       }
       const templateContent = treeAdapters.default.getTemplateContent(template);
+      if (dom5.query(templateContent, p.hasAttrValue('id', 'linter-paper-button-style'))) {
+        continue;
+      }
       const buttonNode = this.getPaperButton(templateContent);
       if (!buttonNode) {
         continue;
