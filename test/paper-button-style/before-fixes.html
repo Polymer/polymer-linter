@@ -1,0 +1,38 @@
+<dom-module id="no-style">
+  <template>
+    <paper-button></paper-button>
+  </template>
+  <script>
+    Polymer({
+      is: "no-style"
+    });
+  </script>
+</dom-module>
+
+<dom-module id="with-style">
+  <template>
+    <style>
+      paper-button {
+        color: blue;
+      }
+    </style>
+    <paper-button></paper-button>
+  </template>
+  <script>
+    Polymer({
+      is: "with-style"
+    });
+  </script>
+</dom-module>
+
+<dom-module id="with-empty-style">
+  <template>
+    <style></style>
+    <paper-button></paper-button>
+  </template>
+  <script>
+    Polymer({
+      is: "with-empty-style"
+    });
+  </script>
+</dom-module>
