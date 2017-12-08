@@ -50,7 +50,7 @@ class PaperMaterialUsage extends HtmlRule {
         continue;
       }
       const templateContent = treeAdapters.default.getTemplateContent(template);
-      const buttonNode = dom5.query(templateContent, p.hasTagName('paper-button'));
+      const buttonNode = this.getPaperButton(templateContent);
       if (!buttonNode) {
         continue;
       }
@@ -66,6 +66,22 @@ class PaperMaterialUsage extends HtmlRule {
         fix: [prependContentInto(parsedDocument, template, insertion)]
       }));
     }
+  }
+
+  getPaperButton(rootNode: dom5.Node): dom5.Node | null {
+    let buttonNode = dom5.query(rootNode, p.hasTagName('paper-button'));
+    if (buttonNode) {
+      return buttonNode;
+    }
+    const templates = dom5.queryAll(rootNode, p.hasTagName('template'));
+    for (const template of templates) {
+      const templateContent = treeAdapters.default.getTemplateContent(template);
+      buttonNode = this.getPaperButton(templateContent);
+      if (buttonNode) {
+        break;
+      }
+    }
+    return buttonNode;
   }
 }
 

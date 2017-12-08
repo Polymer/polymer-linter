@@ -15,6 +15,25 @@
   </script>
 </dom-module>
 
+<dom-module id="in-template">
+  <template>
+    <!-- Remove this to enable the vertical alignment of button content -->
+    <style>
+      paper-button {
+        display: inline-block;
+      }
+    </style>
+    <template>
+      <paper-button></paper-button>
+    </template>
+  </template>
+  <script>
+    Polymer({
+      is: "in-template"
+    });
+  </script>
+</dom-module>
+
 <dom-module id="with-style">
   <template>
     <!-- Remove this to enable the vertical alignment of button content -->
