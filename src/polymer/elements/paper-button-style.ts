@@ -23,8 +23,7 @@ import {stripIndentation} from '../../util';
 
 const p = dom5.predicates;
 
-const cssRule = `<!-- Remove this to enable the vertical alignment of button content -->
-<style id="linter-paper-button-style">
+const cssRule = `<style id="linter-paper-button-style">
   paper-button {
     display: inline-block;
     text-align: center;
