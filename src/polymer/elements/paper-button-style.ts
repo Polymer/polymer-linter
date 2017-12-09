@@ -33,7 +33,8 @@ const cssRule = `<style id="linter-paper-button-style">
 
 class PaperButtonStyle extends HtmlRule {
   code = 'paper-button-style';
-  description = stripIndentation(`Checks if paper-button is used and adds a stylesheet to reset its display and text align.`);
+  description = stripIndentation(
+      `Checks if paper-button is used and adds a stylesheet to reset its display and text align.`);
 
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
     const warnings: Warning[] = [];
@@ -44,14 +45,17 @@ class PaperButtonStyle extends HtmlRule {
   }
 
   convertDeclarations(
-    parsedDocument: ParsedHtmlDocument, document: Document, warnings: Warning[]) {
-    for (const domModule of document.getFeatures({ kind: 'dom-module' })) {
+      parsedDocument: ParsedHtmlDocument, document: Document,
+      warnings: Warning[]) {
+    for (const domModule of document.getFeatures({kind: 'dom-module'})) {
       const template = dom5.query(domModule.astNode, p.hasTagName('template'));
       if (!template) {
         continue;
       }
       const templateContent = treeAdapters.default.getTemplateContent(template);
-      if (dom5.query(templateContent, p.hasAttrValue('id', 'linter-paper-button-style'))) {
+      if (dom5.query(
+              templateContent,
+              p.hasAttrValue('id', 'linter-paper-button-style'))) {
         continue;
       }
       const buttonNode = deepQuery(templateContent, 'paper-button');
@@ -62,11 +66,11 @@ class PaperButtonStyle extends HtmlRule {
       const insertion = `\n${indent}${cssRule.replace(/\n/g, '\n' + indent)}`;
       warnings.push(new Warning({
         code: 'paper-button-style',
-        message: `paper-button style changed to display: inline-flex. Force its display to inline-block to have previous rendering.`,
+        message:
+            `paper-button style changed to display: inline-flex. Force its display to inline-block to have previous rendering.`,
         parsedDocument,
         severity: Severity.WARNING,
-        sourceRange:
-            parsedDocument.sourceRangeForNode(buttonNode)!,
+        sourceRange: parsedDocument.sourceRangeForNode(buttonNode)!,
         fix: [prependContentInto(parsedDocument, template, insertion)]
       }));
     }
