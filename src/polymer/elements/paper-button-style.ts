@@ -20,6 +20,7 @@ import {HtmlRule} from '../../html/rule';
 import {getIndentationInside, prependContentInto} from '../../html/util';
 import {registry} from '../../registry';
 import {stripIndentation} from '../../util';
+import {deepQuery} from './utils';
 
 const p = dom5.predicates;
 
@@ -30,9 +31,9 @@ const cssRule = `<style id="linter-paper-button-style">
   }
 </style>`;
 
-class PaperMaterialUsage extends HtmlRule {
+class PaperButtonStyle extends HtmlRule {
   code = 'paper-button-style';
-  description = stripIndentation(`Checks if paper-material is used and imported.`);
+  description = stripIndentation(`Checks if paper-button is used and adds a stylesheet to reset its display and text align.`);
 
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
     const warnings: Warning[] = [];
@@ -53,7 +54,7 @@ class PaperMaterialUsage extends HtmlRule {
       if (dom5.query(templateContent, p.hasAttrValue('id', 'linter-paper-button-style'))) {
         continue;
       }
-      const buttonNode = this.getPaperButton(templateContent);
+      const buttonNode = deepQuery(templateContent, 'paper-button');
       if (!buttonNode) {
         continue;
       }
@@ -70,22 +71,6 @@ class PaperMaterialUsage extends HtmlRule {
       }));
     }
   }
-
-  getPaperButton(rootNode: dom5.Node): dom5.Node | null {
-    let buttonNode = dom5.query(rootNode, p.hasTagName('paper-button'));
-    if (buttonNode) {
-      return buttonNode;
-    }
-    const templates = dom5.queryAll(rootNode, p.hasTagName('template'));
-    for (const template of templates) {
-      const templateContent = treeAdapters.default.getTemplateContent(template);
-      buttonNode = this.getPaperButton(templateContent);
-      if (buttonNode) {
-        break;
-      }
-    }
-    return buttonNode;
-  }
 }
 
-registry.register(new PaperMaterialUsage());
+registry.register(new PaperButtonStyle());

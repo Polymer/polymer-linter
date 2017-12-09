@@ -25,3 +25,16 @@ export const nodeIsTemplateExtension = (node: parse5.ASTNode) => {
     isAttrValue && templateExtensionNames.includes(isAttrValue)
   );
 };
+
+export const deepQuery = (rootNode: dom5.Node, selector: string): dom5.Node | null => {
+  let node = dom5.query(rootNode, dom5.predicates.hasTagName(selector));
+  if (!node) {
+    const templates = dom5.queryAll(rootNode, dom5.predicates.hasTagName('template'));
+    for (const template of templates) {
+      const templateContent = parse5.treeAdapters.default.getTemplateContent(template);
+      node = deepQuery(templateContent, selector);
+      if (node) break;
+    }
+  }
+  return node;
+};
