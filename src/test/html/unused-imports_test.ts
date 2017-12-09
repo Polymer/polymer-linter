@@ -46,26 +46,23 @@ suite(ruleId, () => {
   });
 
   test('finds unused import references', async() => {
-    const warnings =
-        await linter.lint([`${ruleId}/before-fixes.html`]);
+    const warnings = await linter.lint([`${ruleId}/before-fixes.html`]);
 
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [`
 <link rel="import" href="./other-element.html">
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`]);
     assert.equal(
-        warnings[0].message, 'The import unused-imports/other-element.html is not used and can be removed.');
+        warnings[0].message,
+        'The import unused-imports/other-element.html is not used and can be removed.');
   });
 
   test('removes unused import references', async() => {
-    const warnings =
-        await linter.lint([`${ruleId}/before-fixes.html`]);
+    const warnings = await linter.lint([`${ruleId}/before-fixes.html`]);
     const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
     const loader = makeParseLoader(analyzer, warnings.analysis);
     const result = await applyEdits(edits, loader);
     assert.deepEqual(
-        result.editedFiles.get(
-            `${ruleId}/before-fixes.html`),
-        (await loader(`${ruleId}/after-fixes.html`))
-            .contents);
+        result.editedFiles.get(`${ruleId}/before-fixes.html`),
+        (await loader(`${ruleId}/after-fixes.html`)).contents);
   });
 });
