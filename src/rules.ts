@@ -17,6 +17,7 @@ import './css/deprecated-css-custom-property-syntax';
 import './html/dom-module-name-or-is';
 import './html/move-style-into-template';
 import './html/undefined-elements';
+import './html/unused-imports';
 
 import './polymer/behaviors-spelling';
 import './polymer/call-super-in-callbacks';

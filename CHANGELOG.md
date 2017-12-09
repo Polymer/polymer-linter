@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 - Add an explicit dependency on shady-css-parser. This fixes a bug where it is not always found, despite being a dependency of polymer-analyzer.
 - Add a test for the `content-to-slot-usages` rule's updates to children of `<paper-icon-item>`.
+- Support warning and automatic removal of unused imports through the `unused-imports` rule.
 
 ## [2.3.0] - 2017-11-20
 - Adds the `paper-toolbar-v1-to-v2` rule, which helps upgrade uses of paper-toolbar from v1 to v2 (hybrid) by adding slots to children where appropriate.
