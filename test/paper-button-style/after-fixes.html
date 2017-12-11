@@ -1,6 +1,12 @@
 <dom-module id="no-style">
   <template>
     <style id="linter-paper-button-style">
+      /**
+       * This style reverts the vertical/horizontal alignment done
+       * in https://github.com/PolymerElements/paper-button/pull/115
+       * as this can break some tests.
+       * Remove this style node to apply the change.
+       */
       paper-button {
         display: inline-block;
         text-align: center;
@@ -18,6 +24,12 @@
 <dom-module id="in-template">
   <template>
     <style id="linter-paper-button-style">
+      /**
+       * This style reverts the vertical/horizontal alignment done
+       * in https://github.com/PolymerElements/paper-button/pull/115
+       * as this can break some tests.
+       * Remove this style node to apply the change.
+       */
       paper-button {
         display: inline-block;
         text-align: center;
@@ -37,6 +49,12 @@
 <dom-module id="with-style">
   <template>
     <style id="linter-paper-button-style">
+      /**
+       * This style reverts the vertical/horizontal alignment done
+       * in https://github.com/PolymerElements/paper-button/pull/115
+       * as this can break some tests.
+       * Remove this style node to apply the change.
+       */
       paper-button {
         display: inline-block;
         text-align: center;
@@ -59,6 +77,12 @@
 <dom-module id="with-empty-style">
   <template>
     <style id="linter-paper-button-style">
+      /**
+       * This style reverts the vertical/horizontal alignment done
+       * in https://github.com/PolymerElements/paper-button/pull/115
+       * as this can break some tests.
+       * Remove this style node to apply the change.
+       */
       paper-button {
         display: inline-block;
         text-align: center;
@@ -76,12 +100,7 @@
 
 <dom-module id="no-dupes">
   <template>
-    <style id="linter-paper-button-style">
-      paper-button {
-        display: inline-block;
-        text-align: center;
-      }
-    </style>
+    <style id="linter-paper-button-style"></style>
     <paper-button></paper-button>
   </template>
   <script>

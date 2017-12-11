@@ -25,6 +25,12 @@ import {deepQuery} from './utils';
 const p = dom5.predicates;
 
 const cssRule = `<style id="linter-paper-button-style">
+  /**
+   * This style reverts the vertical/horizontal alignment done
+   * in https://github.com/PolymerElements/paper-button/pull/115
+   * as this can break some tests.
+   * Remove this style node to apply the change.
+   */
   paper-button {
     display: inline-block;
     text-align: center;
