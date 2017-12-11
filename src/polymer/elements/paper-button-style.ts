@@ -26,10 +26,10 @@ const p = dom5.predicates;
 
 const cssRule = `<style id="linter-paper-button-style">
   /**
-   * This style reverts the vertical/horizontal alignment done
-   * in https://github.com/PolymerElements/paper-button/pull/115
-   * as this can break some tests.
-   * Remove this style node to apply the change.
+   * This style preserves the styling previous to
+   * https://github.com/PolymerElements/paper-button/pull/115
+   * This change can break the layout of paper-button content.
+   * Remove this style to apply the change, more details at b/70528356.
    */
   paper-button {
     display: inline-block;
