@@ -54,6 +54,19 @@ class PaperButtonStyle extends HtmlRule {
       parsedDocument: ParsedHtmlDocument, document: Document,
       warnings: Warning[]) {
     for (const domModule of document.getFeatures({kind: 'dom-module'})) {
+      const misplacedStyle =
+          dom5.query(domModule.astNode, p.hasTagName('style'));
+      if (misplacedStyle) {
+        warnings.push(new Warning({
+          code: 'paper-button-style',
+          message:
+              `Style outside template. Run \`move-style-into-template\` rule.`,
+          parsedDocument,
+          severity: Severity.ERROR,
+          sourceRange: parsedDocument.sourceRangeForStartTag(misplacedStyle)!
+        }));
+        continue;
+      }
       const template = dom5.query(domModule.astNode, p.hasTagName('template'));
       if (!template) {
         continue;
@@ -73,7 +86,7 @@ class PaperButtonStyle extends HtmlRule {
       warnings.push(new Warning({
         code: 'paper-button-style',
         message:
-            `paper-button style changed to display: inline-flex. Force its display to inline-block to have previous rendering.`,
+            `paper-button v2 changed its style from \`display: inline-block\` to \`display: inline-flex\`.`,
         parsedDocument,
         severity: Severity.WARNING,
         sourceRange: parsedDocument.sourceRangeForNode(buttonNode)!,

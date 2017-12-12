@@ -109,3 +109,19 @@
     });
   </script>
 </dom-module>
+
+<dom-module id="misplaced-style">
+  <style>
+    paper-button {
+      color: blue;
+    }
+  </style>
+  <template>
+    <paper-button></paper-button>
+  </template>
+  <script>
+    Polymer({
+      is: "misplaced-style"
+    });
+  </script>
+</dom-module>
