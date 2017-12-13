@@ -53,6 +53,7 @@ class PaperButtonStyle extends HtmlRule {
   convertDeclarations(
       parsedDocument: ParsedHtmlDocument, document: Document,
       warnings: Warning[]) {
+    const styleDocs = [...document.getFeatures({kind: 'css-document'})];
     for (const domModule of document.getFeatures({kind: 'dom-module'})) {
       const misplacedStyle =
           dom5.query(domModule.astNode, p.hasTagName('style'));
@@ -81,6 +82,21 @@ class PaperButtonStyle extends HtmlRule {
       if (!buttonNode) {
         continue;
       }
+      const styleNode = dom5.query(
+          templateContent, p.AND(p.hasTagName('style'), (styleNode) => {
+            const i = styleDocs.findIndex((doc) => doc.astNode === styleNode);
+            if (i === -1) {
+              return false;
+            }
+            // Remove style from the docs to speed up next queries.
+            const styleDoc = styleDocs.splice(i, 1)[0];
+            return /--paper-button:\s?{[^}]*display:[^}]*}/.test(
+                styleDoc.parsedDocument.contents);
+          }));
+      if (styleNode) {
+        continue;
+      }
+
       const indent = getIndentationInside(templateContent);
       const insertion = `\n${indent}${cssRule.replace(/\n/g, '\n' + indent)}`;
       warnings.push(new Warning({

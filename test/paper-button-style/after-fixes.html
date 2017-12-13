@@ -125,3 +125,22 @@
     });
   </script>
 </dom-module>
+
+<dom-module id="with-mixin">
+  <template>
+    <style>
+      paper-button {
+        --paper-button: {
+          display: inline;
+          text-align: center;
+        }
+      }
+    </style>
+    <paper-button></paper-button>
+  </template>
+  <script>
+    Polymer({
+      is: "with-mixin"
+    });
+  </script>
+</dom-module>
