@@ -110,22 +110,6 @@
   </script>
 </dom-module>
 
-<dom-module id="misplaced-style">
-  <style>
-    paper-button {
-      color: blue;
-    }
-  </style>
-  <template>
-    <paper-button></paper-button>
-  </template>
-  <script>
-    Polymer({
-      is: "misplaced-style"
-    });
-  </script>
-</dom-module>
-
 <dom-module id="with-mixin">
   <template>
     <style>
@@ -141,6 +125,37 @@
   <script>
     Polymer({
       is: "with-mixin"
+    });
+  </script>
+</dom-module>
+
+<dom-module id="link-style">
+  <!--
+   This style preserves the styling previous to
+   https://github.com/PolymerElements/paper-button/pull/115
+   This change can break the layout of paper-button content.
+   Remove this style to apply the change, more details at b/70528356.
+  -->
+  <link id="linter-paper-button-style" rel="import" type="css" href="data:text/css;charset=utf-8,paper-button%7Bdisplay%3Ainline-block%3Btext-align%3Acenter%7D">
+  <link rel="import" type="css" href="button-style.css">
+  <template>
+    <paper-button></paper-button>
+  </template>
+  <script>
+    Polymer({
+      is: "link-style"
+    });
+  </script>
+</dom-module>
+
+<dom-module id="link-style-with-mixin">
+  <link rel="import" type="css" href="button-mixin.css">
+  <template>
+    <paper-button></paper-button>
+  </template>
+  <script>
+    Polymer({
+      is: "link-style-with-mixin"
     });
   </script>
 </dom-module>

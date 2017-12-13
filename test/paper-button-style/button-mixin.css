@@ -1,0 +1,5 @@
+paper-button {
+  --paper-button: {
+    display: block;
+  }
+}
