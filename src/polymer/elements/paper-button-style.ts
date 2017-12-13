@@ -51,7 +51,10 @@ const linkRule = `<!--
  This change can break the layout of paper-button content.
  Remove this style to apply the change, more details at b/70528356.
 -->
-<link id="linter-paper-button-style" rel="import" type="css" href="data:text/css;charset=utf-8,${encodeURIComponent('paper-button{display:inline-block;text-align:center}')}">`;
+<link id="linter-paper-button-style" rel="import" type="css" href="data:text/css;charset=utf-8,${
+                                                                                                 encodeURIComponent(
+                                                                                                     'paper-button{display:inline-block;text-align:center}')
+                                                                                               }">`;
 
 class PaperButtonStyle extends HtmlRule {
   code = 'paper-button-style';
@@ -88,7 +91,7 @@ class PaperButtonStyle extends HtmlRule {
         continue;
       }
 
-      let linkNode: dom5.Node | null = null;
+      let linkNode: dom5.Node|null = null;
       const linkNodeUsingMixin = dom5.query(
           domModule.astNode, p.AND(outsideStyle, (node: dom5.Node) => {
             if (!linkNode) {
@@ -108,9 +111,9 @@ class PaperButtonStyle extends HtmlRule {
         continue;
       }
       if (linkNode) {
-        const indent =
-            getIndentationInside(domModule.astNode);
-        const insertion = `\n${indent}${linkRule.replace(/\n/g, '\n' + indent)}`;
+        const indent = getIndentationInside(domModule.astNode);
+        const insertion =
+            `\n${indent}${linkRule.replace(/\n/g, '\n' + indent)}`;
         warnings.push(new Warning({
           code: 'paper-button-style',
           message:
@@ -118,12 +121,14 @@ class PaperButtonStyle extends HtmlRule {
           parsedDocument,
           severity: Severity.WARNING,
           sourceRange: parsedDocument.sourceRangeForNode(buttonNode)!,
-          fix: [prependContentInto(
-              parsedDocument, domModule.astNode, insertion)]
+          fix:
+              [prependContentInto(parsedDocument, domModule.astNode, insertion)]
         }));
       } else {
-        const template = dom5.query(domModule.astNode, p.hasTagName('template'))!;
-        const templateContent = treeAdapters.default.getTemplateContent(template);
+        const template =
+            dom5.query(domModule.astNode, p.hasTagName('template'))!;
+        const templateContent =
+            treeAdapters.default.getTemplateContent(template);
 
         const styleNodeUsingMixin =
             dom5.query(templateContent, (node: dom5.Node) => {
@@ -138,8 +143,7 @@ class PaperButtonStyle extends HtmlRule {
           continue;
         }
 
-        const indent =
-            getIndentationInside(templateContent);
+        const indent = getIndentationInside(templateContent);
         const insertion = `\n${indent}${cssRule.replace(/\n/g, '\n' + indent)}`;
         warnings.push(new Warning({
           code: 'paper-button-style',
@@ -148,8 +152,7 @@ class PaperButtonStyle extends HtmlRule {
           parsedDocument,
           severity: Severity.WARNING,
           sourceRange: parsedDocument.sourceRangeForNode(buttonNode)!,
-          fix: [prependContentInto(
-              parsedDocument, template, insertion)]
+          fix: [prependContentInto(parsedDocument, template, insertion)]
         }));
       }
     }
