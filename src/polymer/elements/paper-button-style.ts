@@ -51,10 +51,9 @@ const linkRule = `<!--
  This change can break the layout of paper-button content.
  Remove this style to apply the change, more details at b/70528356.
 -->
-<link id="linter-paper-button-style" rel="import" type="css" ` +
-    'href="data:text/css;charset=utf-8,' +
-    encodeURIComponent('paper-button{display:inline-block;text-align:center}') +
-    '">';
+<link id="linter-paper-button-style" rel="import" type="css"
+      href="data:text/css;charset=utf-8,paper-button{display:inline-block;text-align:center}"
+>`;
 
 class PaperButtonStyle extends HtmlRule {
   code = 'paper-button-style';

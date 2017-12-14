@@ -136,7 +136,9 @@
    This change can break the layout of paper-button content.
    Remove this style to apply the change, more details at b/70528356.
   -->
-  <link id="linter-paper-button-style" rel="import" type="css" href="data:text/css;charset=utf-8,paper-button%7Bdisplay%3Ainline-block%3Btext-align%3Acenter%7D">
+  <link id="linter-paper-button-style" rel="import" type="css"
+        href="data:text/css;charset=utf-8,paper-button{display:inline-block;text-align:center}"
+  >
   <link rel="import" type="css" href="button-style.css">
   <template>
     <paper-button></paper-button>
