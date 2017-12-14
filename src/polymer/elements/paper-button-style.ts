@@ -35,8 +35,8 @@ const outsideStyle = p.AND(
  *      --paper-button: { display: inline; }
  *    }
  *
- * Note that we have special knowledge of the iron-flex-layout mixins as they set the
- * display as well e.g.
+ * Note that we have special knowledge of the iron-flex-layout mixins as they
+ * set the display as well e.g.
  *
  *    paper-button {
  *      --paper-button: { @apply --layout; }
@@ -115,59 +115,45 @@ class PaperButtonStyle extends HtmlRule {
               return false;
             }
             // Remove link from the docs to speed up next queries.
+            const linkDoc = linkDocs.splice(i, 1)[0];
             return [
-              ...linkDocs.splice(i, 1)[0].document.getFeatures(
-                  {kind: 'css-document'})
+              ...linkDoc.document.getFeatures({kind: 'css-document'})
             ].some(setsDisplayInMixin);
           }));
       if (linkNodeUsingMixin) {
         continue;
       }
-      if (linkNode) {
-        const indent = getIndentationInside(domModule.astNode);
-        const insertion =
-            `\n${indent}${linkRule.replace(/\n/g, '\n' + indent)}`;
-        warnings.push(new Warning({
-          code: 'paper-button-style',
-          message:
-              `paper-button v2 changed its style from \`display: inline-block\` to \`display: inline-flex\`.`,
-          parsedDocument,
-          severity: Severity.WARNING,
-          sourceRange: parsedDocument.sourceRangeForNode(buttonNode)!,
-          fix:
-              [prependContentInto(parsedDocument, domModule.astNode, insertion)]
-        }));
-      } else {
-        const template =
-            dom5.query(domModule.astNode, p.hasTagName('template'))!;
-        const templateContent =
-            treeAdapters.default.getTemplateContent(template);
 
-        const styleNodeUsingMixin =
-            dom5.query(templateContent, (node: dom5.Node) => {
-              const i = styleDocs.findIndex((doc) => doc.astNode === node);
-              if (i === -1) {
-                return false;
-              }
-              // Remove style from the docs to speed up next queries.
-              return setsDisplayInMixin(styleDocs.splice(i, 1)[0]);
-            });
-        if (styleNodeUsingMixin) {
-          continue;
-        }
-
-        const indent = getIndentationInside(templateContent);
-        const insertion = `\n${indent}${cssRule.replace(/\n/g, '\n' + indent)}`;
-        warnings.push(new Warning({
-          code: 'paper-button-style',
-          message:
-              `paper-button v2 changed its style from \`display: inline-block\` to \`display: inline-flex\`.`,
-          parsedDocument,
-          severity: Severity.WARNING,
-          sourceRange: parsedDocument.sourceRangeForNode(buttonNode)!,
-          fix: [prependContentInto(parsedDocument, template, insertion)]
-        }));
+      const template = dom5.query(domModule.astNode, p.hasTagName('template'))!;
+      const templateContent = treeAdapters.default.getTemplateContent(template);
+      const styleNodeUsingMixin = dom5.query(
+          templateContent, p.AND(p.hasTagName('style'), (node: dom5.Node) => {
+            const i = styleDocs.findIndex((doc) => doc.astNode === node);
+            if (i === -1) {
+              return false;
+            }
+            // Remove style from the docs to speed up next queries.
+            const styleDoc = styleDocs.splice(i, 1)[0];
+            return setsDisplayInMixin(styleDoc);
+          }));
+      if (styleNodeUsingMixin) {
+        continue;
       }
+
+      const rule = linkNode ? linkRule : cssRule;
+      const insertionNode = linkNode ? domModule.astNode : template;
+      const indent =
+          getIndentationInside(linkNode ? domModule.astNode : templateContent);
+      const insertion = `\n${indent}${rule.replace(/\n/g, '\n' + indent)}`;
+      warnings.push(new Warning({
+        code: 'paper-button-style',
+        message:
+            `paper-button v2 changed its style from \`display: inline-block\` to \`display: inline-flex\`.`,
+        parsedDocument,
+        severity: Severity.WARNING,
+        sourceRange: parsedDocument.sourceRangeForNode(buttonNode)!,
+        fix: [prependContentInto(parsedDocument, insertionNode, insertion)]
+      }));
     }
   }
 }

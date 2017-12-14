@@ -150,6 +150,26 @@
   </script>
 </dom-module>
 
+<dom-module id="link-style-inline-mixin">
+  <link rel="import" type="css" href="button-style.css">
+  <template>
+    <style>
+      paper-button {
+        --paper-button: {
+          display: inline;
+          text-align: left;
+        }
+      }
+    </style>
+    <paper-button></paper-button>
+  </template>
+  <script>
+    Polymer({
+      is: "link-style-inline-mixin"
+    });
+  </script>
+</dom-module>
+
 <dom-module id="link-style-with-mixin">
   <link rel="import" type="css" href="button-mixin.css">
   <template>
