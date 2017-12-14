@@ -28,8 +28,22 @@ const outsideStyle = p.AND(
     p.hasAttrValue('rel', 'import'),
     p.hasAttrValue('type', 'css'));
 
+/**
+ * If a stylesheet sets the display property in the --paper-button mixin. e.g.
+ *
+ *    paper-button {
+ *      --paper-button: { display: inline; }
+ *    }
+ *
+ * Note that we have special knowledge of the iron-flex-layout mixins as they set the
+ * display as well e.g.
+ *
+ *    paper-button {
+ *      --paper-button: { @apply --layout; }
+ *    }
+ */
 const setsDisplayInMixin = (styleDoc: Document) =>
-    /--paper-button:\s?{[^}]*display:[^}]*}/.test(
+    /--paper-button:\s?{[^}]*(display:|@apply[\(\s]--layout)[^}]*}/.test(
         styleDoc.parsedDocument.contents);
 
 const cssRule = `<style id="linter-paper-button-style">

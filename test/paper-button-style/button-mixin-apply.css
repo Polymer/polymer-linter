@@ -1,0 +1,5 @@
+paper-button {
+  --paper-button: {
+    @apply --layout-horizontal;
+  }
+}
