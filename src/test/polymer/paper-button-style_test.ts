@@ -46,4 +46,14 @@ suite(ruleId, () => {
         result.editedFiles.get(`${ruleId}/before-fixes.html`),
         (await loader(`${ruleId}/after-fixes.html`)).contents);
   });
+
+  test('applies automatic-safe fixes in css files', async() => {
+    const warnings = await linter.lint([`${ruleId}/link-import.html`]);
+    const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
+    const loader = makeParseLoader(analyzer, warnings.analysis);
+    const result = await applyEdits(edits, loader);
+    assert.deepEqual(
+        result.editedFiles.get(`${ruleId}/button-style.css`),
+        (await loader(`${ruleId}/button-style-after.css`)).contents);
+  });
 });

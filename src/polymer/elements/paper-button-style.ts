@@ -14,7 +14,7 @@
 
 import * as dom5 from 'dom5';
 import {treeAdapters} from 'parse5';
-import {Document, ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
+import {Document, ParsedCssDocument, ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 
 import {HtmlRule} from '../../html/rule';
 import {getIndentationInside, prependContentInto} from '../../html/util';
@@ -46,28 +46,16 @@ const setsDisplayInMixin = (styleDoc: Document) =>
     /--paper-button:\s?{[^}]*(display:|@apply[\(\s]--layout)[^}]*}/.test(
         styleDoc.parsedDocument.contents);
 
-const cssRule = `<style id="linter-paper-button-style">
-  /**
-   * This style preserves the styling previous to
-   * https://github.com/PolymerElements/paper-button/pull/115
-   * This change can break the layout of paper-button content.
-   * Remove this style to apply the change, more details at b/70528356.
-   */
-  paper-button {
-    display: inline-block;
-    text-align: center;
-  }
-</style>`;
-
-const linkRule = `<!--
- This style preserves the styling previous to
- https://github.com/PolymerElements/paper-button/pull/115
- This change can break the layout of paper-button content.
- Remove this style to apply the change, more details at b/70528356.
--->
-<link id="linter-paper-button-style" rel="import" type="css"
-      href="data:text/css;charset=utf-8,paper-button{display:inline-block;text-align:center}"
->`;
+const cssRule = `/**
+ * This style preserves the styling previous to
+ * https://github.com/PolymerElements/paper-button/pull/115
+ * This change can break the layout of paper-button content.
+ * Remove this style to apply the change, more details at b/70528356.
+ */
+paper-button {
+  display: inline-block;
+  text-align: center;
+}`;
 
 class PaperButtonStyle extends HtmlRule {
   code = 'paper-button-style';
@@ -103,22 +91,30 @@ class PaperButtonStyle extends HtmlRule {
       if (!buttonNode) {
         continue;
       }
-
-      let linkNode: dom5.Node|null = null;
+      // Search if paper-button display is already set.
+      let linkCssDoc: ParsedCssDocument|null = null;
       const linkNodeUsingMixin = dom5.query(
           domModule.astNode, p.AND(outsideStyle, (node: dom5.Node) => {
-            if (!linkNode) {
-              linkNode = node;
-            }
             const i = linkDocs.findIndex((doc) => doc.astNode === node);
             if (i === -1) {
               return false;
             }
             // Remove link from the docs to speed up next queries.
-            const linkDoc = linkDocs.splice(i, 1)[0];
-            return [
-              ...linkDoc.document.getFeatures({kind: 'css-document'})
-            ].some(setsDisplayInMixin);
+            const linkImp = linkDocs.splice(i, 1)[0];
+            let setsDisplay = false;
+            for (const cssDocument of linkImp.document.getFeatures(
+                     {kind: 'css-document'})) {
+              if (!(cssDocument.parsedDocument instanceof ParsedCssDocument)) {
+                continue;
+              }
+              if (!linkCssDoc) {
+                linkCssDoc = cssDocument.parsedDocument;
+              }
+              setsDisplay = setsDisplayInMixin(cssDocument);
+              if (setsDisplay)
+                break;
+            }
+            return setsDisplay;
           }));
       if (linkNodeUsingMixin) {
         continue;
@@ -140,20 +136,38 @@ class PaperButtonStyle extends HtmlRule {
         continue;
       }
 
-      const rule = linkNode ? linkRule : cssRule;
-      const insertionNode = linkNode ? domModule.astNode : template;
-      const indent =
-          getIndentationInside(linkNode ? domModule.astNode : templateContent);
-      const insertion = `\n${indent}${rule.replace(/\n/g, '\n' + indent)}`;
-      warnings.push(new Warning({
-        code: 'paper-button-style',
-        message:
-            `paper-button v2 changed its style from \`display: inline-block\` to \`display: inline-flex\`.`,
-        parsedDocument,
-        severity: Severity.WARNING,
-        sourceRange: parsedDocument.sourceRangeForNode(buttonNode)!,
-        fix: [prependContentInto(parsedDocument, insertionNode, insertion)]
-      }));
+      // Insert the fix in the css file.
+      if (linkCssDoc) {
+        const range = {
+          file: linkCssDoc!.sourceRange.file,
+          start: {line: 0, column: 0},
+          end: {line: 0, column: 0}
+        };
+        warnings.push(new Warning({
+          code: 'paper-button-style',
+          message:
+              `paper-button v2 changed its style from \`display: inline-block\` to \`display: inline-flex\`.`,
+          parsedDocument: linkCssDoc,
+          severity: Severity.WARNING,
+          sourceRange: range,
+          fix: [{replacementText: cssRule + '\n\n', range}]
+        }));
+      } else {
+        const indent = getIndentationInside(templateContent);
+        const insertion = `
+${indent}<style id="linter-paper-button-style">
+${indent}  ${cssRule.replace(/\n/g, '\n' + indent + '  ')}
+${indent}</style>`;
+        warnings.push(new Warning({
+          code: 'paper-button-style',
+          message:
+              `paper-button v2 changed its style from \`display: inline-block\` to \`display: inline-flex\`.`,
+          parsedDocument,
+          severity: Severity.WARNING,
+          sourceRange: parsedDocument.sourceRangeForNode(buttonNode)!,
+          fix: [prependContentInto(parsedDocument, template, insertion)]
+        }));
+      }
     }
   }
 }
