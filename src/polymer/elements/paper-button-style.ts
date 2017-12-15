@@ -65,15 +65,7 @@ class PaperButtonStyle extends HtmlRule {
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
     const warnings: Warning[] = [];
 
-    this.convertDeclarations(parsedDocument, document, warnings);
-
-    return warnings;
-  }
-
-  convertDeclarations(
-      parsedDocument: ParsedHtmlDocument, document: Document,
-      warnings: Warning[]) {
-    const styleDocs = [...document.getFeatures({kind: 'css-document'})];
+    const styleDocs = [...document.getFeatures({ kind: 'css-document' })];
     const linkDocs = [...document.getFeatures({kind: 'css-import'})];
     for (const domModule of document.getFeatures({kind: 'dom-module'})) {
       // Already parsed.
@@ -169,6 +161,8 @@ ${indent}</style>`;
         }));
       }
     }
+
+    return warnings;
   }
 }
 
