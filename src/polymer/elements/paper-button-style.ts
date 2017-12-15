@@ -28,6 +28,15 @@ const outsideStyle = p.AND(
     p.hasAttrValue('rel', 'import'),
     p.hasAttrValue('type', 'css'));
 
+const displayRegex = new RegExp(
+    // In mixin or the element itself
+    '(--paper-button:|paper-button)' +
+    // spaces + open {
+    '\\s*{[^}]*' +
+    // sets display: or @apply --layout
+    '(display:|@apply[\\(\\s]--layout)' +
+    // close }
+    '[^}]*}');
 /**
  * If a stylesheet sets the display property in the --paper-button mixin. e.g.
  *
@@ -42,9 +51,8 @@ const outsideStyle = p.AND(
  *      --paper-button: { @apply --layout; }
  *    }
  */
-const setsDisplayInMixin = (styleDoc: Document) =>
-    /--paper-button:\s?{[^}]*(display:|@apply[\(\s]--layout)[^}]*}/.test(
-        styleDoc.parsedDocument.contents);
+const setsDisplayInStylesheet = (styleDoc: Document) =>
+    displayRegex.test(styleDoc.parsedDocument.contents);
 
 const cssRule = `/**
  * This style preserves the styling previous to
@@ -65,7 +73,7 @@ class PaperButtonStyle extends HtmlRule {
   async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
     const warnings: Warning[] = [];
 
-    const styleDocs = [...document.getFeatures({ kind: 'css-document' })];
+    const styleDocs = [...document.getFeatures({kind: 'css-document'})];
     const linkDocs = [...document.getFeatures({kind: 'css-import'})];
     for (const domModule of document.getFeatures({kind: 'dom-module'})) {
       // Already parsed.
@@ -83,38 +91,12 @@ class PaperButtonStyle extends HtmlRule {
       if (!buttonNode) {
         continue;
       }
-      // Search if paper-button display is already set.
-      let linkCssDoc: ParsedCssDocument|null = null;
-      const linkNodeUsingMixin = dom5.query(
-          domModule.astNode, p.AND(outsideStyle, (node: dom5.Node) => {
-            const i = linkDocs.findIndex((doc) => doc.astNode === node);
-            if (i === -1) {
-              return false;
-            }
-            // Remove link from the docs to speed up next queries.
-            const linkImp = linkDocs.splice(i, 1)[0];
-            let setsDisplay = false;
-            for (const cssDocument of linkImp.document.getFeatures(
-                     {kind: 'css-document'})) {
-              if (!(cssDocument.parsedDocument instanceof ParsedCssDocument)) {
-                continue;
-              }
-              if (!linkCssDoc) {
-                linkCssDoc = cssDocument.parsedDocument;
-              }
-              setsDisplay = setsDisplayInMixin(cssDocument);
-              if (setsDisplay)
-                break;
-            }
-            return setsDisplay;
-          }));
-      if (linkNodeUsingMixin) {
-        continue;
-      }
 
+      // Search if paper-button display is already set in template styles.
       const template = dom5.query(domModule.astNode, p.hasTagName('template'))!;
       const templateContent = treeAdapters.default.getTemplateContent(template);
-      const styleNodeUsingMixin = dom5.query(
+      let setsDisplayInStyles = false;
+      dom5.query(
           templateContent, p.AND(p.hasTagName('style'), (node: dom5.Node) => {
             const i = styleDocs.findIndex((doc) => doc.astNode === node);
             if (i === -1) {
@@ -122,9 +104,38 @@ class PaperButtonStyle extends HtmlRule {
             }
             // Remove style from the docs to speed up next queries.
             const styleDoc = styleDocs.splice(i, 1)[0];
-            return setsDisplayInMixin(styleDoc);
+            setsDisplayInStyles = setsDisplayInStylesheet(styleDoc);
+            return setsDisplayInStyles;
           }));
-      if (styleNodeUsingMixin) {
+      if (setsDisplayInStyles) {
+        continue;
+      }
+
+      // Search if paper-button display is already set in outside styles.
+      let linkCssDoc: ParsedCssDocument|null = null;
+      let setsDisplayInLinks = false;
+      dom5.query(domModule.astNode, p.AND(outsideStyle, (node: dom5.Node) => {
+        const i = linkDocs.findIndex((doc) => doc.astNode === node);
+        if (i === -1) {
+          return false;
+        }
+        // Remove link from the docs to speed up next queries.
+        for (const cssDocument of linkDocs.splice(i, 1)[0].document.getFeatures(
+                 {kind: 'css-document'})) {
+          if (!(cssDocument.parsedDocument instanceof ParsedCssDocument)) {
+            continue;
+          }
+          if (!linkCssDoc) {
+            linkCssDoc = cssDocument.parsedDocument;
+          }
+          setsDisplayInLinks = setsDisplayInStylesheet(cssDocument);
+          if (setsDisplayInLinks) {
+            break;
+          }
+        }
+        return setsDisplayInLinks;
+      }));
+      if (setsDisplayInLinks) {
         continue;
       }
 
