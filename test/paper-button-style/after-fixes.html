@@ -74,6 +74,22 @@
   </script>
 </dom-module>
 
+<dom-module id="with-style-display">
+  <template>
+    <style>
+      paper-button {
+        display: block;
+      }
+    </style>
+    <paper-button></paper-button>
+  </template>
+  <script>
+    Polymer({
+      is: "with-style-display"
+    });
+  </script>
+</dom-module>
+
 <dom-module id="with-empty-style">
   <template>
     <style id="linter-paper-button-style">
