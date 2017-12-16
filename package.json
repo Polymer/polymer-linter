@@ -29,9 +29,9 @@
     "knuth-shuffle": "^1.0.1",
     "mocha": "^3.1.0",
     "source-map-support": "^0.4.3",
+    "tsc-then": "^1.0.1",
     "tslint": "^4.1.1",
-    "typescript": "^2.6.1",
-    "watchy": "^0.6.6"
+    "typescript": "^2.6.1"
   },
   "scripts": {
     "prepublishOnly": "npm run build",
@@ -39,8 +39,8 @@
     "clean": "rm -rf lib; mkdir -p lib",
     "format": "find src | grep '\\.[jt]s$' | xargs clang-format --style=file -i",
     "lint": "tslint -c tslint.json src/*.ts src/**/*.ts",
-    "test": "npm run build && mocha lib/test/*.js lib/test/**/*.js && npm run lint",
-    "test:watch": "watchy -w src/,test/ -- npm test --loglevel=silent",
+    "test": "npm run build && mocha && npm run lint",
+    "test:watch": "tsc-then -- mocha",
     "test:integration": "npm run build && cd test/integration && bower install --silent && cd ../../ && INTEGRATION_TEST=true mocha lib/test/integration_test.js"
   },
   "repository": {
