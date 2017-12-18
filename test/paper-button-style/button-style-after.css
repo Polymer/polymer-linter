@@ -7,6 +7,7 @@
 paper-button {
   display: inline-block;
   text-align: center;
+  font-family: inherit;
 }
 
 paper-button {

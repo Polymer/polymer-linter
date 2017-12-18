@@ -63,6 +63,7 @@ const cssRule = `/**
 paper-button {
   display: inline-block;
   text-align: center;
+  font-family: inherit;
 }`;
 
 class PaperButtonStyle extends HtmlRule {
