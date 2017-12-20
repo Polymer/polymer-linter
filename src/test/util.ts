@@ -24,22 +24,35 @@ export class WarningPrettyPrinter {
   }
 }
 
+/**
+ * Assert that applying all fixes to the given input file results in
+ * the given golden output file.
+ */
 export async function assertExpectedFixes(
-    linter: Linter, analyzer: Analyzer, inputFile: string, outputFile: string) {
+    linter: Linter, analyzer: Analyzer, inputFile: string, goldenFile: string) {
   const warnings = await linter.lint([inputFile]);
   const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
   const loader = makeParseLoader(analyzer);
-  const result = await applyEdits(edits, loader);
-  const inputFileContent =
-      result.editedFiles.get(analyzer.resolveUrl(inputFile)!);
+  const {editedFiles, incompatibleEdits} = await applyEdits(edits, loader);
+  assert.deepEqual(incompatibleEdits, []);
+  const inputFileContent = editedFiles.get(analyzer.resolveUrl(inputFile)!);
   const outputFileContent =
-      (await loader(analyzer.resolveUrl(outputFile)!)).contents;
+      (await loader(analyzer.resolveUrl(goldenFile)!)).contents;
   assert.deepEqual(inputFileContent, outputFileContent);
 }
 
+/**
+ * Assert that applying the given edit result modifies the given input file
+ * and results in the contents of the given golden output file.
+ *
+ * Like assertExpectedFixes, but can also test edit actions.
+ */
 export async function assertFileEdited(
-    analyzer: Analyzer, editResult: EditResult, before: string, after: string) {
+    analyzer: Analyzer,
+    editResult: EditResult,
+    inputFile: string,
+    goldenFile: string) {
   assert.deepEqual(
-      editResult.editedFiles.get(analyzer.resolveUrl(before)!),
-      (await analyzer.load(analyzer.resolveUrl(after)!)));
+      editResult.editedFiles.get(analyzer.resolveUrl(inputFile)!),
+      (await analyzer.load(analyzer.resolveUrl(goldenFile)!)));
 }

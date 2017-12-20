@@ -14,11 +14,11 @@
 
 import {assert} from 'chai';
 import * as path from 'path';
-import {Analyzer, applyEdits, makeParseLoader} from 'polymer-analyzer';
+import {Analyzer} from 'polymer-analyzer';
 
 import {Linter} from '../../linter';
 import {registry} from '../../registry';
-import {assertFileEdited, WarningPrettyPrinter} from '../util';
+import {assertExpectedFixes, WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
 const ruleId = `deprecated-css-custom-property-syntax`;
@@ -70,15 +70,10 @@ suite(ruleId, () => {
   });
 
   test('applies automatic-safe fixes', async() => {
-    const warnings = await linter.lint([`${ruleId}/before-fixes.html`]);
-    const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
-    const loader = makeParseLoader(analyzer, warnings.analysis);
-    const result = await applyEdits(edits, loader);
-    await assertFileEdited(
+    await assertExpectedFixes(
+        linter,
         analyzer,
-        result,
         `${ruleId}/before-fixes.html`,
         `${ruleId}/after-fixes.html`);
-    assert.deepEqual(result.incompatibleEdits, []);
   });
 });
