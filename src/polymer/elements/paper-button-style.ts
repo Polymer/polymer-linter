@@ -29,8 +29,8 @@ const outsideStyle = p.AND(
     p.hasAttrValue('type', 'css'));
 
 const displayRegex = new RegExp(
-    // In mixin or the element itself
-    '(--paper-button:|paper-button)' +
+    // In the element itself or the mixin
+    '(paper-button|--paper-button:)' +
     // spaces + open {
     '\\s*{[^}]*' +
     // sets display: or @apply --layout
@@ -50,9 +50,14 @@ const displayRegex = new RegExp(
  *    paper-button {
  *      --paper-button: { @apply --layout; }
  *    }
+ *
+ * Returns the match.
  */
 const setsDisplayInStylesheet = (styleDoc: Document) =>
-    displayRegex.test(styleDoc.parsedDocument.contents);
+    displayRegex.exec(styleDoc.parsedDocument.contents);
+
+const setsDisplayFlex = (style: string) =>
+  /(display:(.|\s)*flex|@apply[\\(\\s]--layout)/.test(style);
 
 const cssRule = `/**
  * This style preserves the styling previous to
@@ -64,6 +69,19 @@ paper-button {
   display: inline-block;
   text-align: center;
   font-family: inherit;
+  align-items: stretch;
+  justify-content: flex-start;
+}`;
+
+const cssFlexRule = `/**
+ * This style preserves the styling previous to
+ * https://github.com/PolymerElements/paper-button/pull/115
+ * This change can break the layout of paper-button content.
+ * Remove this style to apply the change, more details at b/70528356.
+ */
+paper-button {
+  align-items: stretch;
+  justify-content: flex-start;
 }`;
 
 class PaperButtonStyle extends HtmlRule {
@@ -93,10 +111,12 @@ class PaperButtonStyle extends HtmlRule {
         continue;
       }
 
+      let ruleToInject = cssRule;
+
       // Search if paper-button display is already set in template styles.
       const template = dom5.query(domModule.astNode, p.hasTagName('template'))!;
       const templateContent = treeAdapters.default.getTemplateContent(template);
-      let setsDisplayInStyles = false;
+      let setsDisplayInStyles: RegExpExecArray | null = null;
       dom5.query(
           templateContent, p.AND(p.hasTagName('style'), (node: dom5.Node) => {
             const i = styleDocs.findIndex((doc) => doc.astNode === node);
@@ -106,15 +126,18 @@ class PaperButtonStyle extends HtmlRule {
             // Remove style from the docs to speed up next queries.
             const styleDoc = styleDocs.splice(i, 1)[0];
             setsDisplayInStyles = setsDisplayInStylesheet(styleDoc);
-            return setsDisplayInStyles;
+            return setsDisplayInStyles !== null;
           }));
       if (setsDisplayInStyles) {
-        continue;
+        if (!setsDisplayFlex(setsDisplayInStyles[0])) {
+          continue;
+        }
+        ruleToInject = cssFlexRule;
       }
 
       // Search if paper-button display is already set in outside styles.
       let linkCssDoc: ParsedCssDocument|null = null;
-      let setsDisplayInLinks = false;
+      let setsDisplayInLinks: RegExpExecArray | null = null;
       dom5.query(domModule.astNode, p.AND(outsideStyle, (node: dom5.Node) => {
         const i = linkDocs.findIndex((doc) => doc.astNode === node);
         if (i === -1) {
@@ -134,10 +157,13 @@ class PaperButtonStyle extends HtmlRule {
             break;
           }
         }
-        return setsDisplayInLinks;
+        return setsDisplayInLinks !== null;
       }));
       if (setsDisplayInLinks) {
-        continue;
+        if (!setsDisplayFlex(setsDisplayInLinks[0])) {
+          continue;
+        }
+        ruleToInject = cssFlexRule;
       }
 
       // Insert the fix in the css file.
@@ -154,13 +180,13 @@ class PaperButtonStyle extends HtmlRule {
           parsedDocument: linkCssDoc,
           severity: Severity.WARNING,
           sourceRange: range,
-          fix: [{replacementText: cssRule + '\n\n', range}]
+          fix: [{replacementText: ruleToInject + '\n\n', range}]
         }));
       } else {
         const indent = getIndentationInside(templateContent);
         const insertion = `
 ${indent}<style id="linter-paper-button-style">
-${indent}  ${cssRule.replace(/\n/g, '\n' + indent + '  ')}
+${indent}  ${ruleToInject.replace(/\n/g, '\n' + indent + '  ')}
 ${indent}</style>`;
         warnings.push(new Warning({
           code: 'paper-button-style',

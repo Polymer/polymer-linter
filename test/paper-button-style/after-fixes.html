@@ -11,6 +11,8 @@
         display: inline-block;
         text-align: center;
         font-family: inherit;
+        align-items: stretch;
+        justify-content: flex-start;
       }
     </style>
     <paper-button></paper-button>
@@ -35,6 +37,8 @@
         display: inline-block;
         text-align: center;
         font-family: inherit;
+        align-items: stretch;
+        justify-content: flex-start;
       }
     </style>
     <template>
@@ -61,6 +65,8 @@
         display: inline-block;
         text-align: center;
         font-family: inherit;
+        align-items: stretch;
+        justify-content: flex-start;
       }
     </style>
     <style>
@@ -106,6 +112,8 @@
         display: inline-block;
         text-align: center;
         font-family: inherit;
+        align-items: stretch;
+        justify-content: flex-start;
       }
     </style>
     <style></style>
@@ -201,6 +209,34 @@
   <script>
     Polymer({
       is: "link-style-with-mixin-apply-legacy"
+    });
+  </script>
+</dom-module>
+
+<dom-module id="with-display-flex">
+  <template>
+    <style id="linter-paper-button-style">
+      /**
+       * This style preserves the styling previous to
+       * https://github.com/PolymerElements/paper-button/pull/115
+       * This change can break the layout of paper-button content.
+       * Remove this style to apply the change, more details at b/70528356.
+       */
+      paper-button {
+        align-items: stretch;
+        justify-content: flex-start;
+      }
+    </style>
+    <style>
+      paper-button {
+        display: flex;
+      }
+    </style>
+    <paper-button></paper-button>
+  </template>
+  <script>
+    Polymer({
+      is: "with-display-flex"
     });
   </script>
 </dom-module>
