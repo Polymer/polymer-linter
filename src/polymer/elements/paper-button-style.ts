@@ -57,7 +57,7 @@ const setsDisplayInStylesheet = (styleDoc: Document) =>
     displayRegex.exec(styleDoc.parsedDocument.contents);
 
 const setsDisplayFlex = (style: string) =>
-  /(display:(.|\s)*flex|@apply[\\(\\s]--layout)/.test(style);
+  /(display:\s?(inline)?[-\s]?flex|@apply[\\(\\s]--layout)/.test(style);
 
 const cssRule = `/**
  * This style preserves the styling previous to
