@@ -14,10 +14,11 @@
 
 import {assert} from 'chai';
 import * as path from 'path';
-import {Analyzer, applyEdits, FSUrlLoader, makeParseLoader} from 'polymer-analyzer';
+import {Analyzer, applyEdits, makeParseLoader} from 'polymer-analyzer';
 
 import {Linter} from '../../linter';
 import {registry} from '../../registry';
+import {assertExpectedFixes, assertFileEdited} from '../util';
 
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
 
@@ -28,27 +29,26 @@ suite(ruleId, () => {
   let linter: Linter;
 
   setup(() => {
-    analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
+    analyzer = Analyzer.createForDirectory(fixtures_dir);
     linter = new Linter(registry.getRules([ruleId]), analyzer);
   });
 
   test('works in the trivial case', async() => {
-    const warnings = await linter.lint([]);
+    const {warnings} = await linter.lint([]);
     assert.deepEqual([...warnings], []);
   });
 
   test('applies automatic-safe fixes', async() => {
-    const warnings = await linter.lint([`${ruleId}/before-fixes.html`]);
-    const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
-    const loader = makeParseLoader(analyzer, warnings.analysis);
-    const result = await applyEdits(edits, loader);
-    assert.deepEqual(
-        result.editedFiles.get(`${ruleId}/before-fixes.html`),
-        (await loader(`${ruleId}/after-fixes.html`)).contents);
+    await assertExpectedFixes(
+        linter,
+        analyzer,
+        `${ruleId}/before-fixes.html`,
+        `${ruleId}/after-fixes.html`);
   });
 
   test('applies fixes and edit actions', async() => {
-    const warnings = await linter.lint([`${ruleId}/before-fixes.html`]);
+    const {warnings, analysis} =
+        await linter.lint([`${ruleId}/before-fixes.html`]);
     const edits = [];
     for (const warning of warnings) {
       if (warning.fix) {
@@ -60,10 +60,12 @@ suite(ruleId, () => {
         }
       }
     }
-    const loader = makeParseLoader(analyzer, warnings.analysis);
+    const loader = makeParseLoader(analyzer, analysis);
     const result = await applyEdits(edits, loader);
-    assert.deepEqual(
-        result.editedFiles.get(`${ruleId}/before-fixes.html`),
-        (await loader(`${ruleId}/after-edits.html`)).contents);
+    await assertFileEdited(
+        analyzer,
+        result,
+        `${ruleId}/before-fixes.html`,
+        `${ruleId}/after-edits.html`);
   });
 });

@@ -14,7 +14,7 @@
 
 import {assert} from 'chai';
 import * as path from 'path';
-import {Analyzer, FSUrlLoader} from 'polymer-analyzer';
+import {Analyzer} from 'polymer-analyzer';
 
 import {Linter} from '../../linter';
 import {registry} from '../../registry';
@@ -28,24 +28,25 @@ suite('call-super-in-callbacks', () => {
   let linter: Linter;
 
   setup(() => {
-    analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
+    analyzer = Analyzer.createForDirectory(fixtures_dir);
     warningPrinter = new WarningPrettyPrinter();
     linter =
         new Linter(registry.getRules(['call-super-in-callbacks']), analyzer);
   });
 
   test('works in the trivial case', async() => {
-    const warnings = await linter.lint([]);
+    const {warnings} = await linter.lint([]);
     assert.deepEqual([...warnings], []);
   });
 
   test('gives no warnings for a perfectly fine file', async() => {
-    const warnings = await linter.lint(['perfectly-fine/polymer-element.html']);
+    const {warnings} =
+        await linter.lint(['perfectly-fine/polymer-element.html']);
     assert.deepEqual([...warnings], []);
   });
 
   test('warns for the proper cases and with the right messages', async() => {
-    const warnings = await linter.lint(
+    const {warnings} = await linter.lint(
         ['call-super-in-callbacks/call-super-in-callbacks.html']);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `

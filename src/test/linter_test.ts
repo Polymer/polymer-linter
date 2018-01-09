@@ -14,7 +14,7 @@
 
 import {assert} from 'chai';
 import * as path from 'path';
-import {Analyzer, Document, FSUrlLoader, Severity, Warning} from 'polymer-analyzer';
+import {Analyzer, Document, Severity, Warning} from 'polymer-analyzer';
 
 import {Linter} from '../linter';
 import {Rule} from '../rule';
@@ -48,19 +48,19 @@ suite('Linter', () => {
     let warningPrinter: WarningPrettyPrinter;
 
     setup(() => {
-      analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
+      analyzer = Analyzer.createForDirectory(fixtures_dir);
       warningPrinter = new WarningPrettyPrinter();
     });
 
     test('works in the trivial case', async() => {
       const linter = new Linter([], analyzer);
-      const warnings = await linter.lint([]);
+      const {warnings} = await linter.lint([]);
       assert.deepEqual([...warnings], []);
     });
 
     test('gives no warnings for a perfectly fine file', async() => {
       const linter = new Linter([], analyzer);
-      const warnings =
+      const {warnings} =
           await linter.lint(['perfectly-fine/polymer-element.html']);
       assert.deepEqual([...warnings], []);
     });
@@ -68,7 +68,7 @@ suite('Linter', () => {
     test('surfaces warnings up from the analyzer', async() => {
       // Even without any rules we still get the warnings from the analyzer.
       const linter = new Linter([], analyzer);
-      const warnings =
+      const {warnings} =
           await linter.lint(['missing-imports/missing-imports.html']);
       assert.deepEqual(warningPrinter.prettyPrint(warnings), [
         `
@@ -83,28 +83,27 @@ suite('Linter', () => {
     const testName =
         'when linting a package, do not surface warnings from external files';
     test(testName, async() => {
-      const analyzer = new Analyzer({
-        urlLoader: new FSUrlLoader(path.join(fixtures_dir, 'package-external'))
-      });
+      const dir = path.join(fixtures_dir, 'package-external');
+      const analyzer = Analyzer.createForDirectory(dir);
       const linter = new Linter([new AlwaysWarnsRule()], analyzer);
-      const warnings = await linter.lintPackage();
+      const {warnings} = await linter.lintPackage();
       // One warning from the analyzer, one from the AlwaysWarns, both in
       // index, none from bower_components/external.html
       assert.deepEqual(
           warnings.map((w) => w.sourceRange.file),
-          ['index.html', 'index.html']);
+          ['index.html', 'index.html'].map((u) => analyzer.resolveUrl(u)));
 
-      const alsoWarnings = await linter.lint(['index.html']);
+      const {warnings: alsoWarnings} = await linter.lint(['index.html']);
       assert.deepEqual(alsoWarnings, warnings);
 
-      const allWarnings =
+      const {warnings: allWarnings} =
           await linter.lint(['index.html', 'bower_components/external.html']);
       assert.deepEqual(allWarnings.map((w) => w.sourceRange.file).sort(), [
         'index.html',
         'index.html',
         'bower_components/external.html',
         'bower_components/external.html'
-      ].sort());
+      ].map((u) => analyzer.resolveUrl(u)).sort());
     });
   });
 });

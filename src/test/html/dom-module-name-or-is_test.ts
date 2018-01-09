@@ -14,7 +14,7 @@
 
 import {assert} from 'chai';
 import * as path from 'path';
-import {Analyzer, FSUrlLoader} from 'polymer-analyzer';
+import {Analyzer} from 'polymer-analyzer';
 
 import {Linter} from '../../linter';
 import {registry} from '../../registry';
@@ -28,24 +28,25 @@ suite('dom-module-invalid-attrs', () => {
   let linter: Linter;
 
   setup(() => {
-    analyzer = new Analyzer({urlLoader: new FSUrlLoader(fixtures_dir)});
+    analyzer = Analyzer.createForDirectory(fixtures_dir);
     warningPrinter = new WarningPrettyPrinter();
     linter =
         new Linter(registry.getRules(['dom-module-invalid-attrs']), analyzer);
   });
 
   test('works in the trivial case', async() => {
-    const warnings = await linter.lint([]);
+    const {warnings} = await linter.lint([]);
     assert.deepEqual([...warnings], []);
   });
 
   test('gives no warnings for a perfectly fine file', async() => {
-    const warnings = await linter.lint(['perfectly-fine/polymer-element.html']);
+    const {warnings} =
+        await linter.lint(['perfectly-fine/polymer-element.html']);
     assert.deepEqual([...warnings], []);
   });
 
   test('warns for a file "is" and "name" dom-modules', async() => {
-    const warnings =
+    const {warnings} =
         await linter.lint(['dom-module-name-or-is/dom-module-name-or-is.html']);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
