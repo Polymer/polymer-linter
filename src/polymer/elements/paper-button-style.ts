@@ -57,7 +57,7 @@ const setsDisplayInStylesheet = (styleDoc: Document) =>
     displayRegex.exec(styleDoc.parsedDocument.contents);
 
 const setsDisplayFlex = (style: string) =>
-  /(display:\s?(inline)?[-\s]?flex|@apply[\\(\\s]--layout)/.test(style);
+    /(display:\s?(inline)?[-\s]?flex|@apply[\\(\\s]--layout)/.test(style);
 
 const cssRule = `/**
  * This style preserves the styling previous to
@@ -116,7 +116,7 @@ class PaperButtonStyle extends HtmlRule {
       // Search if paper-button display is already set in template styles.
       const template = dom5.query(domModule.astNode, p.hasTagName('template'))!;
       const templateContent = treeAdapters.default.getTemplateContent(template);
-      let setsDisplayInStyles: RegExpExecArray | null = null;
+      let setsDisplayInStyles: RegExpExecArray|null = null;
       dom5.query(
           templateContent, p.AND(p.hasTagName('style'), (node: dom5.Node) => {
             const i = styleDocs.findIndex((doc) => doc.astNode === node);
@@ -137,7 +137,7 @@ class PaperButtonStyle extends HtmlRule {
 
       // Search if paper-button display is already set in outside styles.
       let linkCssDoc: ParsedCssDocument|null = null;
-      let setsDisplayInLinks: RegExpExecArray | null = null;
+      let setsDisplayInLinks: RegExpExecArray|null = null;
       dom5.query(domModule.astNode, p.AND(outsideStyle, (node: dom5.Node) => {
         const i = linkDocs.findIndex((doc) => doc.astNode === node);
         if (i === -1) {
