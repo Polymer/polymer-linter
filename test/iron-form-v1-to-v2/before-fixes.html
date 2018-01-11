@@ -4,16 +4,21 @@
 
   <form is="iron-form"></form>
 
-  <div><form is="iron-form"></form></div>
+  <div><form is="iron-form" allow-redirect></form></div>
 
-  <form is="iron-form" method="get" action="/my-end-point" on-iron-form-error="handleError">
+  <form is="iron-form"
+        method="post"
+        action="/my-end-point"
+        with-credentials
+        on-iron-form-error="handleError"
+        on-submit="onSubmit">
     <input type="text">
     <input type="submit">
   </form>
 
   <dom-module id="my-element">
     <template>
-      <form id="form" is="iron-form" allow-redirect="[[shouldAllow]]">
+      <form id="form" is="iron-form" allow-redirect$="[[shouldAllow]]">
         <input type="text">
         <input type="submit">
       </form>

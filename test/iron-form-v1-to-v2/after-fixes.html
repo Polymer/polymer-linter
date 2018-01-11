@@ -3,25 +3,30 @@
 <body>
 
   <iron-form>
-    <form></form>
+  <form is="iron-form"></form>
   </iron-form>
 
-  <div><iron-form><form></form></iron-form></div>
+  <div><iron-form allow-redirect><form is="iron-form" allow-redirect></form></iron-form></div>
 
-  <iron-form on-iron-form-error="handleError">
-    <form method="get" action="/my-end-point">
-      <input type="text">
-      <input type="submit">
-    </form>
+  <iron-form with-credentials on-iron-form-error="handleError">
+  <form is="iron-form"
+        method="post"
+        action="/my-end-point"
+        with-credentials
+        on-iron-form-error="handleError"
+        on-submit="onSubmit">
+    <input type="text">
+    <input type="submit">
+  </form>
   </iron-form>
 
   <dom-module id="my-element">
     <template>
-      <iron-form id="form" allow-redirect="[[shouldAllow]]">
-        <form>
-          <input type="text">
-          <input type="submit">
-        </form>
+      <iron-form allow-redirect$="[[shouldAllow]]">
+      <form id="form" is="iron-form" allow-redirect$="[[shouldAllow]]">
+        <input type="text">
+        <input type="submit">
+      </form>
       </iron-form>
     </template>
     <script>

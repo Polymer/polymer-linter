@@ -12,9 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as clone from 'clone';
 import * as dom5 from 'dom5';
-import * as parse5 from 'parse5';
 import {Document, ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 
 import {HtmlRule} from '../../html/rule';
@@ -29,7 +27,10 @@ const isIronFormV1 = p.AND(
     p.hasTagName('form'),
     p.hasAttrValue('is', 'iron-form'));
 
-const ironFormProperties = ['allow-redirect', 'headers', 'with-credentials'];
+const ironFormProperties = [
+  'allow-redirect', 'headers', 'with-credentials',
+  'allow-redirect$', 'headers$', 'with-credentials$'
+];
 
 class IronFormV1ToV2 extends HtmlRule {
   code = 'iron-form-v1-to-v2';
@@ -62,32 +63,20 @@ class IronFormV1ToV2 extends HtmlRule {
     const forms = dom5.queryAll(
         parsedDocument.ast, isIronFormV1, [], dom5.childNodesIncludeTemplate);
     for (const form of forms) {
-      // Create a wrapper <iron-form>
-      const ironForm =
-          parse5.treeAdapters.default.createElement('iron-form', '', []);
-
-      // Clone the <form> and move its attributes to <iron-form>
-      const clonedForm = clone(form);
-      dom5.removeAttribute(clonedForm, 'is');
-      this.copyAttribute(clonedForm, ironForm, 'id');
-      clonedForm.attrs.forEach((attr) => {
-        if (attr.name.startsWith('on-iron-form-') ||
-            ironFormProperties.indexOf(attr.name) >= 0) {
-          this.copyAttribute(clonedForm, ironForm, attr.name);
-        }
-      });
-      dom5.append(ironForm, clonedForm);
-      const fragment = parse5.treeAdapters.default.createDocumentFragment();
-      dom5.append(fragment, ironForm);
-      // Formatting fun.
+      // Copy the iron-form attributes and event listeners to <iron-form>.
+      const attrs =
+          form.attrs
+              .filter(
+                  (attr) =>
+                      (attr.name.startsWith('on-iron-form-') ||
+                       ironFormProperties.indexOf(attr.name) >= 0))
+              .map(
+                  (attr) =>
+                      `${attr.name}${attr.value ? `="${attr.value}"` : ''}`)
+              .join(' ');
+      const formRange = parsedDocument.sourceRangeForNode(form)!;
       const indentation = getIndentationInside(form.parentNode!);
-      const newline = indentation ? '\n' : '';
-      const serializedForm =
-          parse5.serialize(fragment)
-              .replace('<form', `${newline + indentation}<form`)
-              .replace(/^/mg, '  ')
-              .replace('</form>', `</form>${newline + indentation}`)
-              .trim();
+      const newline = indentation ? '\n' + indentation : '';
       warnings.push(new Warning({
         parsedDocument,
         code: this.code,
@@ -95,21 +84,28 @@ class IronFormV1ToV2 extends HtmlRule {
             `<form> should not be extended with \`is="iron-form"\` but instead wrapped with \`<iron-form>\`.`,
         severity: Severity.WARNING,
         sourceRange: parsedDocument.sourceRangeForAttribute(form, 'is')!,
-        fix: [{
-          range: parsedDocument.sourceRangeForNode(form)!,
-          replacementText: serializedForm
-        }]
+        fix: [
+          {
+            range: {
+              file: parsedDocument.url,
+              start: formRange.start,
+              end: formRange.start
+            },
+            replacementText: `<iron-form${attrs ? ' ' + attrs : ''}>${newline}`
+          },
+          {
+            range: {
+              file: parsedDocument.url,
+              start: formRange.end,
+              end: formRange.end
+            },
+            replacementText: newline + '</iron-form>'
+          }
+        ]
       }));
     }
 
     return warnings;
-  }
-
-  copyAttribute(from: dom5.Node, to: dom5.Node, attr: string) {
-    if (dom5.hasAttribute(from, attr)) {
-      dom5.setAttribute(to, attr, dom5.getAttribute(from, attr)!);
-      dom5.removeAttribute(from, attr);
-    }
   }
 }
 
