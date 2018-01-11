@@ -45,16 +45,16 @@ suite(ruleId, () => {
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
   <form is="iron-form"></form>
-  ~~~~~~~~~~~~~~~~~~~~~`,
+        ~~~~~~~~~~~~~~`,
       `
-  <div><form is=\"iron-form\"></form></div>
-       ~~~~~~~~~~~~~~~~~~~~~`,
+  <div><form is="iron-form"></form></div>
+             ~~~~~~~~~~~~~~`,
       `
   <form is="iron-form" method="get" action="/my-end-point" on-iron-form-error="handleError">
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+        ~~~~~~~~~~~~~~`,
       `
       <form id="form" is="iron-form" allow-redirect="[[shouldAllow]]">
-      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+                      ~~~~~~~~~~~~~~`,
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
