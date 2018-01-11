@@ -53,8 +53,8 @@ suite(ruleId, () => {
   <form is="iron-form" method="get" action="/my-end-point" on-iron-form-error="handleError">
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
       `
-      <form id="form" is="iron-form" allow-redirect>
-      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+      <form id="form" is="iron-form" allow-redirect="[[shouldAllow]]">
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
