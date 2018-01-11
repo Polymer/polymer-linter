@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+- Adds the new rule `iron-form-v1-to-v2`, which warns about `iron-form` being used as a type extension of `<form>`.
+  - The fix automatically wraps the `<form is="iron-form">` into an `<iron-form>` and moves id, `iron-form` properties and event listeners from `<form>` to `<iron-form>`.
 
 ## [3.0.0-pre.1] - 2017-12-21
 - [BREAKING] Return an object with `warnings` and `analysis` properties
