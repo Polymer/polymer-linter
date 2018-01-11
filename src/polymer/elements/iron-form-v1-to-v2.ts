@@ -13,7 +13,7 @@
  */
 
 import * as dom5 from 'dom5';
-import {Document, ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
+import {Document, ParsedHtmlDocument, Replacement, Severity, Warning} from 'polymer-analyzer';
 
 import {HtmlRule} from '../../html/rule';
 import {getIndentationInside} from '../../html/util';
@@ -28,8 +28,12 @@ const isIronFormV1 = p.AND(
     p.hasAttrValue('is', 'iron-form'));
 
 const ironFormProperties = [
-  'allow-redirect', 'headers', 'with-credentials',
-  'allow-redirect$', 'headers$', 'with-credentials$'
+  'allow-redirect',
+  'headers',
+  'with-credentials',
+  'allow-redirect$',
+  'headers$',
+  'with-credentials$'
 ];
 
 class IronFormV1ToV2 extends HtmlRule {
@@ -74,34 +78,44 @@ class IronFormV1ToV2 extends HtmlRule {
                   (attr) =>
                       `${attr.name}${attr.value ? `="${attr.value}"` : ''}`)
               .join(' ');
-      const formRange = parsedDocument.sourceRangeForNode(form)!;
       const indentation = getIndentationInside(form.parentNode!);
-      const newline = indentation ? '\n' + indentation : '';
+      const formRange = parsedDocument.sourceRangeForNode(form)!;
+      const fix: Replacement[] = [
+        {
+          range: {
+            file: parsedDocument.url,
+            start: formRange.start,
+            end: formRange.start
+          },
+          replacementText: '<iron-form' + (attrs ? ' ' + attrs : '') + '>' +
+              (indentation ? '\n' + indentation + '  ' : '')
+        },
+        {
+          range: {
+            file: parsedDocument.url,
+            start: formRange.end,
+            end: formRange.end
+          },
+          replacementText:
+              (indentation ? '\n' + indentation : '') + '</iron-form>'
+        }
+      ];
+      if (indentation && formRange.end.line > formRange.start.line) {
+        for (let i = formRange.start.line + 1; i <= formRange.end.line; i++) {
+          const position = {line: i, column: 0};
+          fix.push({
+            range: {file: parsedDocument.url, start: position, end: position},
+            replacementText: '  '
+          });
+        }
+      }
       warnings.push(new Warning({
         parsedDocument,
         code: this.code,
         message:
             `<form> should not be extended with \`is="iron-form"\` but instead wrapped with \`<iron-form>\`.`,
         severity: Severity.WARNING,
-        sourceRange: parsedDocument.sourceRangeForAttribute(form, 'is')!,
-        fix: [
-          {
-            range: {
-              file: parsedDocument.url,
-              start: formRange.start,
-              end: formRange.start
-            },
-            replacementText: `<iron-form${attrs ? ' ' + attrs : ''}>${newline}`
-          },
-          {
-            range: {
-              file: parsedDocument.url,
-              start: formRange.end,
-              end: formRange.end
-            },
-            replacementText: newline + '</iron-form>'
-          }
-        ]
+        sourceRange: parsedDocument.sourceRangeForAttribute(form, 'is')!, fix
       }));
     }
 
