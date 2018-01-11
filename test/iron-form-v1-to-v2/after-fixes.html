@@ -1,0 +1,36 @@
+<html>
+
+<body>
+
+  <iron-form>
+    <form></form>
+  </iron-form>
+
+  <div><iron-form><form></form></iron-form></div>
+
+  <iron-form on-iron-form-error="handleError">
+    <form method="get" action="/my-end-point">
+      <input type="text">
+      <input type="submit">
+    </form>
+  </iron-form>
+
+  <dom-module id="my-element">
+    <template>
+      <iron-form id="form" allow-redirect="">
+        <form>
+          <input type="text">
+          <input type="submit">
+        </form>
+      </iron-form>
+    </template>
+    <script>
+      Polymer({
+        is: "my-element"
+      });
+    </script>
+  </dom-module>
+
+</body>
+
+</html>
