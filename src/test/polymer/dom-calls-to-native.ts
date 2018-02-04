@@ -58,24 +58,12 @@ suite.only('dom-calls-to-native', () => {
       `
       const root = Polymer.dom(event).rootTarget;
                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
-      `
-    Polymer.dom(event).localTarget.click();
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
-      `
-    const path = Polymer.dom(event).path;
-                 ~~~~~~~~~~~~~~~~~~~~~~~`,
-      `
-    const root = Polymer.dom(event).rootTarget;
-                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
       'Polymer.dom no longer needs to be called for "localTarget", instead "event.target" may be used.',
       'Polymer.dom no longer needs to be called for "path", instead "event.composedPath()" may be used.',
-      'Polymer.dom no longer needs to be called for "rootTarget", instead "event.composedPath()[0]" may be used.',
-      'Polymer.dom no longer needs to be called for "localTarget", instead "event.target" may be used.',
-      'Polymer.dom no longer needs to be called for "path", instead "event.composedPath()" may be used.',
-      'Polymer.dom no longer needs to be called for "rootTarget", instead "event.composedPath()[0]" may be used.',
+      'Polymer.dom no longer needs to be called for "rootTarget", instead "event.composedPath()[0]" may be used.'
     ]);
   });
 });
