@@ -14,8 +14,7 @@
 
 import babelTraverse from 'babel-traverse';
 import * as babel from 'babel-types';
-import {Document, Severity, Warning, Class, SourceRange, ParsedDocument, isPositionInsideRange} from 'polymer-analyzer';
-import {Function as AnalyzedFunction} from 'polymer-analyzer/lib/javascript/function';
+import {Document, Severity, Warning, SourceRange, ParsedDocument, isPositionInsideRange} from 'polymer-analyzer';
 
 import {registry} from '../registry';
 import {Rule} from '../rule';
@@ -46,12 +45,10 @@ class DomCallsToNative extends Rule {
   async check(document: Document) {
     const warnings: Warning[] = [];
 
-    const features = new Array<Class|AnalyzedFunction>(
-        ...document.getFeatures({kind: 'class'}),
-        ...document.getFeatures({kind: 'function'}));
+    const docs = document.getFeatures({kind: 'js-document'});
 
-    for (const feature of features) {
-      babelTraverse(feature.astNode, {
+    for (const doc of docs) {
+      babelTraverse(doc.parsedDocument.ast, {
         noScope: true,
         MemberExpression: (path) => {
           if (!babel.isIdentifier(path.node.property)) {
@@ -59,13 +56,13 @@ class DomCallsToNative extends Rule {
           }
 
           const name = path.node.property.name;
-          const doc = getParsedDocumentContaining(feature.sourceRange, document);
+          const containingDoc = getParsedDocumentContaining(doc.sourceRange, document);
 
-          if (!doc) {
+          if (!containingDoc) {
             return;
           }
 
-          const sourceRange = doc.sourceRangeForNode(path.node)!;
+          const sourceRange = containingDoc.sourceRangeForNode(path.node)!;
 
           if (this._isPolymerDomCall(path.node) && this._replacements.has(name)) {
             const replacement = this._replacements.get(name)!;
