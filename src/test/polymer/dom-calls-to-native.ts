@@ -30,8 +30,7 @@ suite.only('dom-calls-to-native', () => {
   setup(() => {
     analyzer = Analyzer.createForDirectory(fixtures_dir);
     warningPrinter = new WarningPrettyPrinter();
-    linter =
-        new Linter(registry.getRules(['dom-calls-to-native']), analyzer);
+    linter = new Linter(registry.getRules(['dom-calls-to-native']), analyzer);
   });
 
   test('works in the trivial case', async() => {
@@ -46,8 +45,8 @@ suite.only('dom-calls-to-native', () => {
   });
 
   test('warns for the proper cases and with the right messages', async() => {
-    const {warnings} = await linter.lint(
-        ['dom-calls-to-native/dom-calls-to-native.html']);
+    const {warnings} =
+        await linter.lint(['dom-calls-to-native/dom-calls-to-native.html']);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
       Polymer.dom(event).localTarget.innerHTML = 'foo';
