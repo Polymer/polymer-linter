@@ -18,8 +18,7 @@ import {Document, isPositionInsideRange, ParsedDocument, Severity, SourceRange, 
 
 import {registry} from '../registry';
 import {Rule} from '../rule';
-import {stripWhitespace} from '../util';
-import {stripIndentation} from '../util';
+import {stripIndentation, stripWhitespace} from '../util';
 
 
 class DomCallsToNative extends Rule {
