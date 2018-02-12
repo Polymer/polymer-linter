@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document, Warning, ParsedDocument} from 'polymer-analyzer';
+import {Document, ParsedDocument, Warning} from 'polymer-analyzer';
 
 /**
  * A lint rule. Can take a package and find Warnings.

@@ -134,8 +134,8 @@ class MoveStyleIntoTemplate extends HtmlRule {
         }));
       }
 
-      const linksInShadowDom = dom5.nodeWalkAll(
-          template, mustBeOutsideTemplate, [], dom5.childNodesIncludeTemplate);
+      const linksInShadowDom = dom5.iteration.queryAll(
+          template, mustBeOutsideTemplate, dom5.childNodesIncludeTemplate);
       for (const linkInShadowDom of linksInShadowDom) {
         let message;
         let code;

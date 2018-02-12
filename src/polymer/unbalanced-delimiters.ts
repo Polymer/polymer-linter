@@ -40,10 +40,9 @@ class UnbalancedDelimiters extends HtmlRule {
       Promise<Warning[]> {
     let warnings: Warning[] = [];
 
-    const templates = dom5.queryAll(
+    const templates = dom5.iteration.queryAll(
         parsedHtml.ast,
         matchers.isDatabindingTemplate,
-        [],
         dom5.childNodesIncludeTemplate);
     for (const template of templates) {
       warnings =
@@ -76,7 +75,7 @@ class UnbalancedDelimiters extends HtmlRule {
     let warnings: Warning[] = [];
     const content = parse5.treeAdapters.default.getTemplateContent(template);
 
-    dom5.nodeWalkAll(content, (node: parse5.ASTNode) => {
+    for (const node of dom5.iteration.depthFirst(content)) {
       if (dom5.isElement(node) && node.attrs.length > 0) {
         warnings =
             warnings.concat(this._getWarningsForElementAttrs(parsedHtml, node));
@@ -91,8 +90,7 @@ class UnbalancedDelimiters extends HtmlRule {
           sourceRange: parsedHtml.sourceRangeForNode(node)!
         }));
       }
-      return false;  // predicates must return boolean & we don't need results.
-    });
+    }
     return warnings;
   }
 

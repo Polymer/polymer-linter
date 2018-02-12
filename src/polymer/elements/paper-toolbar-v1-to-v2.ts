@@ -85,10 +85,9 @@ class PaperToolbarV1ToV2 extends HtmlRule {
   async checkDocument(parsedDocument: ParsedHtmlDocument) {
     const warnings: Warning[] = [];
 
-    const paperToolbars = dom5.nodeWalkAll(
+    const paperToolbars = dom5.iteration.queryAll(
         parsedDocument.ast,
         dom5.predicates.hasTagName('paper-toolbar'),
-        undefined,
         dom5.childNodesIncludeTemplate);
 
     const checkNode = (node: dom5.Node) => {

@@ -62,7 +62,7 @@ class IronFlexLayoutImport extends HtmlRule {
 
   convertDeclarations(
       parsedDocument: ParsedHtmlDocument, _: Document, warnings: Warning[]) {
-    const imports = dom5.queryAll(parsedDocument.ast, isImport);
+    const imports = [...dom5.iteration.queryAll(parsedDocument.ast, isImport)];
     // Assume base path to be current folder.
     let polymerElementsBasePath: string = './';
     let goodImport: dom5.Node|null = null;
@@ -79,7 +79,7 @@ class IronFlexLayoutImport extends HtmlRule {
       }
     }
 
-    const styleNode = dom5.query(
+    const styleNode = dom5.iteration.query(
         parsedDocument.ast,
         usesIronFlexStyleIncludes,
         dom5.childNodesIncludeTemplate);

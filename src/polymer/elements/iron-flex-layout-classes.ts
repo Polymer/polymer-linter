@@ -109,7 +109,7 @@ class IronFlexLayoutClasses extends HtmlRule {
     // Search in the dom-modules.
     for (const domModule of document.getFeatures({kind: 'dom-module'})) {
       const misplacedStyle =
-          dom5.query(domModule.astNode, p.hasTagName('style'));
+          dom5.iteration.query(domModule.astNode, p.hasTagName('style'));
       if (misplacedStyle) {
         warnings.push(new Warning({
           code: 'iron-flex-layout-classes',
@@ -121,7 +121,8 @@ class IronFlexLayoutClasses extends HtmlRule {
         }));
         continue;
       }
-      const template = dom5.query(domModule.astNode, p.hasTagName('template'));
+      const template =
+          dom5.iteration.query(domModule.astNode, p.hasTagName('template'));
       if (!template) {
         continue;
       }
@@ -138,7 +139,7 @@ class IronFlexLayoutClasses extends HtmlRule {
       const warning: {fix: Edit | undefined} = warnings[fixIndex];
       // Fallback to style without include attribute.
       const styleNode = getStyleNodeWithInclude(templateContent) ||
-          dom5.query(templateContent, p.hasTagName('style'));
+          dom5.iteration.query(templateContent, p.hasTagName('style'));
       if (!styleNode) {
         const indent = getIndentationInside(templateContent);
         warning.fix = [prependContentInto(parsedDocument, template, `
@@ -155,7 +156,7 @@ ${indent}<style include="${missingModules}"></style>`)];
             parsedDocument, styleNode, 'include', missingModules)];
       }
     }
-    const body = dom5.query(parsedDocument.ast, p.hasTagName('body'));
+    const body = dom5.iteration.query(parsedDocument.ast, p.hasTagName('body'));
     // Handle files like `<dom-module></dom-module> <body><p>hello</p></body>`
     // where a "fake" body node would be created by dom-module. Skip these
     // cases, dear user please write proper HTML ¯\_(ツ)_/¯
@@ -221,9 +222,9 @@ function searchUsedModulesAndIncludes(
     modules: Map<string, dom5.Node[]> = new Map(),
     includes: string[] =
         []): {modules: Map<string, dom5.Node[]>, includes: string[]} {
-  dom5.nodeWalkAll(rootNode, (node: dom5.Node) => {
+  for (const node of dom5.iteration.depthFirst(rootNode)) {
     if (!dom5.isElement(node)) {
-      return false;
+      continue;
     }
     // Ensure we don't search into dom-module's templates.
     if (p.hasTagName('template')(node) &&
@@ -247,14 +248,13 @@ function searchUsedModulesAndIncludes(
         }
       });
     }
-    return false;
-  });
+  }
   return {modules, includes};
 }
 
 function getStyleNodeWithInclude(node: dom5.Node) {
   let styleToEdit = null;
-  for (const style of dom5.queryAll(node, isStyleInclude)) {
+  for (const style of dom5.iteration.queryAll(node, isStyleInclude)) {
     // Get the first one of the styles with include attribute, otherwise
     // prefer styles that already include iron-flex-layout modules.
     if (!styleToEdit ||

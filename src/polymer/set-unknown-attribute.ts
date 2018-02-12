@@ -49,8 +49,8 @@ class SetUnknownAttribute extends HtmlRule {
       return [];
     }
     const databindingRanges =
-        dom5.queryAll(parsedDoc.ast, isDatabindingTemplate)
-            .map((t) => parsedDoc.sourceRangeForNode(t)!);
+        [...dom5.iteration.queryAll(parsedDoc.ast, isDatabindingTemplate)].map(
+            (t) => parsedDoc.sourceRangeForNode(t)!);
     for (const ref of elementReferences) {
       const node = ref.astNode;
       if (!node || !node.tagName) {
