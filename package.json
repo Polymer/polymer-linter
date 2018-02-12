@@ -33,7 +33,7 @@
     "source-map-support": "^0.4.3",
     "tsc-then": "^1.0.1",
     "tslint": "^4.1.1",
-    "typescript": "^2.6.1"
+    "typescript": "^2.7.1"
   },
   "scripts": {
     "prepublishOnly": "npm run build",
