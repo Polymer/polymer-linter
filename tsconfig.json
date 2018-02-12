@@ -2,8 +2,7 @@
     "extends": "./node_modules/@polymer/tools-common/tsconfig.json",
     "compilerOptions": {
         "baseUrl": "src",
-        "outDir": "lib",
-        "strictPropertyInitialization": false
+        "outDir": "lib"
     },
     "include": [
         "src/**/*.ts",
