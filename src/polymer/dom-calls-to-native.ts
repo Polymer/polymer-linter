@@ -54,6 +54,12 @@ class DomCallsToNative extends Rule {
           }
 
           const name = path.node.property.name;
+
+          if (!this._isPolymerDomCall(path.node.object) ||
+              !this._replacements.has(name)) {
+            return;
+          }
+
           const containingDoc =
               getParsedDocumentContaining(doc.sourceRange, document);
 
@@ -62,21 +68,17 @@ class DomCallsToNative extends Rule {
           }
 
           const sourceRange = containingDoc.sourceRangeForNode(path.node)!;
+          const replacement = this._replacements.get(name)!;
 
-          if (this._isPolymerDomCall(path.node) &&
-              this._replacements.has(name)) {
-            const replacement = this._replacements.get(name)!;
-
-            warnings.push(new Warning({
-              parsedDocument: document.parsedDocument,
-              code: 'deprecated-dom-call',
-              severity: Severity.WARNING, sourceRange,
-              message: stripWhitespace(`
-                Polymer.dom no longer needs to be called for "${name}",
-                instead "event.${replacement}" may be used.
-              `)
-            }));
-          }
+          warnings.push(new Warning({
+            parsedDocument: document.parsedDocument,
+            code: 'deprecated-dom-call',
+            severity: Severity.WARNING, sourceRange,
+            message: stripWhitespace(`
+              Polymer.dom no longer needs to be called for "${name}",
+              instead "event.${replacement}" may be used.
+            `)
+          }));
         }
       });
     }
@@ -84,13 +86,13 @@ class DomCallsToNative extends Rule {
     return warnings;
   }
 
-  private _isPolymerDomCall(expr: babel.MemberExpression): boolean {
-    return babel.isCallExpression(expr.object) &&
-        babel.isMemberExpression(expr.object.callee) &&
-        babel.isIdentifier(expr.object.callee.object) &&
-        babel.isIdentifier(expr.object.callee.property) &&
-        expr.object.callee.object.name === 'Polymer' &&
-        expr.object.callee.property.name === 'dom';
+  private _isPolymerDomCall(expr: babel.Expression): boolean {
+    return babel.isCallExpression(expr) &&
+        babel.isMemberExpression(expr.callee) &&
+        babel.isIdentifier(expr.callee.object) &&
+        babel.isIdentifier(expr.callee.property) &&
+        expr.callee.object.name === 'Polymer' &&
+        expr.callee.property.name === 'dom';
   }
 }
 
