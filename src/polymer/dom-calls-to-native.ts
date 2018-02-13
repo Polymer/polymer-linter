@@ -54,9 +54,10 @@ class DomCallsToNative extends Rule {
           }
 
           const name = path.node.property.name;
+          const replacement = this._replacements.get(name);
 
           if (!this._isPolymerDomCall(path.node.object) ||
-              !this._replacements.has(name)) {
+              replacement === undefined) {
             return;
           }
 
@@ -68,7 +69,6 @@ class DomCallsToNative extends Rule {
           }
 
           const sourceRange = containingDoc.sourceRangeForNode(path.node)!;
-          const replacement = this._replacements.get(name)!;
 
           warnings.push(new Warning({
             parsedDocument: document.parsedDocument,
@@ -98,6 +98,9 @@ class DomCallsToNative extends Rule {
 
 registry.register(new DomCallsToNative());
 
+// TODO(43081j): this exists already in the analyzer's analysis
+// namespace. We should remove this function and import it instead
+// once it has been exposed in a future analyzer release.
 function getParsedDocumentContaining(
     sourceRange: SourceRange|undefined,
     document: Document): ParsedDocument<any, any>|undefined {
