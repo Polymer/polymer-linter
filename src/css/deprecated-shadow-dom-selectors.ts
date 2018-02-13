@@ -27,12 +27,12 @@ class DeprecatedShadowPiercingCombinators extends CssRule {
 
   async checkDocument(parsedDocument: ParsedCssDocument, _document: Document) {
     const warnings: Warning[] = [];
-  
+
     for (const node of parsedDocument) {
       if (node.type === shady.nodeType.ruleset) {
         const deprecatedCombinatorsRegex = /(\/deep\/|>>>|::shadow)/g;
         let match: RegExpExecArray | null;
-        
+
         while ((match = deprecatedCombinatorsRegex.exec(node.selector)) !== null) {
           const combinatorOffset = match.index!;
           const start = node.range.start + combinatorOffset;
@@ -40,7 +40,7 @@ class DeprecatedShadowPiercingCombinators extends CssRule {
           const sourceRange =
             parsedDocument.sourceRangeForShadyRange({ start, end });
           warnings.push(new Warning({
-            code: 'deprecated-combinator',
+            code: 'deprecated-shadow-dom-selectors',
             severity: Severity.WARNING, parsedDocument, sourceRange,
             message:
                 'The /deep/ (>>>) combinator and ::shadow pseudo-element ' +
