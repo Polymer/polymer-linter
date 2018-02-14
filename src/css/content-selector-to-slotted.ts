@@ -20,7 +20,7 @@ import {registry} from '../registry';
 import {stripIndentation} from '../util';
 
 class ContentToSlottedUsages extends CssRule {
-  code = 'content-to-slotted-usages';
+  code = 'content-selector-to-slotted';
   description = stripIndentation(`
       Warns when using deprecated ::content pseudo-element.
   `);
@@ -33,7 +33,7 @@ class ContentToSlottedUsages extends CssRule {
         const deprecatedRegex = /::content/;
         const match = node.selector.match(deprecatedRegex);
 
-        if (match) {
+        if (match !== null) {
           const combinatorOffset = match.index!;
           const start = node.range.start + combinatorOffset;
           const end = start + match[0].length;
@@ -66,11 +66,11 @@ class ContentToSlottedUsages extends CssRule {
           }
 
           warnings.push(new Warning({
-            code: 'content-to-slotted-usages',
+            code: 'content-selector-to-slotted',
             severity: Severity.WARNING, parsedDocument, sourceRange,
             message:
                 'The ::content pseudo-element has been deprecated in favor of ' +
-                'the ::shadow psuedo-element in WebComponents v1.',
+                'the ::slotted psuedo-element in WebComponents v1.',
             fix
           }));
         }

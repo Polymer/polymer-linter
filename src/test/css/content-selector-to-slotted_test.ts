@@ -21,7 +21,7 @@ import {registry} from '../../registry';
 import {assertExpectedFixes, WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
-const ruleId = `content-to-slotted-usages`;
+const ruleId = `content-selector-to-slotted`;
 
 suite(ruleId, () => {
   let analyzer: Analyzer;
@@ -69,12 +69,12 @@ suite(ruleId, () => {
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
-      `The ::content pseudo-element has been deprecated in favor of the ::shadow psuedo-element in WebComponents v1.`,
-      `The ::content pseudo-element has been deprecated in favor of the ::shadow psuedo-element in WebComponents v1.`,
-      `The ::content pseudo-element has been deprecated in favor of the ::shadow psuedo-element in WebComponents v1.`,
-      `The ::content pseudo-element has been deprecated in favor of the ::shadow psuedo-element in WebComponents v1.`,
-      `The ::content pseudo-element has been deprecated in favor of the ::shadow psuedo-element in WebComponents v1.`,
-      `The ::content pseudo-element has been deprecated in favor of the ::shadow psuedo-element in WebComponents v1.`,
+      `The ::content pseudo-element has been deprecated in favor of the ::slotted psuedo-element in WebComponents v1.`,
+      `The ::content pseudo-element has been deprecated in favor of the ::slotted psuedo-element in WebComponents v1.`,
+      `The ::content pseudo-element has been deprecated in favor of the ::slotted psuedo-element in WebComponents v1.`,
+      `The ::content pseudo-element has been deprecated in favor of the ::slotted psuedo-element in WebComponents v1.`,
+      `The ::content pseudo-element has been deprecated in favor of the ::slotted psuedo-element in WebComponents v1.`,
+      `The ::content pseudo-element has been deprecated in favor of the ::slotted psuedo-element in WebComponents v1.`,
     ]);
   });
 
