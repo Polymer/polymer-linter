@@ -12,7 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document, Warning} from 'polymer-analyzer';
+// TODO(stramel): Remove on drop of Node 6
+// @ts-ignore
+import {Document, Warning, ParsedDocument} from 'polymer-analyzer';
 
 /**
  * A lint rule. Can take a package and find Warnings.
