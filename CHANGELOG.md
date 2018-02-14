@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+- Make `dom-module-invalid-attrs` rule fixable for cases where only `is` or `name` exist, not both.
+
 ### New Lint Rules
 - `dom-calls-to-native`: Warns when `Polymer.dom` is used where native methods/properties may
 - `deprecated-shadow-dom-selectors`: Warns when deprecated Shadow DOM selectors are used. (`/deep/`, `>>>`, and `::shadow`)

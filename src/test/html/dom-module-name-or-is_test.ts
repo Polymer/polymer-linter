@@ -23,7 +23,7 @@ import {assertExpectedFixes, WarningPrettyPrinter} from '../util';
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
 const ruleId = 'dom-module-name-or-is';
 
-suite.only(ruleId, () => {
+suite(ruleId, () => {
   let analyzer: Analyzer;
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
