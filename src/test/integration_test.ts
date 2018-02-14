@@ -56,7 +56,7 @@ const codesToIgnore = new Set([
 const fileSpecificIgnoreCodesToIgnore: {[path: string]: Set<string>} = {
   // https://github.com/PolymerElements/paper-scroll-header-panel/pull/106
   'paper-scroll-header-panel/demo/lorem-ipsum.html':
-      new Set(['dom-module-invalid-attrs']),
+      new Set(['dom-module-name-or-is']),
 
   // https://github.com/PolymerElements/iron-a11y-keys-behavior/pull/66
   'iron-a11y-keys-behavior/test/basic-test.html':
