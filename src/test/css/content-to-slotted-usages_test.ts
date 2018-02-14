@@ -23,7 +23,7 @@ import {assertExpectedFixes, WarningPrettyPrinter} from '../util';
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
 const ruleId = `content-to-slotted-usages`;
 
-suite.only(ruleId, () => {
+suite(ruleId, () => {
   let analyzer: Analyzer;
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
@@ -48,22 +48,22 @@ suite.only(ruleId, () => {
   test('warns for the proper cases and with the right messages', async() => {
     const {warnings} = await linter.lint([`${ruleId}/${ruleId}.html`]);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
-  `
+      `
   ::content h1 {
   ~~~~~~~~~`,
-  `
+      `
   ::content::before {
-  ~~~~~~~~~`,    
-  `
+  ~~~~~~~~~`,
+      `
   x-tabs ::content x-panel {
          ~~~~~~~~~`,
-    `
+      `
     :host ::content > [top-item] {
           ~~~~~~~~~`,
-    `
+      `
     ::content > [top-item] {
     ~~~~~~~~~`,
-    `
+      `
     ::content * {
     ~~~~~~~~~`,
     ]);
