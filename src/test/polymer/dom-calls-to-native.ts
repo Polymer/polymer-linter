@@ -22,7 +22,7 @@ import {WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
 
-suite.only('dom-calls-to-native', () => {
+suite('dom-calls-to-native', () => {
   let analyzer: Analyzer;
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
