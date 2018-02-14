@@ -69,12 +69,12 @@ suite(ruleId, () => {
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
-      `The ::content pseudo-element has been deprecated in favor of the ::slotted psuedo-element in WebComponents v1.`,
-      `The ::content pseudo-element has been deprecated in favor of the ::slotted psuedo-element in WebComponents v1.`,
-      `The ::content pseudo-element has been deprecated in favor of the ::slotted psuedo-element in WebComponents v1.`,
-      `The ::content pseudo-element has been deprecated in favor of the ::slotted psuedo-element in WebComponents v1.`,
-      `The ::content pseudo-element has been deprecated in favor of the ::slotted psuedo-element in WebComponents v1.`,
-      `The ::content pseudo-element has been deprecated in favor of the ::slotted psuedo-element in WebComponents v1.`,
+      `The ::content pseudo-element has been deprecated in favor of the ::slotted psuedo-element in ShadowDOM v1.`,
+      `The ::content pseudo-element has been deprecated in favor of the ::slotted psuedo-element in ShadowDOM v1.`,
+      `The ::content pseudo-element has been deprecated in favor of the ::slotted psuedo-element in ShadowDOM v1.`,
+      `The ::content pseudo-element has been deprecated in favor of the ::slotted psuedo-element in ShadowDOM v1.`,
+      `The ::content pseudo-element has been deprecated in favor of the ::slotted psuedo-element in ShadowDOM v1.`,
+      `The ::content pseudo-element has been deprecated in favor of the ::slotted psuedo-element in ShadowDOM v1.`,
     ]);
   });
 

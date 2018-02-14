@@ -70,7 +70,7 @@ class ContentToSlottedUsages extends CssRule {
             severity: Severity.WARNING, parsedDocument, sourceRange,
             message:
                 'The ::content pseudo-element has been deprecated in favor of ' +
-                'the ::slotted psuedo-element in WebComponents v1.',
+                'the ::slotted psuedo-element in ShadowDOM v1.',
             fix
           }));
         }
