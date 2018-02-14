@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 import * as parse5 from 'parse5';
 import {ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 
@@ -40,7 +40,7 @@ class UnbalancedDelimiters extends HtmlRule {
       Promise<Warning[]> {
     let warnings: Warning[] = [];
 
-    const templates = dom5.iteration.queryAll(
+    const templates = dom5.queryAll(
         parsedHtml.ast,
         matchers.isDatabindingTemplate,
         dom5.childNodesIncludeTemplate);
@@ -75,7 +75,7 @@ class UnbalancedDelimiters extends HtmlRule {
     let warnings: Warning[] = [];
     const content = parse5.treeAdapters.default.getTemplateContent(template);
 
-    for (const node of dom5.iteration.depthFirst(content)) {
+    for (const node of dom5.depthFirst(content)) {
       if (dom5.isElement(node) && node.attrs.length > 0) {
         warnings =
             warnings.concat(this._getWarningsForElementAttrs(parsedHtml, node));

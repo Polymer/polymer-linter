@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 import {AttributeDatabindingExpression, Document, isPositionInsideRange, ParsedHtmlDocument, PolymerDatabindingExpression as DatabindingExpression, Severity, SourceRange, Warning} from 'polymer-analyzer';
 
 import {HtmlRule} from '../html/rule';
@@ -54,7 +54,7 @@ class DatabindWithUnknownProperty extends HtmlRule {
         ...sharedProperties
       ]);
       const scopedProperties: {scope: SourceRange, property: string}[] = [];
-      const domRepeats = dom5.iteration.queryAll(
+      const domRepeats = dom5.queryAll(
           domModule.astNode, isDomRepeat, dom5.childNodesIncludeTemplate);
       for (const domRepeat of domRepeats) {
         const scope = parsedDocument.sourceRangeForNode(domRepeat)!;

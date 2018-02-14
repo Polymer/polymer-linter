@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 import * as parse5 from 'parse5';
 import {treeAdapters} from 'parse5';
 import {Action, Document, Edit, ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
@@ -45,12 +45,11 @@ class ContentToSlotDeclarations extends HtmlRule {
     const warnings: Warning[] = [];
 
     for (const domModule of document.getFeatures({kind: 'dom-module'})) {
-      const template =
-          dom5.iteration.query(domModule.astNode, p.hasTagName('template'));
+      const template = dom5.query(domModule.astNode, p.hasTagName('template'));
       if (!template) {
         continue;
       }
-      const contentElements = dom5.iteration.queryAll(
+      const contentElements = dom5.queryAll(
           treeAdapters.default.getTemplateContent(template),
           p.hasTagName('content'),
           dom5.childNodesIncludeTemplate);

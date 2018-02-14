@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 import {Attribute, Document, Element, isPositionInsideRange, ParsedHtmlDocument, Property, Severity, Warning} from 'polymer-analyzer';
 
 import {HtmlRule} from '../html/rule';
@@ -49,7 +49,7 @@ class SetUnknownAttribute extends HtmlRule {
       return [];
     }
     const databindingRanges =
-        [...dom5.iteration.queryAll(parsedDoc.ast, isDatabindingTemplate)].map(
+        [...dom5.queryAll(parsedDoc.ast, isDatabindingTemplate)].map(
             (t) => parsedDoc.sourceRangeForNode(t)!);
     for (const ref of elementReferences) {
       const node = ref.astNode;

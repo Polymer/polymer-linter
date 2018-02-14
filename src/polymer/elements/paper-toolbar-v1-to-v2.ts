@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 import * as parse5 from 'parse5';
 import stripIndent = require('strip-indent');
 
@@ -85,7 +85,7 @@ class PaperToolbarV1ToV2 extends HtmlRule {
   async checkDocument(parsedDocument: ParsedHtmlDocument) {
     const warnings: Warning[] = [];
 
-    const paperToolbars = dom5.iteration.queryAll(
+    const paperToolbars = dom5.queryAll(
         parsedDocument.ast,
         dom5.predicates.hasTagName('paper-toolbar'),
         dom5.childNodesIncludeTemplate);

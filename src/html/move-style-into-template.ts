@@ -13,7 +13,7 @@
  */
 
 import * as clone from 'clone';
-import * as dom5 from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 import * as parse5 from 'parse5';
 import {Document, ParsedHtmlDocument, Replacement, Severity, Warning} from 'polymer-analyzer';
 
@@ -134,7 +134,7 @@ class MoveStyleIntoTemplate extends HtmlRule {
         }));
       }
 
-      const linksInShadowDom = dom5.iteration.queryAll(
+      const linksInShadowDom = dom5.queryAll(
           template, mustBeOutsideTemplate, dom5.childNodesIncludeTemplate);
       for (const linkInShadowDom of linksInShadowDom) {
         let message;
