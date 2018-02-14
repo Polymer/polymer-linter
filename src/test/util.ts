@@ -30,10 +30,10 @@ export class WarningPrettyPrinter {
  */
 export async function assertExpectedFixes(
     linter: Linter, analyzer: Analyzer, inputFile: string, goldenFile: string) {
-  const {warnings} = await linter.lint([inputFile]);
+  const { warnings } = await linter.lint([inputFile]);
   const edits = warnings.filter((w) => w.fix).map((w) => w.fix!);
   const loader = makeParseLoader(analyzer);
-  const {editedFiles, incompatibleEdits} = await applyEdits(edits, loader);
+  const { editedFiles, incompatibleEdits } = await applyEdits(edits, loader);
   assert.deepEqual(incompatibleEdits, []);
   const inputFileContent = editedFiles.get(analyzer.resolveUrl(inputFile)!);
   const outputFileContent =

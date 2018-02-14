@@ -1,0 +1,18 @@
+<style>
+  x-tabs ::slotted(x-panel) {
+    color: #00F;
+  }
+</style>
+<template>
+  <style>
+    :host ::slotted([top-item]) {
+      color: #F00;
+    }
+    ::slotted(top-item) {
+      color: #0F0;
+    }
+    ::slotted(*) {
+      color: #00F;
+    }
+  </style>
+</template>

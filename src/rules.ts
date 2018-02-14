@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import './css/content-to-slotted-usages';
 import './css/deprecated-css-custom-property-syntax';
 import './css/deprecated-shadow-dom-selectors';
 
