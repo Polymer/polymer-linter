@@ -13,7 +13,7 @@
  */
 
 import * as dom5 from 'dom5/lib/index-next';
-import {ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
+import {ParsedHtmlDocument, Replacement, Severity, Warning} from 'polymer-analyzer';
 
 import {registry} from '../registry';
 import {stripWhitespace} from '../util';
@@ -49,18 +49,32 @@ class DomModuleNameOrIs extends HtmlRule {
         p.hasTagName('dom-module'), p.OR(p.hasAttr('is'), p.hasAttr('name')));
     const badModules = dom5.queryAll(document.ast, badModule);
     for (const domModule of badModules) {
+      const isFixable =
+          !(dom5.getAttribute(domModule, 'is') !== null &&
+            dom5.getAttribute(domModule, 'name') !== null);
       for (const badAttr of ['is', 'name']) {
         const attr = dom5.getAttribute(domModule, badAttr);
-        if (attr != null) {
+        if (attr !== null) {
+          const sourceRange =
+              document.sourceRangeForAttributeName(domModule, badAttr)!;
+
+          let fix: ReadonlyArray<Replacement>|undefined;
+          if (isFixable) {
+            fix = [
+              {
+                range: sourceRange,
+                replacementText: 'id',
+              },
+            ];
+          }
+
           warnings.push(new Warning({
             parsedDocument: document,
             code: this.code,
             message: stripWhitespace(`
                 Use the "id" attribute rather than "${badAttr}"
                 to associate the tagName of an element with its dom-module.`),
-            severity: Severity.WARNING,
-            sourceRange:
-                document.sourceRangeForAttributeName(domModule, badAttr)!
+            severity: Severity.WARNING, sourceRange, fix,
           }));
         }
       }

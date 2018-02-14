@@ -18,11 +18,12 @@ import {Analyzer} from 'polymer-analyzer';
 
 import {Linter} from '../../linter';
 import {registry} from '../../registry';
-import {WarningPrettyPrinter} from '../util';
+import {assertExpectedFixes, WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
+const ruleId = 'dom-module-name-or-is';
 
-suite('dom-module-invalid-attrs', () => {
+suite.only(ruleId, () => {
   let analyzer: Analyzer;
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
@@ -62,5 +63,13 @@ suite('dom-module-invalid-attrs', () => {
 <dom-module name="baz-elem" is="zod-elem">
             ~~~~`,
     ]);
+  });
+
+  test('applies automatic-safe fixes', async() => {
+    await assertExpectedFixes(
+        linter,
+        analyzer,
+        `${ruleId}/before-fixes.html`,
+        `${ruleId}/after-fixes.html`);
   });
 });
