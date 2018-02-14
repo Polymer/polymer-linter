@@ -12,8 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-// TODO(stramel): Remove on drop of Node 6
-// @ts-ignore
 import {Document, Warning, ParsedDocument} from 'polymer-analyzer';
 
 /**
@@ -89,3 +87,7 @@ export class RuleCollection {
     this.rules = rules;
   }
 }
+
+// Need to have ParsedDocument in exported types for some reason.
+const t: null|ParsedDocument = null;
+t;
