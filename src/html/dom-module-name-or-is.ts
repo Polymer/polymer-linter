@@ -21,11 +21,10 @@ import {stripIndentation} from '../util';
 
 import {HtmlRule} from './rule';
 
-
 const p = dom5.predicates;
 
 class DomModuleNameOrIs extends HtmlRule {
-  code = 'dom-module-invalid-attrs';
+  code = 'dom-module-name-or-is';
   description = stripIndentation(`
       Warns for:
 
@@ -54,29 +53,34 @@ class DomModuleNameOrIs extends HtmlRule {
             dom5.getAttribute(domModule, 'name') !== null);
       for (const badAttr of ['is', 'name']) {
         const attr = dom5.getAttribute(domModule, badAttr);
-        if (attr !== null) {
-          const sourceRange =
-              document.sourceRangeForAttributeName(domModule, badAttr)!;
-
-          let fix: ReadonlyArray<Replacement>|undefined;
-          if (isFixable) {
-            fix = [
-              {
-                range: sourceRange,
-                replacementText: 'id',
-              },
-            ];
-          }
-
-          warnings.push(new Warning({
-            parsedDocument: document,
-            code: this.code,
-            message: stripWhitespace(`
-                Use the "id" attribute rather than "${badAttr}"
-                to associate the tagName of an element with its dom-module.`),
-            severity: Severity.WARNING, sourceRange, fix,
-          }));
+        if (attr === null) {
+          continue;
         }
+
+        const sourceRange =
+            document.sourceRangeForAttributeName(domModule, badAttr);
+        if (sourceRange === undefined) {
+          continue;
+        }
+
+        let fix: ReadonlyArray<Replacement>|undefined;
+        if (isFixable) {
+          fix = [
+            {
+              range: sourceRange,
+              replacementText: 'id',
+            },
+          ];
+        }
+
+        warnings.push(new Warning({
+          parsedDocument: document,
+          code: this.code,
+          message: stripWhitespace(`
+              Use the "id" attribute rather than "${badAttr}"
+              to associate the tagName of an element with its dom-module.`),
+          severity: Severity.WARNING, sourceRange, fix,
+        }));
       }
     }
     return warnings;

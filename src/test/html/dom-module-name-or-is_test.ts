@@ -31,8 +31,7 @@ suite(ruleId, () => {
   setup(() => {
     analyzer = Analyzer.createForDirectory(fixtures_dir);
     warningPrinter = new WarningPrettyPrinter();
-    linter =
-        new Linter(registry.getRules(['dom-module-invalid-attrs']), analyzer);
+    linter = new Linter(registry.getRules([ruleId]), analyzer);
   });
 
   test('works in the trivial case', async() => {
@@ -47,8 +46,7 @@ suite(ruleId, () => {
   });
 
   test('warns for a file "is" and "name" dom-modules', async() => {
-    const {warnings} =
-        await linter.lint(['dom-module-name-or-is/dom-module-name-or-is.html']);
+    const {warnings} = await linter.lint([`${ruleId}/${ruleId}.html`]);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
 <dom-module name="foo-elem">

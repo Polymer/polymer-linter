@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
-- Make `dom-module-invalid-attrs` rule fixable for cases where only `is` or `name` exist, not both.
+- Make `dom-module-name-or-is` rule fixable for cases where only `is` or `name` exist, and both if they use the same values.
 
 ### New Lint Rules
 - `dom-calls-to-native`: Warns when `Polymer.dom` is used where native methods/properties may
