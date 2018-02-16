@@ -21,24 +21,11 @@ import {Rule} from '../rule';
 import {getDocumentContaining, stripIndentation, stripWhitespace} from '../util';
 
 
-class DomCallsToNative extends Rule {
-  code = 'dom-calls-to-native';
+class CreateElementExtension extends Rule {
+  code = 'create-element-extension';
   description = stripIndentation(`
-      Warns when the Polymer.dom is used in places where native
-      methods can now be used instead.
-
-        Polymer.dom(event).path
-
-      Accepted syntax:
-
-        event.composedPath()
+    Warns when using the second parameter of createElement for element extension using the is attribute.
   `);
-
-  private _replacements: Map<string, string> = new Map([
-    ['localTarget', 'target'],
-    ['rootTarget', 'composedPath()[0]'],
-    ['path', 'composedPath()']
-  ]);
 
   async check(document: Document) {
     const warnings: Warning[] = [];
@@ -48,23 +35,14 @@ class DomCallsToNative extends Rule {
     for (const doc of docs) {
       babelTraverse(doc.parsedDocument.ast, {
         noScope: true,
-        MemberExpression: (path) => {
-          if (!babel.isIdentifier(path.node.property)) {
-            return;
-          }
-
-          const name = path.node.property.name;
-          const replacement = this._replacements.get(name);
-
-          if (!this._isPolymerDomCall(path.node.object) ||
-              replacement === undefined) {
+        CallExpression: (path) => {
+          if (!this.isExtendingElementCall(path.node)) {
             return;
           }
 
           const containingDoc =
               getDocumentContaining(doc.sourceRange, document);
-
-          if (!containingDoc) {
+          if (containingDoc === undefined) {
             return;
           }
 
@@ -75,28 +53,28 @@ class DomCallsToNative extends Rule {
 
           warnings.push(new Warning({
             parsedDocument: document.parsedDocument,
-            code: 'deprecated-dom-call',
+            code: 'create-element-extension',
             severity: Severity.WARNING, sourceRange,
             message: stripWhitespace(`
-              Polymer.dom no longer needs to be called for "${name}",
-              instead "event.${replacement}" may be used.
+              Element extension via the is attribute has been deprecated.
             `)
           }));
-        }
+        },
       });
     }
 
     return warnings;
   }
 
-  private _isPolymerDomCall(expr: babel.Expression): boolean {
+  private isExtendingElementCall(expr: babel.Expression): boolean {
     return babel.isCallExpression(expr) &&
         babel.isMemberExpression(expr.callee) &&
-        babel.isIdentifier(expr.callee.object) &&
+        (babel.isIdentifier(expr.callee.object) ||
+         babel.isThisExpression(expr.callee.object)) &&
         babel.isIdentifier(expr.callee.property) &&
-        expr.callee.object.name === 'Polymer' &&
-        expr.callee.property.name === 'dom';
+        expr.callee.property.name === 'createElement' &&
+        expr.arguments.length >= 2;
   }
 }
 
-registry.register(new DomCallsToNative());
+registry.register(new CreateElementExtension());
