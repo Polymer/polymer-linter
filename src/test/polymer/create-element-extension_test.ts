@@ -21,7 +21,7 @@ import {registry} from '../../registry';
 import {WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
-const ruleId = 'dom-calls-to-native';
+const ruleId = 'create-element-extension';
 
 suite(ruleId, () => {
   let analyzer: Analyzer;
@@ -50,20 +50,20 @@ suite(ruleId, () => {
         await linter.lint([`${ruleId}/${ruleId}.html`]);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
-      Polymer.dom(event).localTarget.innerHTML = 'foo';
-      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+      document.createElement('style', 'custom-style');
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
       `
-      const path = Polymer.dom(event).path;
-                   ~~~~~~~~~~~~~~~~~~~~~~~`,
+      document.createElement('ul', {is: 'x-expanding-list'});
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
       `
-      const root = Polymer.dom(event).rootTarget;
-                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+      this.createElement('form', 'iron-form');
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
-      'Polymer.dom no longer needs to be called for "localTarget", instead "event.target" may be used.',
-      'Polymer.dom no longer needs to be called for "path", instead "event.composedPath()" may be used.',
-      'Polymer.dom no longer needs to be called for "rootTarget", instead "event.composedPath()[0]" may be used.'
+      'Element extension via the is attribute has been deprecated.',
+      'Element extension via the is attribute has been deprecated.',
+      'Element extension via the is attribute has been deprecated.',
     ]);
   });
 });

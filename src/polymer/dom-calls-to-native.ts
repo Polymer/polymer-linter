@@ -14,11 +14,11 @@
 
 import babelTraverse from 'babel-traverse';
 import * as babel from 'babel-types';
-import {Document, isPositionInsideRange, ParsedDocument, Severity, SourceRange, Warning} from 'polymer-analyzer';
+import {Document, Severity, Warning} from 'polymer-analyzer';
 
 import {registry} from '../registry';
 import {Rule} from '../rule';
-import {stripIndentation, stripWhitespace} from '../util';
+import {getDocumentContaining, stripIndentation, stripWhitespace} from '../util';
 
 
 class DomCallsToNative extends Rule {
@@ -62,13 +62,16 @@ class DomCallsToNative extends Rule {
           }
 
           const containingDoc =
-              getParsedDocumentContaining(doc.sourceRange, document);
+              getDocumentContaining(doc.sourceRange, document);
 
           if (!containingDoc) {
             return;
           }
 
-          const sourceRange = containingDoc.sourceRangeForNode(path.node)!;
+          const sourceRange = containingDoc.sourceRangeForNode(path.node);
+          if (sourceRange === undefined) {
+            return;
+          }
 
           warnings.push(new Warning({
             parsedDocument: document.parsedDocument,
@@ -97,26 +100,3 @@ class DomCallsToNative extends Rule {
 }
 
 registry.register(new DomCallsToNative());
-
-// TODO(43081j): this exists already in the analyzer's analysis
-// namespace. We should remove this function and import it instead
-// once it has been exposed in a future analyzer release.
-function getParsedDocumentContaining(
-    sourceRange: SourceRange|undefined,
-    document: Document): ParsedDocument<any, any>|undefined {
-  if (!sourceRange) {
-    return undefined;
-  }
-  let mostSpecificDocument: undefined|Document = undefined;
-  for (const doc of document.getFeatures({kind: 'document'})) {
-    if (isPositionInsideRange(sourceRange.start, doc.sourceRange)) {
-      if (!mostSpecificDocument ||
-          isPositionInsideRange(
-              doc.sourceRange!.start, mostSpecificDocument.sourceRange)) {
-        mostSpecificDocument = doc;
-      }
-    }
-  }
-  mostSpecificDocument = mostSpecificDocument || document;
-  return mostSpecificDocument.parsedDocument;
-}
