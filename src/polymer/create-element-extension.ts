@@ -14,7 +14,7 @@
 
 import babelTraverse from 'babel-traverse';
 import * as babel from 'babel-types';
-import { Document, Severity, Warning } from 'polymer-analyzer';
+import {Document, Severity, Warning} from 'polymer-analyzer';
 
 import {registry} from '../registry';
 import {Rule} from '../rule';
@@ -30,7 +30,7 @@ class CreateElementExtension extends Rule {
   async check(document: Document) {
     const warnings: Warning[] = [];
 
-    const docs = document.getFeatures({ kind: 'js-document' });
+    const docs = document.getFeatures({kind: 'js-document'});
 
     for (const doc of docs) {
       babelTraverse(doc.parsedDocument.ast, {
@@ -40,7 +40,8 @@ class CreateElementExtension extends Rule {
             return;
           }
 
-          const containingDoc = getDocumentContaining(doc.sourceRange, document);
+          const containingDoc =
+              getDocumentContaining(doc.sourceRange, document);
           if (containingDoc === undefined) {
             return;
           }
@@ -67,11 +68,12 @@ class CreateElementExtension extends Rule {
 
   private isExtendingElementCall(expr: babel.Expression): boolean {
     return babel.isCallExpression(expr) &&
-      babel.isMemberExpression(expr.callee) &&
-      (babel.isIdentifier(expr.callee.object) || babel.isThisExpression(expr.callee.object)) &&
-      babel.isIdentifier(expr.callee.property) &&
-      expr.callee.property.name === 'createElement' &&
-      expr.arguments.length >= 2;
+        babel.isMemberExpression(expr.callee) &&
+        (babel.isIdentifier(expr.callee.object) ||
+         babel.isThisExpression(expr.callee.object)) &&
+        babel.isIdentifier(expr.callee.property) &&
+        expr.callee.property.name === 'createElement' &&
+        expr.arguments.length >= 2;
   }
 }
 
