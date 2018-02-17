@@ -21,7 +21,7 @@ import {registry} from '../../registry';
 import {assertExpectedFixes, WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
-const ruleId = 'dom-module-name-or-is';
+const ruleId = 'dom-module-invalid-attrs';
 
 suite(ruleId, () => {
   let analyzer: Analyzer;

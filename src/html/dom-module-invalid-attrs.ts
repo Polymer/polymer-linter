@@ -23,8 +23,8 @@ import {HtmlRule} from './rule';
 
 const p = dom5.predicates;
 
-class DomModuleNameOrIs extends HtmlRule {
-  code = 'dom-module-name-or-is';
+class DomModuleInvalidAttrs extends HtmlRule {
+  code = 'dom-module-invalid-attrs';
   description = stripIndentation(`
       Warns for:
 
@@ -87,4 +87,4 @@ class DomModuleNameOrIs extends HtmlRule {
   }
 }
 
-registry.register(new DomModuleNameOrIs());
+registry.register(new DomModuleInvalidAttrs());
