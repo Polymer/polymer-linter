@@ -40,6 +40,14 @@ class CreateElementExtension extends Rule {
             return;
           }
 
+          let message: string;
+          if (babel.isStringLiteral(path.node.arguments[1])) {
+            message = 'Element extension via the is attribute is deprecated.';
+          } else {
+            message =
+                'Element extension via the is property is not widely supported, and is not recommended.';
+          }
+
           const containingDoc =
               getDocumentContaining(doc.sourceRange, document);
           if (containingDoc === undefined) {
@@ -54,10 +62,7 @@ class CreateElementExtension extends Rule {
           warnings.push(new Warning({
             parsedDocument: document.parsedDocument,
             code: 'create-element-extension',
-            severity: Severity.WARNING, sourceRange,
-            message: stripWhitespace(`
-              Element extension via the is attribute has been deprecated.
-            `)
+            severity: Severity.WARNING, sourceRange, message
           }));
         },
       });
@@ -69,8 +74,8 @@ class CreateElementExtension extends Rule {
   private isExtendingElementCall(expr: babel.Expression): boolean {
     return babel.isCallExpression(expr) &&
         babel.isMemberExpression(expr.callee) &&
-        (babel.isIdentifier(expr.callee.object) ||
-         babel.isThisExpression(expr.callee.object)) &&
+        babel.isIdentifier(expr.callee.object) &&
+        expr.callee.object.name === 'document' &&
         babel.isIdentifier(expr.callee.property) &&
         expr.callee.property.name === 'createElement' &&
         expr.arguments.length >= 2;
