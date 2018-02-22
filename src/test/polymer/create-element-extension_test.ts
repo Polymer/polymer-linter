@@ -55,15 +55,11 @@ suite(ruleId, () => {
       `
       document.createElement('ul', {is: 'x-expanding-list'});
       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
-      `
-      this.createElement('form', 'iron-form');
-      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
-      'Element extension via the is attribute has been deprecated.',
-      'Element extension via the is attribute has been deprecated.',
-      'Element extension via the is attribute has been deprecated.',
+      'Element extension via the is attribute is deprecated.',
+      'Element extension via the is property is not widely supported, and is not recommended.',
     ]);
   });
 });
