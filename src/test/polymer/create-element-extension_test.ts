@@ -46,8 +46,7 @@ suite(ruleId, () => {
   });
 
   test('warns for the proper cases and with the right messages', async() => {
-    const {warnings} =
-        await linter.lint([`${ruleId}/${ruleId}.html`]);
+    const {warnings} = await linter.lint([`${ruleId}/${ruleId}.html`]);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
       document.createElement('style', 'custom-style');
