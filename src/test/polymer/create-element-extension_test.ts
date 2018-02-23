@@ -57,8 +57,8 @@ suite(ruleId, () => {
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
-      'Element extension via the is string is deprecated.',
-      'Element extension via the is property is not widely supported, and is not recommended.',
+      'document.createElement with a custom element tagname as the second parameter is deprecated.',
+      'Creating a custom element extension of a built-in element is not widely supported, and is not recommended.',
     ]);
   });
 });
