@@ -40,30 +40,34 @@ class CreateElementExtension extends Rule {
             return;
           }
 
-          let message: string;
-          if (babel.isStringLiteral(path.node.arguments[1])) {
-            message = 'Element extension via the is attribute is deprecated.';
-          } else {
-            message =
-                'Element extension via the is property is not widely supported, and is not recommended.';
-          }
-
           const containingDoc =
               getDocumentContaining(doc.sourceRange, document);
           if (containingDoc === undefined) {
             return;
           }
 
-          const sourceRange = containingDoc.sourceRangeForNode(path.node);
+          const sourceRange =
+              containingDoc.sourceRangeForNode(path.node.arguments[1]);
           if (sourceRange === undefined) {
             return;
           }
 
-          warnings.push(new Warning({
-            parsedDocument: document.parsedDocument,
-            code: 'create-element-extension',
-            severity: Severity.WARNING, sourceRange, message
-          }));
+          if (babel.isStringLiteral(path.node.arguments[1])) {
+            warnings.push(new Warning({
+              parsedDocument: document.parsedDocument,
+              code: 'create-element-string-extension',
+              severity: Severity.WARNING, sourceRange,
+              message: 'Element extension via the is string is deprecated.'
+            }));
+          } else {
+            warnings.push(new Warning({
+              parsedDocument: document.parsedDocument,
+              code: 'create-element-is-property-extension',
+              severity: Severity.WARNING, sourceRange,
+              message:
+                  'Element extension via the is property is not widely supported, and is not recommended.'
+            }));
+          }
         },
       });
     }
@@ -78,7 +82,7 @@ class CreateElementExtension extends Rule {
         expr.callee.object.name === 'document' &&
         babel.isIdentifier(expr.callee.property) &&
         expr.callee.property.name === 'createElement' &&
-        expr.arguments.length >= 2;
+        expr.arguments.length === 2;
   }
 }
 

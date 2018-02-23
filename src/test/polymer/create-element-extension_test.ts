@@ -50,14 +50,14 @@ suite(ruleId, () => {
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
       document.createElement('style', 'custom-style');
-      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+                                      ~~~~~~~~~~~~~~`,
       `
       document.createElement('ul', {is: 'x-expanding-list'});
-      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~`,
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
-      'Element extension via the is attribute is deprecated.',
+      'Element extension via the is string is deprecated.',
       'Element extension via the is property is not widely supported, and is not recommended.',
     ]);
   });
