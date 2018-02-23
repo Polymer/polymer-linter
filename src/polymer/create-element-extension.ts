@@ -58,7 +58,7 @@ class CreateElementExtension extends Rule {
               code: 'create-element-string-extension',
               severity: Severity.WARNING, sourceRange,
               message: stripWhitespace(`
-                Element extension via the is string is deprecated.
+                document.createElement with a custom element tagname as the second parameter is deprecated.
               `)
             }));
           } else {
@@ -67,7 +67,7 @@ class CreateElementExtension extends Rule {
               code: 'create-element-is-property-extension',
               severity: Severity.WARNING, sourceRange,
               message: stripWhitespace(`
-                Element extension via the is property is not widely supported, and is not recommended.
+                Creating a custom element extension of a built-in element is not widely supported, and is not recommended.
               `)
             }));
           }
