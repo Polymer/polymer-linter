@@ -57,15 +57,18 @@ class CreateElementExtension extends Rule {
               parsedDocument: document.parsedDocument,
               code: 'create-element-string-extension',
               severity: Severity.WARNING, sourceRange,
-              message: 'Element extension via the is string is deprecated.'
+              message: stripWhitespace(`
+                Element extension via the is string is deprecated.
+              `)
             }));
           } else {
             warnings.push(new Warning({
               parsedDocument: document.parsedDocument,
               code: 'create-element-is-property-extension',
               severity: Severity.WARNING, sourceRange,
-              message:
-                  'Element extension via the is property is not widely supported, and is not recommended.'
+              message: stripWhitespace(`
+                Element extension via the is property is not widely supported, and is not recommended.
+              `)
             }));
           }
         },
