@@ -51,14 +51,10 @@ suite(ruleId, () => {
       `
 <style is="custom-style">
        ~~~~~~~~~~~~~~~~~`,
-      `
-    <style is="custom-style">
-           ~~~~~~~~~~~~~~~~~`
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
       '<style> should not be extended with \`is="custom-style"\` but instead wrapped with \`<custom-style>\`.',
-      '<style> extended with \`is="custom-style"\` is unnecessary inside a Polymer element.',
     ]);
   });
 

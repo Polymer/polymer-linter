@@ -76,28 +76,6 @@ class CustomStyleExtension extends HtmlRule {
                               })
                               .length > 0;
       if (inDomModule) {
-        const startTagRange =
-            parsedDocument.sourceRangeForStartTag(customStyle);
-        if (startTagRange === undefined) {
-          continue;
-        }
-        warnings.push(new Warning({
-          parsedDocument,
-          code: 'unnecessary-custom-style-extension',
-          message:
-              `<style> extended with \`is="custom-style"\` is unnecessary inside a Polymer element.`,
-          severity: Severity.WARNING,
-          sourceRange:
-              parsedDocument.sourceRangeForAttribute(customStyle, 'is')!,
-          fix: [{
-            range: {
-              file: parsedDocument.url,
-              start: startTagRange.start,
-              end: startTagRange.end
-            },
-            replacementText: '<style>'
-          }]
-        }));
         continue;
       }
 
