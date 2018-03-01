@@ -6,8 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+- Make `dom-module-invalid-attrs` rule fixable for cases where only `is` or `name` exist, and both if they use the same values.
+- `create-element-extension`: Warns when using the second parameter of `createElement` for element extension using the `is` attribute.
 - Adds the new rule `iron-form-v1-to-v2`, which warns about `iron-form` being used as a type extension of `<form>`.
   - The fix automatically wraps the `<form is="iron-form">` into an `<iron-form>` and moves id, `iron-form` properties and event listeners from `<form>` to `<iron-form>`.
+
+## [3.0.0-pre.2] - 2018-02-16
+### New Lint Rules
+- `dom-calls-to-native`: Warns when `Polymer.dom` is used where native methods/properties may
+- `deprecated-shadow-dom-selectors`: Warns when deprecated Shadow DOM selectors are used. (`/deep/`, `>>>`, and `::shadow`)
+- `content-selector-to-slotted`: Warns when deprecated `::content` selector is used. Can safely fix usages that use `>` selector.
 
 ## [3.0.0-pre.1] - 2017-12-21
 - [BREAKING] Return an object with `warnings` and `analysis` properties
@@ -76,7 +84,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - polymer-lint is now at feature parity with [polylint](https://github.com/PolymerLabs/polylint), and is ready to replace it!
 
 ### New Lint Rules
-- `databind-with-unknown-property` - Warns when a polymer element's databindings use properties that aren't declared on that element.
+- `databind-with-unknown-property`: Warns when a polymer element's databindings use properties that aren't declared on that element.
 - `element-before-dom-module`: Warns when a Polymer element is defined before its `<dom-module>` exists in the DOM.
 - `databinding-calls-must-be-functions`: Computed functions, observers, and calls in databinding expressions must be either methods on the element or properties with types that could be function types.
 - `call-super-in-callbacks`: Warns when a Polymer 2.0 element does not call super() in callbacks that require it, like `connectedCallback`.

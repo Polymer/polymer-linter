@@ -47,17 +47,16 @@ export class LintRegistry {
    * Given an array of string codes for registered rules and rule collections,
    * return the set of rules.
    */
-  getRules(ruleCodes: string[]): Set<Rule> {
+  getRules(ruleCodes: ReadonlyArray<string>): Set<Rule> {
     const results = new Set();
     this._getRules(ruleCodes, new Set(), results);
     return results;
   }
 
   private _getRules(
-      ruleCodes: string[], alreadyExpanded: Set<string>,
+      ruleCodes: ReadonlyArray<string>, alreadyExpanded: Set<string>,
       results: Set<Rule>): void {
     ruleCodes = ruleCodes.filter((p) => !alreadyExpanded.has(p));
-
     for (const code of ruleCodes) {
       alreadyExpanded.add(code);
       const ruleOrCollection = this._all.get(code);

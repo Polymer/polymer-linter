@@ -12,9 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import './css/content-selector-to-slotted';
 import './css/deprecated-css-custom-property-syntax';
+import './css/deprecated-shadow-dom-selectors';
 
-import './html/dom-module-name-or-is';
+import './html/dom-module-invalid-attrs';
 import './html/move-style-into-template';
 import './html/undefined-elements';
 
@@ -22,8 +24,10 @@ import './polymer/behaviors-spelling';
 import './polymer/call-super-in-callbacks';
 import './polymer/content-to-slot-declarations';
 import './polymer/content-to-slot-usages';
+import './polymer/create-element-extension';
 import './polymer/databinding-calls-must-be-functions';
 import './polymer/databind-with-unknown-property';
+import './polymer/dom-calls-to-native';
 import './polymer/element-before-dom-module';
 import './polymer/set-unknown-attribute';
 import './polymer/unbalanced-delimiters';

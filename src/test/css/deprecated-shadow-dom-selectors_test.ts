@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt
  * The complete set of authors may be found at
@@ -21,8 +21,9 @@ import {registry} from '../../registry';
 import {WarningPrettyPrinter} from '../util';
 
 const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
+const ruleId = `deprecated-shadow-dom-selectors`;
 
-suite('dom-module-invalid-attrs', () => {
+suite(ruleId, () => {
   let analyzer: Analyzer;
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
@@ -30,8 +31,7 @@ suite('dom-module-invalid-attrs', () => {
   setup(() => {
     analyzer = Analyzer.createForDirectory(fixtures_dir);
     warningPrinter = new WarningPrettyPrinter();
-    linter =
-        new Linter(registry.getRules(['dom-module-invalid-attrs']), analyzer);
+    linter = new Linter(registry.getRules([ruleId]), analyzer);
   });
 
   test('works in the trivial case', async() => {
@@ -45,22 +45,28 @@ suite('dom-module-invalid-attrs', () => {
     assert.deepEqual([...warnings], []);
   });
 
-  test('warns for a file "is" and "name" dom-modules', async() => {
-    const {warnings} =
-        await linter.lint(['dom-module-name-or-is/dom-module-name-or-is.html']);
+  test('warns for the proper cases and with the right messages', async() => {
+    const {warnings} = await linter.lint([`${ruleId}/${ruleId}.html`]);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
       `
-<dom-module name="foo-elem">
-            ~~~~`,
+  x-tabs /deep/ x-panel {
+         ~~~~~~`,
       `
-<dom-module is="bar-elem">
-            ~~`,
+  x-tabs >>> x-panel {
+         ~~~`,
       `
-<dom-module name="baz-elem" is="zod-elem">
-                            ~~`,
+    x-tabs::shadow x-panel::shadow h2 {
+          ~~~~~~~~`,
       `
-<dom-module name="baz-elem" is="zod-elem">
-            ~~~~`,
+    x-tabs::shadow x-panel::shadow h2 {
+                          ~~~~~~~~`,
+    ]);
+
+    assert.deepEqual(warnings.map((w) => w.message), [
+      `The /deep/ (>>>) combinator and ::shadow pseudo-element have been deprecated.`,
+      `The /deep/ (>>>) combinator and ::shadow pseudo-element have been deprecated.`,
+      `The /deep/ (>>>) combinator and ::shadow pseudo-element have been deprecated.`,
+      `The /deep/ (>>>) combinator and ::shadow pseudo-element have been deprecated.`,
     ]);
   });
 });

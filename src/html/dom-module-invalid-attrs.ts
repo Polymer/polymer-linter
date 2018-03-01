@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5';
-import {ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
+import * as dom5 from 'dom5/lib/index-next';
+import {ParsedHtmlDocument, Replacement, Severity, Warning} from 'polymer-analyzer';
 
 import {registry} from '../registry';
 import {stripWhitespace} from '../util';
@@ -21,10 +21,9 @@ import {stripIndentation} from '../util';
 
 import {HtmlRule} from './rule';
 
-
 const p = dom5.predicates;
 
-class DomModuleNameOrIs extends HtmlRule {
+class DomModuleInvalidAttrs extends HtmlRule {
   code = 'dom-module-invalid-attrs';
   description = stripIndentation(`
       Warns for:
@@ -47,26 +46,45 @@ class DomModuleNameOrIs extends HtmlRule {
     const warnings: Warning[] = [];
     const badModule = p.AND(
         p.hasTagName('dom-module'), p.OR(p.hasAttr('is'), p.hasAttr('name')));
-    const badModules = dom5.nodeWalkAll(document.ast, badModule);
+    const badModules = dom5.queryAll(document.ast, badModule);
     for (const domModule of badModules) {
+      const isFixable =
+          !(dom5.getAttribute(domModule, 'is') !== null &&
+            dom5.getAttribute(domModule, 'name') !== null);
       for (const badAttr of ['is', 'name']) {
         const attr = dom5.getAttribute(domModule, badAttr);
-        if (attr != null) {
-          warnings.push(new Warning({
-            parsedDocument: document,
-            code: this.code,
-            message: stripWhitespace(`
-                Use the "id" attribute rather than "${badAttr}"
-                to associate the tagName of an element with its dom-module.`),
-            severity: Severity.WARNING,
-            sourceRange:
-                document.sourceRangeForAttributeName(domModule, badAttr)!
-          }));
+        if (attr === null) {
+          continue;
         }
+
+        const sourceRange =
+            document.sourceRangeForAttributeName(domModule, badAttr);
+        if (sourceRange === undefined) {
+          continue;
+        }
+
+        let fix: ReadonlyArray<Replacement>|undefined;
+        if (isFixable) {
+          fix = [
+            {
+              range: sourceRange,
+              replacementText: 'id',
+            },
+          ];
+        }
+
+        warnings.push(new Warning({
+          parsedDocument: document,
+          code: this.code,
+          message: stripWhitespace(`
+              Use the "id" attribute rather than "${badAttr}"
+              to associate the tagName of an element with its dom-module.`),
+          severity: Severity.WARNING, sourceRange, fix,
+        }));
       }
     }
     return warnings;
   }
 }
 
-registry.register(new DomModuleNameOrIs());
+registry.register(new DomModuleInvalidAttrs());
