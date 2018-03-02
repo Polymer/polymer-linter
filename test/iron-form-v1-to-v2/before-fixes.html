@@ -4,12 +4,14 @@
 
   <form is="iron-form"></form>
 
-  <div><form is="iron-form" allow-redirect></form></div>
+  <div><form is="iron-form" with-credentials></form></div>
 
   <form is="iron-form"
         method="post"
         action="/my-end-point"
         with-credentials
+        disable-native-validation-ui
+        content-type="application/json"
         on-iron-form-error="handleError"
         on-submit="onSubmit">
     <input type="text">
@@ -18,7 +20,7 @@
 
   <dom-module id="my-element">
     <template>
-      <form id="form" is="iron-form" allow-redirect$="[[shouldAllow]]">
+      <form id="form" is="iron-form" with-credentials$="[[withCredentials]]">
         <input type="text">
         <input type="submit">
       </form>
