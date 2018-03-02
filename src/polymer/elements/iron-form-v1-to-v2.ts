@@ -27,14 +27,25 @@ const isIronFormV1 = p.AND(
     p.hasTagName('form'),
     p.hasAttrValue('is', 'iron-form'));
 
-const ironFormProperties = [
-  'allow-redirect',
+const propertiesToDelete = [
+  'is',
+  'disable-native-validation-ui',
+  'disable-native-validation-ui$',
+  'request',
+  'request$',
+];
+const propertiesToMove = [
+  'id',
+  'id$',
   'headers',
-  'with-credentials',
-  'allow-redirect$',
   'headers$',
+  'with-credentials',
   'with-credentials$'
 ];
+const propertiesToRename: {[key: string]: string;} = {
+  'content-type': 'enctype',
+  'content-type$': 'enctype$',
+};
 
 class IronFormV1ToV2 extends HtmlRule {
   code = 'iron-form-v1-to-v2';
@@ -54,8 +65,7 @@ class IronFormV1ToV2 extends HtmlRule {
       Should instead be written as:
 
           <iron-form on-iron-form-error="handleError">
-            <form method="get"
-                  action="/my-end-point">
+            <form method="get" action="/my-end-point">
               <input type="text">
               <input type="submit">
             </form>
@@ -67,41 +77,40 @@ class IronFormV1ToV2 extends HtmlRule {
     const forms = dom5.queryAll(
         parsedDocument.ast, isIronFormV1, [], dom5.childNodesIncludeTemplate);
     for (const form of forms) {
-      // Copy the iron-form attributes and event listeners to <iron-form>.
-      const attrs =
-          form.attrs
-              .filter(
-                  (attr) =>
-                      (attr.name.startsWith('on-iron-form-') ||
-                       ironFormProperties.indexOf(attr.name) >= 0))
-              .map(
-                  (attr) =>
-                      `${attr.name}${attr.value ? `="${attr.value}"` : ''}`)
-              .join(' ');
+      // Collect attributes/events for the iron-form and form.
+      let ironFormAttrs = '', formAttrs = '';
+      form.attrs.forEach((attr) => {
+        // All `iron-form-*` events and `propertiesToMove` go on <iron-form>.
+        if ((attr.name.indexOf('on-iron-form-') === 0 ||
+             propertiesToMove.indexOf(attr.name) >= 0)) {
+          ironFormAttrs +=
+              ` ${attr.name}${attr.value ? `="${attr.value}"` : ''}`;
+        } else if (propertiesToDelete.indexOf(attr.name) === -1) {
+          const attrName = propertiesToRename[attr.name] || attr.name;
+          formAttrs += ` ${attrName}${attr.value ? `="${attr.value}"` : ''}`;
+        }
+      });
       const indentation = getIndentationInside(form.parentNode!);
-      const formRange = parsedDocument.sourceRangeForNode(form)!;
+      const startLinebreak = indentation ? '\n' + indentation + '  ' : '';
+      const endLinebreak = indentation ? '\n' + indentation : '';
+      const formStartTagRange = parsedDocument.sourceRangeForStartTag(form)!;
+      const formEndTagRange = parsedDocument.sourceRangeForEndTag(form)!;
       const fix: Replacement[] = [
         {
-          range: {
-            file: parsedDocument.url,
-            start: formRange.start,
-            end: formRange.start
-          },
-          replacementText: '<iron-form' + (attrs ? ' ' + attrs : '') + '>' +
-              (indentation ? '\n' + indentation + '  ' : '')
+          range: formStartTagRange,
+          replacementText:
+              `<iron-form${ironFormAttrs}>${startLinebreak}<form${formAttrs}>`
         },
         {
-          range: {
-            file: parsedDocument.url,
-            start: formRange.end,
-            end: formRange.end
-          },
-          replacementText:
-              (indentation ? '\n' + indentation : '') + '</iron-form>'
+          range: formEndTagRange,
+          replacementText: `</form>${endLinebreak}</iron-form>`
         }
       ];
-      if (indentation && formRange.end.line > formRange.start.line) {
-        for (let i = formRange.start.line + 1; i <= formRange.end.line; i++) {
+      // Indent also the <form> content.
+      if (indentation) {
+        for (let i = formStartTagRange.end.line + 1;
+             i <= formEndTagRange.end.line;
+             i++) {
           const position = {line: i, column: 0};
           fix.push({
             range: {file: parsedDocument.url, start: position, end: position},

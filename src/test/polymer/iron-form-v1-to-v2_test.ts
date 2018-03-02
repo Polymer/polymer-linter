@@ -47,13 +47,13 @@ suite(ruleId, () => {
   <form is="iron-form"></form>
         ~~~~~~~~~~~~~~`,
       `
-  <div><form is="iron-form" allow-redirect></form></div>
+  <div><form is="iron-form" with-credentials></form></div>
              ~~~~~~~~~~~~~~`,
       `
   <form is="iron-form"
         ~~~~~~~~~~~~~~`,
       `
-      <form id="form" is="iron-form" allow-redirect$="[[shouldAllow]]">
+      <form id="form" is="iron-form" with-credentials$="[[withCredentials]]">
                       ~~~~~~~~~~~~~~`,
     ]);
 
