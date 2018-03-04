@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 - Make `dom-module-invalid-attrs` rule fixable for cases where only `is` or `name` exist, and both if they use the same values.
+
+### New Lint Rules
 - `create-element-extension`: Warns when using the second parameter of `createElement` for element extension using the `is` attribute.
+- `root-selector-to-html`: Warns when using the `:root` selector in `custom-style` or element styles
 
 ## [3.0.0-pre.2] - 2018-02-16
 ### New Lint Rules
