@@ -1,0 +1,33 @@
+<style>
+  :root {
+    --my-theme-color: #0F0;
+  }
+</style>
+<style is="custom-style">
+  html {
+    --my-theme-color: #F00;
+  }
+</style>
+
+<dom-module id="my-app">
+  <template>
+    <style>
+      :host {
+        box-sizing: border-box;
+      }
+
+      :host > * {
+        --my-theme-color: #F00;
+      }
+
+      .selected {
+        font-weight: bold;
+      }
+    </style>
+  </template>
+  <script>
+    Polymer({
+      is: 'my-app'
+    });
+  </script>
+</dom-module>
