@@ -13,7 +13,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 import {Document, isPositionInsideRange, ParsedHtmlDocument, Replacement, Severity, Warning} from 'polymer-analyzer';
 
 import {HtmlRule} from '../html/rule';
@@ -52,11 +52,8 @@ class CustomStyleExtension extends HtmlRule {
   async checkDocument(parsedDocument: ParsedHtmlDocument, _document: Document) {
     const warnings: Warning[] = [];
 
-    const customStyleTags = dom5.queryAll(
-        parsedDocument.ast,
-        isCustomStyleV1,
-        [],
-        dom5.childNodesIncludeTemplate);
+    const customStyleTags = [...dom5.queryAll(
+        parsedDocument.ast, isCustomStyleV1, dom5.childNodesIncludeTemplate)];
     if (customStyleTags.length === 0) {
       return warnings;  // Early exit quick in the trivial case.
     }
@@ -79,42 +76,32 @@ class CustomStyleExtension extends HtmlRule {
         continue;
       }
 
-      const indentation = getIndentationInside(customStyle.parentNode!);
+      const indentation = getIndentationInside(customStyle).slice(2);
       const fix: Replacement[] =
-          indentSourceRange(sourceRange, `${indentation}  `, parsedDocument);
+          indentSourceRange(sourceRange, `  `, parsedDocument);
+
       fix.push({
         range: {
           file: parsedDocument.url,
           start: sourceRange.start,
           end: sourceRange.start
         },
-        replacementText: `<custom-style>\n`
+        replacementText: `<custom-style>\r\n${indentation}`
       });
-
       fix.push({
         range: {
           file: parsedDocument.url,
           start: sourceRange.end,
           end: sourceRange.end
         },
-        replacementText: `\n${indentation}</custom-style>`
+        replacementText: `\r\n${indentation}</custom-style>`
       });
 
-      if (indentation && sourceRange.end.line > sourceRange.start.line) {
-        for (let i = sourceRange.start.line + 1; i <= sourceRange.end.line;
-             i++) {
-          const position = {line: i, column: 0};
-          fix.push({
-            range: {file: parsedDocument.url, start: position, end: position},
-            replacementText: '  '
-          });
-        }
-      }
       warnings.push(new Warning({
         parsedDocument,
         code: this.code,
         message:
-            `<style> should not be extended with \`is="custom-style"\` but instead wrapped with \`<custom-style>\`.`,
+            `<style> extended with \`is="custom-style"\` should be wrapped with \`<custom-style>\`.`,
         severity: Severity.WARNING,
         sourceRange: parsedDocument.sourceRangeForAttribute(customStyle, 'is')!,
         fix
