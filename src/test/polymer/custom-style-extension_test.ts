@@ -54,7 +54,7 @@ suite(ruleId, () => {
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
-      '<style> should not be extended with \`is="custom-style"\` but instead wrapped with \`<custom-style>\`.',
+      '<style> extended with \`is="custom-style"\` should be wrapped with \`<custom-style>\`.',
     ]);
   });
 
