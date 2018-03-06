@@ -24,7 +24,7 @@ const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
 
 const ruleId = 'root-selector-to-html';
 
-suite.only(ruleId, () => {
+suite(ruleId, () => {
   let analyzer: Analyzer;
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
