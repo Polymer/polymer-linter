@@ -35,8 +35,8 @@ class RootSelectorToHtml extends Rule {
   `);
 
   async check(document: Document) {
-    let elementStyleTags: dom5.Node[] = [];
-    let styleModuleStyleTags: dom5.Node[] = [];
+    const elementStyleTags: dom5.Node[] = [];
+    const styleModuleStyleTags: dom5.Node[] = [];
 
     // Get custom-styles
     const customStyleTags = [...dom5.queryAll(
@@ -124,7 +124,7 @@ class RootSelectorToHtml extends Rule {
             {start, end: start + match[0].length});
 
         // Only fix plain `:root` selectors
-        let fix: Replacement[] = [];
+        const fix: Replacement[] = [];
         if (node.selector.match(/^:root$/) !== null) {
           fix.push({range: sourceRange, replacementText});
         }
