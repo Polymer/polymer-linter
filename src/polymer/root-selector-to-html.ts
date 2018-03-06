@@ -61,8 +61,8 @@ class RootSelectorToHtml extends Rule {
     }
 
     for (const style of styleTags) {
-      const sourceRange =
-          document.parsedDocument.sourceRangeForNode(style.childNodes[0]);
+      const sourceRange = document.parsedDocument.sourceRangeForNode(
+          style.childNodes && style.childNodes[0]);
       if (sourceRange === undefined) {
         continue;
       }
