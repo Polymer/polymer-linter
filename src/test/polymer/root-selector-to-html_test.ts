@@ -24,7 +24,7 @@ const fixtures_dir = path.join(__dirname, '..', '..', '..', 'test');
 
 const ruleId = 'root-selector-to-html';
 
-suite(ruleId, () => {
+suite.only(ruleId, () => {
   let analyzer: Analyzer;
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
@@ -49,11 +49,15 @@ suite(ruleId, () => {
       `
       :root {
       ~~~~~`,
+      `
+      :root {
+      ~~~~~`,
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
-      'Root should no longer be used',
-      'Root should no longer be used',
+      'The ::root selector should no longer be used',
+      'The ::root selector should no longer be used',
+      'The ::root selector should no longer be used',
     ]);
   });
 

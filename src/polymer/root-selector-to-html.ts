@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5';
-import {Document, ParsedCssDocument, Severity, Warning} from 'polymer-analyzer';
+import * as dom5 from 'dom5/lib/index-next';
+import {Document, isPositionInsideRange, ParsedCssDocument, Severity, Warning} from 'polymer-analyzer';
 import * as shady from 'shady-css-parser';
 
 import {registry} from '../registry';
@@ -27,10 +27,6 @@ const isCustomStyle = p.AND(
         p.hasAttrValue('is', 'custom-style'),
         (node: dom5.Node) => !!(
             node.parentNode && p.hasTagName('custom-style')(node.parentNode))));
-const isElementStyle = p.AND(
-    p.hasTagName('style'),
-    (node: dom5.Node) => !!(
-        node.parentNode && node.parentNode.nodeName === '#document-fragment'));
 
 class RootSelectorToHtml extends Rule {
   code = 'root-selector-to-html';
@@ -39,30 +35,70 @@ class RootSelectorToHtml extends Rule {
   `);
 
   async check(document: Document) {
+    let elementStyleTags: dom5.Node[] = [];
+    let styleModuleStyleTags: dom5.Node[] = [];
+
+    // Get custom-styles
+    const customStyleTags = [...dom5.queryAll(
+        document.parsedDocument.ast,
+        isCustomStyle,
+        dom5.childNodesIncludeTemplate)];
+
+    // Get dom-modules then sort style tags into element styles or style module
+    // styles
+    const domModules = document.getFeatures({kind: 'dom-module'});
+    if (domModules.size > 0) {
+      for (const domModule of domModules) {
+        const moduleChildren = domModule.astNode.childNodes || [];
+        const template: any =
+            moduleChildren.find((m) => m.tagName === 'template');
+        if (template === undefined ||
+            template.content.childNodes === undefined ||
+            template.content.childNodes.length === 0) {
+          continue;
+        }
+        const styleTag = template.content.childNodes.find(
+            (t: dom5.Node) => t.tagName === 'style');
+        if (styleTag === undefined) {
+          continue;
+        }
+
+        const elements = document.getFeatures({kind: 'polymer-element'});
+        const isElementModule = [...elements].some(
+            (el) =>
+                !!(el.sourceRange &&
+                   isPositionInsideRange(
+                       el.sourceRange.start, domModule.sourceRange)));
+        if (isElementModule) {
+          elementStyleTags.push(styleTag);
+        } else {
+          styleModuleStyleTags.push(styleTag);
+        }
+      }
+    }
+
     return [
       ...this.generateWarnings(
-          document, isCustomStyle, 'html'),  // Check custom styles
+          document, customStyleTags, 'html'),  // Check custom styles
       ...this.generateWarnings(
-          document, isElementStyle, ':host > *'),  // Check element styles
+          document, elementStyleTags, ':host > *'),  // Check element styles
+      ...this.generateWarnings(
+          document,
+          styleModuleStyleTags,
+          'html, :host > *'),  // Check style modules
     ];
   }
 
   private generateWarnings(
-      document: Document, predicate: dom5.Predicate, replacementText: string) {
+      document: Document, styleTags: dom5.Node[], replacementText: string) {
     const warnings: Warning[] = [];
-
-    const styleTags = dom5.queryAll(
-        document.parsedDocument.ast,
-        predicate,
-        [],
-        dom5.childNodesIncludeTemplate);
     if (styleTags.length === 0) {
       return warnings;
     }
 
     for (const style of styleTags) {
-      const sourceRange =
-          document.parsedDocument.sourceRangeForNode(style.childNodes[0]);
+      const sourceRange = document.parsedDocument.sourceRangeForNode(
+          style.childNodes && style.childNodes[0]);
       if (sourceRange === undefined) {
         continue;
       }
@@ -77,7 +113,7 @@ class RootSelectorToHtml extends Rule {
           continue;
         }
 
-        const deprecatedRegex = /:root/;
+        const deprecatedRegex = /^:root$/;
         const match = node.selector.match(deprecatedRegex);
         if (match === null) {
           continue;
@@ -92,7 +128,7 @@ class RootSelectorToHtml extends Rule {
           code: this.code,
           severity: Severity.WARNING, sourceRange,
           message: stripWhitespace(`
-            Root should no longer be used
+            The ::root selector should no longer be used
           `),
           fix: [{range: sourceRange, replacementText}]
         }));
