@@ -47,6 +47,9 @@ suite(ruleId, () => {
   :root {
   ~~~~~`,
       `
+  :root foo {
+  ~~~~~`,
+      `
       :root {
       ~~~~~`,
       `
@@ -55,6 +58,7 @@ suite(ruleId, () => {
     ]);
 
     assert.deepEqual(warnings.map((w) => w.message), [
+      'The ::root selector should no longer be used',
       'The ::root selector should no longer be used',
       'The ::root selector should no longer be used',
       'The ::root selector should no longer be used',

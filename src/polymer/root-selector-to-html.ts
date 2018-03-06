@@ -13,7 +13,7 @@
  */
 
 import * as dom5 from 'dom5/lib/index-next';
-import {Document, isPositionInsideRange, ParsedCssDocument, Severity, Warning} from 'polymer-analyzer';
+import {Document, isPositionInsideRange, ParsedCssDocument, Replacement, Severity, Warning} from 'polymer-analyzer';
 import * as shady from 'shady-css-parser';
 
 import {registry} from '../registry';
@@ -31,7 +31,7 @@ const isCustomStyle = p.AND(
 class RootSelectorToHtml extends Rule {
   code = 'root-selector-to-html';
   description = stripIndentation(`
-      Warns when using :root inside an element's template or custom-style
+      Warns when using :root inside an element's template, custom-style, or style module.
   `);
 
   async check(document: Document) {
@@ -113,7 +113,7 @@ class RootSelectorToHtml extends Rule {
           continue;
         }
 
-        const deprecatedRegex = /^:root$/;
+        const deprecatedRegex = /:root/;
         const match = node.selector.match(deprecatedRegex);
         if (match === null) {
           continue;
@@ -123,6 +123,12 @@ class RootSelectorToHtml extends Rule {
         const sourceRange = containingDoc.sourceRangeForShadyRange(
             {start, end: start + match[0].length});
 
+        // Only fix plain `:root` selectors
+        let fix: Replacement[] = [];
+        if (node.selector.match(/^:root$/) !== null) {
+          fix.push({range: sourceRange, replacementText});
+        }
+
         warnings.push(new Warning({
           parsedDocument: document.parsedDocument,
           code: this.code,
@@ -130,7 +136,7 @@ class RootSelectorToHtml extends Rule {
           message: stripWhitespace(`
             The ::root selector should no longer be used
           `),
-          fix: [{range: sourceRange, replacementText}]
+          fix
         }));
       }
     }
