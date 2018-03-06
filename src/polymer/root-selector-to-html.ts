@@ -77,7 +77,7 @@ class RootSelectorToHtml extends Rule {
           continue;
         }
 
-        const deprecatedRegex = /:root/;
+        const deprecatedRegex = /^:root$/;
         const match = node.selector.match(deprecatedRegex);
         if (match === null) {
           continue;
