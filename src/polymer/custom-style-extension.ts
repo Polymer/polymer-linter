@@ -14,19 +14,19 @@
  */
 
 import * as dom5 from 'dom5/lib/index-next';
-import { Document, isPositionInsideRange, ParsedHtmlDocument, Replacement, Severity, Warning } from 'polymer-analyzer';
+import {Document, isPositionInsideRange, ParsedHtmlDocument, Replacement, Severity, Warning} from 'polymer-analyzer';
 
-import { HtmlRule } from '../html/rule';
-import { getIndentationInside } from '../html/util';
-import { registry } from '../registry';
-import { indentSourceRange, stripIndentation } from '../util';
+import {HtmlRule} from '../html/rule';
+import {getIndentationInside} from '../html/util';
+import {registry} from '../registry';
+import {indentSourceRange, stripIndentation} from '../util';
 
 const p = dom5.predicates;
 const isCustomStyleV1 = p.AND(
-  (node: dom5.Node) =>
-    !node.parentNode || !p.hasTagName('custom-style')(node.parentNode),
-  p.hasTagName('style'),
-  p.hasAttrValue('is', 'custom-style'));
+    (node: dom5.Node) =>
+        !node.parentNode || !p.hasTagName('custom-style')(node.parentNode),
+    p.hasTagName('style'),
+    p.hasAttrValue('is', 'custom-style'));
 
 class CustomStyleExtension extends HtmlRule {
   code = 'custom-style-extension';
@@ -53,12 +53,12 @@ class CustomStyleExtension extends HtmlRule {
     const warnings: Warning[] = [];
 
     const customStyleTags = [...dom5.queryAll(
-      parsedDocument.ast, isCustomStyleV1, dom5.childNodesIncludeTemplate)];
+        parsedDocument.ast, isCustomStyleV1, dom5.childNodesIncludeTemplate)];
     if (customStyleTags.length === 0) {
       return warnings;  // Early exit quick in the trivial case.
     }
 
-    const domModules = Array.from(_document.getFeatures({ kind: 'dom-module' }));
+    const domModules = Array.from(_document.getFeatures({kind: 'dom-module'}));
 
     for (const customStyle of customStyleTags) {
       const sourceRange = parsedDocument.sourceRangeForNode(customStyle);
@@ -67,18 +67,18 @@ class CustomStyleExtension extends HtmlRule {
       }
 
       const inDomModule = domModules
-        .filter((domModule) => {
-          return isPositionInsideRange(
-            sourceRange.start, domModule.sourceRange);
-        })
-        .length > 0;
+                              .filter((domModule) => {
+                                return isPositionInsideRange(
+                                    sourceRange.start, domModule.sourceRange);
+                              })
+                              .length > 0;
       if (inDomModule) {
         continue;
       }
 
       const indentation = getIndentationInside(customStyle).slice(2);
       const fix: Replacement[] =
-        indentSourceRange(sourceRange, `  `, parsedDocument);
+          indentSourceRange(sourceRange, `  `, parsedDocument);
 
       fix.push({
         range: {
@@ -101,7 +101,7 @@ class CustomStyleExtension extends HtmlRule {
         parsedDocument,
         code: this.code,
         message:
-          `<style> extended with \`is="custom-style"\` should be wrapped with \`<custom-style>\`.`,
+            `<style> extended with \`is="custom-style"\` should be wrapped with \`<custom-style>\`.`,
         severity: Severity.WARNING,
         sourceRange: parsedDocument.sourceRangeForAttribute(customStyle, 'is')!,
         fix
