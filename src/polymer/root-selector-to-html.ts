@@ -124,9 +124,9 @@ class RootSelectorToHtml extends Rule {
             {start, end: start + match[0].length});
 
         // Only fix plain `:root` selectors
-        const fix: Replacement[] = [];
+        const fix: Replacement[]|undefined = undefined;
         if (node.selector.match(/^:root$/) !== null) {
-          fix.push({range: sourceRange, replacementText});
+          fix = [{range: sourceRange, replacementText}];
         }
 
         warnings.push(new Warning({
