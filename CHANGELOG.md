@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 - Adds the new rule `iron-form-v1-to-v2`, which warns about `iron-form` being used as a type extension of `<form>`.
-  - The fix automatically wraps the `<form is="iron-form">` into an `<iron-form>` and moves id, `iron-form` properties and event listeners from `<form>` to `<iron-form>`.
+  - The fix automatically wraps the `<form is="iron-form">` into an `<iron-form>` and moves `id`, `with-credentials`, `headers` properties and `on-iron-form-*` events from `<form>` to `<iron-form>`.
 
 ## [3.0.0-pre.3] - 2018-03-07
 
