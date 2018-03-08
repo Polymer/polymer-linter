@@ -27,25 +27,25 @@ const isIronFormV1 = p.AND(
     p.hasTagName('form'),
     p.hasAttrValue('is', 'iron-form'));
 
-const propertiesToDelete = [
+const propertiesToDelete: ReadonlySet<string> = new Set([
   'is',
   'disable-native-validation-ui',
   'disable-native-validation-ui$',
   'request',
   'request$',
-];
-const propertiesToMove = [
+]);
+const propertiesToMove: ReadonlySet<string> = new Set([
   'id',
   'id$',
   'headers',
   'headers$',
   'with-credentials',
   'with-credentials$'
-];
-const propertiesToRename: {[key: string]: string;} = {
-  'content-type': 'enctype',
-  'content-type$': 'enctype$',
-};
+]);
+const propertiesToRename: ReadonlyMap<string, string> = new Map([
+  ['content-type', 'enctype'],
+  ['content-type$', 'enctype$'],
+]);
 
 class IronFormV1ToV2 extends HtmlRule {
   code = 'iron-form-v1-to-v2';
@@ -82,11 +82,11 @@ class IronFormV1ToV2 extends HtmlRule {
       form.attrs.forEach((attr) => {
         // All `iron-form-*` events and `propertiesToMove` go on <iron-form>.
         if ((attr.name.indexOf('on-iron-form-') === 0 ||
-             propertiesToMove.indexOf(attr.name) >= 0)) {
+             propertiesToMove.has(attr.name))) {
           ironFormAttrs +=
               ` ${attr.name}${attr.value ? `="${attr.value}"` : ''}`;
-        } else if (propertiesToDelete.indexOf(attr.name) === -1) {
-          const attrName = propertiesToRename[attr.name] || attr.name;
+        } else if (!propertiesToDelete.has(attr.name)) {
+          const attrName = propertiesToRename.get(attr.name) || attr.name;
           formAttrs += ` ${attrName}${attr.value ? `="${attr.value}"` : ''}`;
         }
       });

@@ -29,8 +29,8 @@ export abstract class Rule {
    */
   abstract readonly description: string;
 
-  protected readonly cache =
-      new WeakMap<Document, Promise<ReadonlyArray<Warning>>>();
+  protected readonly cache: WeakMap<Document, Promise<ReadonlyArray<Warning>>> =
+      new WeakMap();
 
   /**
    * Finds all warnings in the given document.
