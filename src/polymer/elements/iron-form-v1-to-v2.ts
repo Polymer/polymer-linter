@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 import {Document, ParsedHtmlDocument, Replacement, Severity, Warning} from 'polymer-analyzer';
 
 import {HtmlRule} from '../../html/rule';
@@ -75,7 +75,7 @@ class IronFormV1ToV2 extends HtmlRule {
   async checkDocument(parsedDocument: ParsedHtmlDocument, _document: Document) {
     const warnings: Warning[] = [];
     const forms = dom5.queryAll(
-        parsedDocument.ast, isIronFormV1, [], dom5.childNodesIncludeTemplate);
+        parsedDocument.ast, isIronFormV1, dom5.childNodesIncludeTemplate);
     for (const form of forms) {
       // Collect attributes/events for the iron-form and form.
       let ironFormAttrs = '', formAttrs = '';
