@@ -47,7 +47,7 @@ suite('call-super-in-callbacks', () => {
     assert.deepEqual([...warnings], []);
   });
 
-  test.skip('warns for the proper cases and with the right messages', async() => {
+  test('warns for the proper cases and with the right messages', async() => {
     const {warnings} = await linter.lint(
         ['call-super-in-callbacks/call-super-in-callbacks.html']);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
